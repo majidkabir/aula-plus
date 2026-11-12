@@ -149,6 +149,7 @@ struct NowLine: View {
 struct EventCard: View {
     let event: Event
     @Environment(AppModel.self) private var app
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var isPast: Bool { event.end < .now }
     private var color: Color {
@@ -156,24 +157,33 @@ struct EventCard: View {
         return Palette.color(for: first, in: app.children)
     }
 
+    private var timeText: String {
+        event.allDay ? String(localized: "Hele dagen") : "\(Fmt.time(event.start)) – \(Fmt.time(event.end))"
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .trailing, spacing: 2) {
-                if event.allDay {
-                    Text("Hele dagen").font(.caption.weight(.semibold))
-                } else {
-                    Text(Fmt.time(event.start)).font(.subheadline.weight(.semibold))
-                    Text(Fmt.time(event.end)).font(.caption).foregroundStyle(.secondary)
+            if !typeSize.isAccessibilitySize {
+                VStack(alignment: .trailing, spacing: 2) {
+                    if event.allDay {
+                        Text("Hele dagen").font(.caption.weight(.semibold))
+                    } else {
+                        Text(Fmt.time(event.start)).font(.subheadline.weight(.semibold))
+                        Text(Fmt.time(event.end)).font(.caption).foregroundStyle(.secondary)
+                    }
                 }
+                .monospacedDigit()
+                .lineLimit(1)
+                .fixedSize()
+                .frame(minWidth: 52, alignment: .trailing)
             }
-            .monospacedDigit()
-            .lineLimit(1)
-            .fixedSize()
-            .frame(minWidth: 52, alignment: .trailing)
 
             RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 4)
 
             VStack(alignment: .leading, spacing: 4) {
+                if typeSize.isAccessibilitySize {
+                    Text(timeText).font(.subheadline.weight(.semibold)).monospacedDigit()
+                }
                 HStack(alignment: .firstTextBaseline) {
                     Text(event.title).font(.body.weight(.semibold)).lineLimit(2)
                     Spacer(minLength: 4)
@@ -188,7 +198,8 @@ struct EventCard: View {
                 let details: [String] = [event.location, event.hasSubstitute ? event.substitute : event.teacher].compactMap { $0 }
                 if !details.isEmpty {
                     Text(details.joined(separator: " · "))
-                        .font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+                        .font(.subheadline).foregroundStyle(.secondary)
+                        .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                 }
                 let names = event.childIds.compactMap { app.child($0)?.firstName }
                 if app.children.count > 1, app.selectedChildId == nil, !names.isEmpty {

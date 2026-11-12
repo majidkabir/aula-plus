@@ -1221,6 +1221,16 @@
         }
       }
     },
+    "Kunne ikke opdatere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't refresh"
+          }
+        }
+      }
+    },
     "Log ind med MitID": {
       "localizations": {
         "en": {
@@ -2047,6 +2057,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Showing data from %@"
+          }
+        }
+      }
+    },
+    "Viser data fra %@. Træk ned for at prøve igen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Showing data from %@. Pull down to try again."
           }
         }
       }

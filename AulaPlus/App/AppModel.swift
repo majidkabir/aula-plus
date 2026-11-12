@@ -96,6 +96,7 @@ final class AppModel {
             case "gallery": selectedTab = .more; morePath.append(DemoRoute.gallery)
             case "notifications": selectedTab = .more; morePath.append(DemoRoute.notifications)
             case "settings": selectedTab = .more; morePath.append(DemoRoute.settings)
+            case "empty": selectedTab = .more; morePath.append(DemoRoute.empty)
             default: break
             }
             return

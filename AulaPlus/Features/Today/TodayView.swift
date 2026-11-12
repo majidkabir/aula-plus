@@ -178,6 +178,7 @@ struct ChildDayCard: View {
     let presence: Presence?
     let events: [Event]
     @Environment(AppModel.self) private var app
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var upcoming: [Event] { events.filter { $0.end >= .now } }
     private var doneCount: Int { events.count - upcoming.count }
@@ -209,7 +210,9 @@ struct ChildDayCard: View {
             if let p = presence {
                 let facts = Self.facts(p)
                 if !facts.isEmpty {
-                    LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
+                    LazyVGrid(columns: typeSize.isAccessibilitySize
+                              ? [GridItem(.flexible(), alignment: .leading)]
+                              : [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
                               alignment: .leading, spacing: 10) {
                         ForEach(facts, id: \.label) { f in
                             HStack(spacing: 8) {
@@ -259,7 +262,7 @@ struct ChildDayCard: View {
                                         .accessibilityLabel(Text("Vikar"))
                                 }
                                 Spacer(minLength: 4)
-                                if let loc = e.location {
+                                if let loc = e.location, !typeSize.isAccessibilitySize {
                                     Text(loc).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                                 }
                             }

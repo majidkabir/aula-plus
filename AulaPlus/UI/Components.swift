@@ -82,20 +82,25 @@ struct StaleBanner: View {
 
     var body: some View {
         if let error {
-            HStack(spacing: 8) {
+            HStack(alignment: .top, spacing: 10) {
                 Image(systemName: "wifi.exclamationmark")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.orange)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(error).lineLimit(2)
+                    Text("Kunne ikke opdatere").font(.subheadline.weight(.semibold))
+                    Text(error).font(.footnote).foregroundStyle(.secondary).lineLimit(2)
                     if let savedAt {
-                        Text("Viser data fra \(savedAt.formatted(.relative(presentation: .named)))")
-                            .foregroundStyle(.secondary)
+                        Text("Viser data fra \(savedAt.formatted(.relative(presentation: .named))). Træk ned for at prøve igen.")
+                            .font(.footnote).foregroundStyle(.secondary)
                     }
                 }
             }
-            .font(.footnote)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(10)
-            .background(.orange.opacity(0.15), in: RoundedRectangle(cornerRadius: 10))
+            .padding(12)
+            .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: Theme.rowRadius, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: Theme.rowRadius, style: .continuous).strokeBorder(Color.orange.opacity(0.3)))
+            .accessibilityElement(children: .combine)
         }
     }
 }

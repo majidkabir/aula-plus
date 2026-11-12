@@ -50,6 +50,17 @@ struct MoreView: View {
                 case .notifications: NotificationsView()
                 case .settings: SettingsView(embedded: true)
                 case .gallery: GalleryView()
+                case .empty:
+                    // Screenshot of the offline + empty states.
+                    VStack(spacing: 0) {
+                        StaleBanner(error: String(localized: "Aula svarede med HTTP 503."), savedAt: Date().addingTimeInterval(-3600))
+                            .padding()
+                        ContentUnavailableView("Ingen opslag", systemImage: "newspaper",
+                                               description: Text("Der er ingen begivenheder denne dag."))
+                        Spacer()
+                    }
+                    .background(Color(.systemGroupedBackground))
+                    .navigationTitle("Opslag")
                 }
             }
         }
