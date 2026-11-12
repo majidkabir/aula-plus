@@ -69,6 +69,7 @@ struct Presence: Codable, Hashable {
 struct Attachment: Codable, Hashable {
     let name: String
     let url: URL?
+    var isLink: Bool? = nil   // web link rather than a file
 }
 
 struct ThreadSummary: Codable, Identifiable, Hashable {
@@ -240,7 +241,8 @@ struct AttachmentDTO: Decodable {
         let names: [String?] = [name, file?.name, media?.file?.name, media?.title, link?.name, document?.title]
         let url: String? = urls.compactMap { $0 }.first
         let n: String = names.compactMap { $0?.nilIfEmpty }.first ?? "Vedhæftet fil"
-        return Attachment(name: n, url: url.flatMap { URL(string: $0) })
+        let linkOnly: Bool = link?.url != nil && media?.file?.url == nil && file?.url == nil
+        return Attachment(name: n, url: url.flatMap { URL(string: $0) }, isLink: linkOnly)
     }
 }
 

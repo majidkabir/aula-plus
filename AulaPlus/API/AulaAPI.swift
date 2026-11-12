@@ -25,7 +25,7 @@ enum AulaError: LocalizedError {
 actor AulaAPI {
     static let shared = AulaAPI()
 
-    private let session: URLSession
+    let session: URLSession
     private let tokens: TokenStore
     private var version: Int
     private var sessionReady = false
@@ -262,10 +262,10 @@ actor AulaAPI {
 
     // MARK: Transport
 
-    private struct Ignored: Decodable { init(from decoder: Decoder) throws {} }
+    struct Ignored: Decodable { init(from decoder: Decoder) throws {} }
 
     /// Calls an Aula API method and returns its decoded `data`.
-    private func call<T: Decodable>(_ method: String,
+    func call<T: Decodable>(_ method: String,
                                     query: [URLQueryItem] = [],
                                     body: [String: Any]? = nil,
                                     needsSession: Bool = true) async throws -> T {
@@ -334,7 +334,7 @@ actor AulaAPI {
         throw AulaError.http(410)
     }
 
-    private func external<T: Decodable>(_ url: String, query: [URLQueryItem], headers: [String: String]) async throws -> T {
+    func external<T: Decodable>(_ url: String, query: [URLQueryItem], headers: [String: String]) async throws -> T {
         var c = URLComponents(string: url)!
         c.queryItems = query
         var req = URLRequest(url: c.url!)
