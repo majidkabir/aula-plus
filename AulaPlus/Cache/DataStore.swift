@@ -10,10 +10,24 @@ final class DataStore {
     let presence: Loadable<[Presence]>
     let threads: Loadable<[ThreadSummary]>
     let posts: Loadable<[Post]>
+    let notifications: Loadable<[AulaNotification]>
+    let importantDates: Loadable<[ImportantDate]>
+    let albums: Loadable<[Album]>
 
     @ObservationIgnored private var weeks: [String: Loadable<[Event]>] = [:]
     @ObservationIgnored private var threadPages: [String: Loadable<ThreadPage>] = [:]
     @ObservationIgnored private var weekPlans: [String: Loadable<[WeekPlan]>] = [:]
+    @ObservationIgnored private var albumMedia: [Int: Loadable<[Media]>] = [:]
+
+    func media(albumId: Int) -> Loadable<[Media]> {
+        if let l = albumMedia[albumId] { return l }
+        let l = Loadable<[Media]>(key: "album-\(albumId)") {
+            let s = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.media(albumId: albumId, institutionProfileIds: s.institutionProfileIds)
+        }
+        albumMedia[albumId] = l
+        return l
+    }
 
     private init() {
         presence = Loadable(key: "presence") {
@@ -26,6 +40,18 @@ final class DataStore {
         posts = Loadable(key: "posts") {
             let s = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.posts(institutionProfileIds: s.institutionProfileIds)
+        }
+        notifications = Loadable(key: "notifications") {
+            _ = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.notifications()
+        }
+        importantDates = Loadable(key: "important-dates") {
+            _ = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.importantDates()
+        }
+        albums = Loadable(key: "albums") {
+            let s = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.albums(institutionProfileIds: s.institutionProfileIds)
         }
     }
 
@@ -80,6 +106,10 @@ final class DataStore {
         presence.forget()
         threads.forget()
         posts.forget()
+        notifications.forget()
+        importantDates.forget()
+        albums.forget()
+        albumMedia = [:]
         weeks = [:]
         threadPages = [:]
         weekPlans = [:]

@@ -1,12 +1,16 @@
 import SwiftUI
 
 struct SettingsView: View {
+    var embedded = false
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
     @State private var confirmLogout = false
 
     var body: some View {
-        NavigationStack {
+        if embedded { content } else { NavigationStack { content } }
+    }
+
+    private var content: some View {
             List {
                 if let s = app.session.value {
                     Section("Logget ind som") {
@@ -37,7 +41,9 @@ struct SettingsView: View {
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Færdig") { dismiss() } }
+                if !embedded {
+                    ToolbarItem(placement: .confirmationAction) { Button("Færdig") { dismiss() } }
+                }
             }
             .confirmationDialog("Log ud af Aula+?", isPresented: $confirmLogout, titleVisibility: .visible) {
                 Button("Log ud", role: .destructive) {
@@ -47,6 +53,5 @@ struct SettingsView: View {
                     }
                 }
             }
-        }
     }
 }

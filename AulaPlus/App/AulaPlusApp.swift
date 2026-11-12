@@ -46,8 +46,8 @@ struct MainTabs: View {
                 .tabItem { Label("Kalender", systemImage: "calendar") }
             WeekPlanView()
                 .tabItem { Label("Ugeplan", systemImage: "list.bullet.rectangle") }
-            PostsView()
-                .tabItem { Label("Opslag", systemImage: "newspaper") }
+            MoreView()
+                .tabItem { Label("Mere", systemImage: "ellipsis.circle") }
         }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
