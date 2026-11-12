@@ -6,6 +6,13 @@ struct WeekPlanView: View {
     @State private var weekDate = Date.now
 
     private var plan: Loadable<[WeekPlan]> { data.weekPlan(weekOf: weekDate) }
+    private var tasks: Loadable<[SchoolTask]> { data.schoolTasks(weekOf: weekDate) }
+
+    private var visibleTasks: [SchoolTask] {
+        let all = tasks.value ?? []
+        guard let id = app.selectedChildId, let child = app.child(id) else { return all }
+        return all.filter { $0.childName.isEmpty || $0.childName.localizedCaseInsensitiveContains(child.firstName) }
+    }
 
     private var supported: Bool {
         let w = app.session.value?.widgetIds ?? []
@@ -28,7 +35,16 @@ struct WeekPlanView: View {
                     weekSwitcher
                     StaleBanner(error: plan.error, savedAt: plan.savedAt)
 
-                    if !supported && app.session.value != nil {
+                    if !visibleTasks.isEmpty {
+                        Text("Opgaver").font(.title3.bold())
+                        Card {
+                            VStack(alignment: .leading, spacing: 10) {
+                                ForEach(visibleTasks) { t in TaskRow(task: t, showChild: app.children.count > 1) }
+                            }
+                        }
+                    }
+
+                    if !supported && app.session.value != nil && visibleTasks.isEmpty {
                         ContentUnavailableView("Ugeplan ikke understøttet endnu",
                                                systemImage: "puzzlepiece.extension",
                                                description: Text("Din skole bruger en ugeplan-udbyder, som Aula+ ikke kender endnu (understøtter Meebook og Min Uddannelse)."))
@@ -58,8 +74,16 @@ struct WeekPlanView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Ugeplan")
-            .refreshable { await plan.refresh() }
-            .task(id: Week.key(weekDate)) { await plan.load(maxAge: 1800) }
+            .refreshable {
+                async let a: () = plan.refresh()
+                async let b: () = tasks.refresh()
+                _ = await (a, b)
+            }
+            .task(id: Week.key(weekDate)) {
+                async let a: () = plan.load(maxAge: 1800)
+                async let b: () = tasks.load(maxAge: 1800)
+                _ = await (a, b)
+            }
         }
     }
 
@@ -77,5 +101,28 @@ struct WeekPlanView: View {
 
     private func shift(_ days: Int) {
         weekDate = Calendar.week.date(byAdding: .day, value: days, to: weekDate) ?? weekDate
+    }
+}
+
+struct TaskRow: View {
+    let task: SchoolTask
+    let showChild: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(task.isDone ? Color.green : Color.secondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(task.title).font(.subheadline.weight(.medium)).strikethrough(task.isDone)
+                HStack(spacing: 6) {
+                    if let s = task.subject { Text(s) }
+                    if let d = task.due { Text("Afleveres \(d.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))") }
+                    else if let w = task.weekday { Text(w) }
+                    if showChild, !task.childName.isEmpty { Text("· \(task.childName)") }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
     }
 }

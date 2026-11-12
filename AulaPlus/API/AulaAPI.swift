@@ -247,7 +247,7 @@ actor AulaAPI {
         return []
     }
 
-    private func widgetToken(_ id: String) async throws -> String {
+    func widgetToken(_ id: String) async throws -> String {
         let token: String = try await call("aulaToken.getAulaToken", query: [.init(name: "widgetId", value: id)])
         return "Bearer \(token)"
     }

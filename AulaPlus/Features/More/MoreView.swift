@@ -5,7 +5,8 @@ struct MoreView: View {
     @Environment(AppModel.self) private var app
 
     var body: some View {
-        NavigationStack {
+        @Bindable var app = app
+        NavigationStack(path: $app.morePath) {
             List {
                 Section {
                     NavigationLink { PostsList() } label: { Label("Opslag", systemImage: "newspaper") }

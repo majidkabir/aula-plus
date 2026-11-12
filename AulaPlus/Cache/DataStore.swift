@@ -80,6 +80,20 @@ final class DataStore {
         return l
     }
 
+    @ObservationIgnored private var tasks: [String: Loadable<[SchoolTask]>] = [:]
+
+    func schoolTasks(weekOf date: Date) -> Loadable<[SchoolTask]> {
+        let start = Week.start(of: date)
+        let key = "tasks-\(Week.key(start))"
+        if let l = tasks[key] { return l }
+        let l = Loadable<[SchoolTask]>(key: key) {
+            let s = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.schoolTasks(session: s, week: Week.isoWeek(start))
+        }
+        tasks[key] = l
+        return l
+    }
+
     func weekPlan(weekOf date: Date) -> Loadable<[WeekPlan]> {
         let start = Week.start(of: date)
         let key = "weekplan-\(Week.key(start))"
@@ -113,6 +127,7 @@ final class DataStore {
         weeks = [:]
         threadPages = [:]
         weekPlans = [:]
+        tasks = [:]
     }
 }
 

@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
     @State private var confirmLogout = false
+    @State private var notificationsOn = BackgroundRefresh.isEnabled
 
     var body: some View {
         if embedded { content } else { NavigationStack { content } }
@@ -27,6 +28,22 @@ struct SettingsView: View {
                             }
                         }
                     }
+                }
+                Section {
+                    Toggle(isOn: $notificationsOn) {
+                        Label("Notifikationer om nye beskeder og opslag", systemImage: "bell.badge")
+                    }
+                    .onChange(of: notificationsOn) { _, on in
+                        Task {
+                            if on { notificationsOn = await BackgroundRefresh.requestPermission() }
+                            else { BackgroundRefresh.disable() }
+                        }
+                    }
+                    Toggle(isOn: Binding(get: { app.lockEnabled }, set: { app.lockEnabled = $0 })) {
+                        Label("Lås med Face ID", systemImage: "faceid")
+                    }
+                } footer: {
+                    Text("Aula+ tjekker for nyt i baggrunden, når iOS tillader det (typisk hvert 15.–60. minut).")
                 }
                 Section {
                     Button("Ryd cache") { DiskCache.clear() }

@@ -107,3 +107,10 @@ final class MessagingTests: XCTestCase {
         XCTAssertEqual(a.name, "Site")
     }
 }
+
+final class MoreTests: XCTestCase {
+    func testDotNetDate() {
+        let d = AulaAPI.parseDotNetDate("/Date(1771196400000-0000)/")
+        XCTAssertEqual(d?.timeIntervalSince1970, 1771196400)
+    }
+}
