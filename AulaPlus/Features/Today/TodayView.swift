@@ -23,7 +23,12 @@ struct TodayView: View {
                     vacationBanner
 
                     if app.children.isEmpty && app.session.isLoading {
-                        ProgressView().frame(maxWidth: .infinity).padding(.top, 60)
+                        // Skeleton while the first load runs.
+                        ForEach([Demo.emma, Demo.noah]) { c in
+                            ChildDayCard(child: c, presence: Demo.presence.first { $0.childId == c.id }, events: [])
+                        }
+                        .redacted(reason: .placeholder)
+                        .allowsHitTesting(false)
                     }
 
                     ForEach(app.visibleChildren) { child in

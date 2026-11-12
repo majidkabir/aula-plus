@@ -51,6 +51,14 @@ jobs:
               xcrun simctl io "$UDID" screenshot "shots/$mode-$screen.png"
             done
           done
+          xcrun simctl ui "$UDID" appearance light
+          xcrun simctl ui "$UDID" content_size accessibility-large
+          for screen in today calendar; do
+            xcrun simctl terminate "$UDID" com.majidkabir.aulaplus 2>/dev/null || true
+            xcrun simctl launch "$UDID" com.majidkabir.aulaplus -demo YES -screen $screen
+            sleep 5
+            xcrun simctl io "$UDID" screenshot "shots/xl-$screen.png"
+          done
           ls -la shots
       - name: Publish to screenshots branch
         run: |
