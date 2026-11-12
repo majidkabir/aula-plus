@@ -45,6 +45,13 @@ struct MoreView: View {
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Album.self) { AlbumView(album: $0) }
+            .navigationDestination(for: DemoRoute.self) { r in
+                switch r {
+                case .notifications: NotificationsView()
+                case .settings: SettingsView(embedded: true)
+                case .gallery: GalleryView()
+                }
+            }
         }
     }
 

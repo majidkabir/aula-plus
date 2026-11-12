@@ -84,7 +84,7 @@ final class AppModel {
 
     func start() async {
         if Demo.isOn {
-            phase = .loggedIn
+            phase = Demo.screen == "login" ? .loggedOut : .loggedIn
             switch Demo.screen {
             case "messages": selectedTab = .messages
             case "thread": selectedTab = .messages; messagesPath = [Demo.threads[0]]
@@ -93,6 +93,9 @@ final class AppModel {
             case "more": selectedTab = .more
             case "post": selectedTab = .more; morePath.append(Demo.posts[0])
             case "child": todayPath.append(Demo.noah)
+            case "gallery": selectedTab = .more; morePath.append(DemoRoute.gallery)
+            case "notifications": selectedTab = .more; morePath.append(DemoRoute.notifications)
+            case "settings": selectedTab = .more; morePath.append(DemoRoute.settings)
             default: break
             }
             return

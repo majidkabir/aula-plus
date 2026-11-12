@@ -159,3 +159,6 @@ enum Demo {
         }
     }
 }
+
+/// Extra navigation targets used only by screenshot runs.
+enum DemoRoute: Hashable { case notifications, settings, gallery }

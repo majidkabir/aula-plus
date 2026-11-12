@@ -44,7 +44,7 @@ jobs:
           mkdir -p shots
           for mode in light dark; do
             xcrun simctl ui "$UDID" appearance $mode
-            for screen in today messages thread calendar weekPlan more post child; do
+            for screen in today messages thread calendar weekPlan more post child login notifications settings gallery; do
               xcrun simctl terminate "$UDID" com.majidkabir.aulaplus 2>/dev/null || true
               xcrun simctl launch "$UDID" com.majidkabir.aulaplus -demo YES -screen $screen
               sleep 5
