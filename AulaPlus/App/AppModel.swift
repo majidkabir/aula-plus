@@ -126,6 +126,7 @@ final class AppModel {
         DataStore.shared.reset()
         session.forget()
         WidgetSnapshot(children: [], unread: 0, latestSender: nil, latestSubject: nil, updated: .now).save()
+        BackgroundRefresh.updateBadge(0, force: true)
         selectedChildId = nil
         phase = .loggedOut
     }

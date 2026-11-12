@@ -3,6 +3,7 @@ import SwiftUI
 struct ContactsView: View {
     @Environment(AppModel.self) private var app
     @State private var groups: [AulaGroup] = []
+    @State private var groupsLoaded = Demo.isOn
     @State private var groupId: Int?
     @State private var filter = "guardian"
     @State private var contacts: Loadable<[Contact]>?
@@ -39,7 +40,7 @@ struct ContactsView: View {
         }
         .overlay {
             if shown.isEmpty {
-                if contacts?.isLoading == true || groups.isEmpty { ProgressView() }
+                if !groupsLoaded || (!groups.isEmpty && (contacts == nil || contacts?.isLoading == true)) { ProgressView() }
                 else { ContentUnavailableView("Ingen kontakter", systemImage: "person.2") }
             }
         }
@@ -50,6 +51,7 @@ struct ContactsView: View {
                 groups = (try? await AulaAPI.shared.groups(childIds: app.children.map(\.id))) ?? []
                 groupId = groupId ?? groups.first?.id
             }
+            groupsLoaded = true
         }
         .task(id: "\(groupId ?? 0)-\(filter)") { await reload() }
         .refreshable { await contacts?.refresh() }

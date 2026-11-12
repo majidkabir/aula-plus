@@ -106,10 +106,15 @@ actor AulaAPI {
         try await withThrowingTaskGroup(of: [DailyOverviewDTO].self) { group in
             for id in childIds {
                 group.addTask {
-                    // A child without Komme/Gå (e.g. a school child) just has no overview.
-                    let list: Lossy<DailyOverviewDTO>? = try? await self.call(
-                        "presence.getDailyOverview", query: [.init(name: "childIds[]", value: String(id))])
-                    return list?.items ?? []
+                    // A child without Komme/Gå (e.g. a school child) is rejected → no overview.
+                    // Auth and network errors still propagate so the cache isn't overwritten with nothing.
+                    do {
+                        let list: Lossy<DailyOverviewDTO> = try await self.call(
+                            "presence.getDailyOverview", query: [.init(name: "childIds[]", value: String(id))])
+                        return list.items
+                    } catch is AulaError {
+                        return []
+                    }
                 }
             }
             var out: [Presence] = []
@@ -314,7 +319,8 @@ actor AulaAPI {
     private func send(_ method: String, query: [URLQueryItem], body: [String: Any]?) async throws -> (Data, HTTPURLResponse) {
         let token = try await tokens.accessToken()
         for _ in 0..<5 {
-            var c = URLComponents(string: "\(AulaConfig.apiBase)\(version)/")!
+            let v = version
+            var c = URLComponents(string: "\(AulaConfig.apiBase)\(v)/")!
             c.queryItems = [.init(name: "method", value: method)] + query + [.init(name: "access_token", value: token)]
             var req = URLRequest(url: c.url!)
             if let body {
@@ -328,8 +334,11 @@ actor AulaAPI {
             let (data, resp) = try await session.data(for: req)
             guard let http = resp as? HTTPURLResponse else { throw AulaError.http(0) }
             if http.statusCode == 410 {          // API version retired → try the next one
-                version += 1
-                UserDefaults.standard.set(version, forKey: "aula.apiVersion")
+                // Parallel calls all see the 410; bump once, not once per call.
+                if version == v {
+                    version = v + 1
+                    UserDefaults.standard.set(version, forKey: "aula.apiVersion")
+                }
                 continue
             }
             return (data, http)
