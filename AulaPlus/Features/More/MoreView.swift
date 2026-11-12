@@ -67,6 +67,7 @@ struct MoreView: View {
 
 struct GalleryView: View {
     @Environment(DataStore.self) private var data
+    static func tint(_ id: Int) -> Color { [Color.pink, .orange, .teal, .purple, .indigo, .green][abs(id) % 6] }
     private let columns = [GridItem(.adaptive(minimum: 160), spacing: 12)]
 
     var body: some View {
@@ -79,14 +80,20 @@ struct GalleryView: View {
                             AsyncImage(url: album.coverURL) { img in
                                 img.resizable().scaledToFill()
                             } placeholder: {
-                                Rectangle().fill(Color(.tertiarySystemFill))
-                                    .overlay(Image(systemName: "photo").foregroundStyle(.secondary))
+                                LinearGradient(colors: [Self.tint(album.id).opacity(0.35), Self.tint(album.id).opacity(0.12)],
+                                               startPoint: .topLeading, endPoint: .bottomTrailing)
+                                    .overlay(Image(systemName: "photo.on.rectangle.angled").font(.title)
+                                        .foregroundStyle(Self.tint(album.id)))
                             }
                             .frame(height: 130)
                             .frame(maxWidth: .infinity)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                             Text(album.title).font(.subheadline.weight(.semibold)).lineLimit(2)
-                            Text(Fmt.listDate(album.date)).font(.caption).foregroundStyle(.secondary)
+                            HStack(spacing: 4) {
+                                Text(Fmt.listDate(album.date))
+                                if let n = album.count { Text("· \(n) billeder") }
+                            }
+                            .font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     .buttonStyle(.plain)
@@ -100,6 +107,7 @@ struct GalleryView: View {
                 else { ContentUnavailableView("Ingen albums", systemImage: "photo.on.rectangle") }
             }
         }
+        .background(Color(.systemGroupedBackground))
         .navigationTitle("Galleri")
         .refreshable { await data.albums.refresh() }
         .task { await data.albums.load(maxAge: 600) }
@@ -259,12 +267,9 @@ struct NotificationRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 28, height: 28)
-                .background(Color.accentColor.opacity(0.12), in: Circle())
+            IconTile(systemImage: icon, color: tileColor)
             VStack(alignment: .leading, spacing: 3) {
-                Text(notification.title).font(.subheadline).lineLimit(2)
+                Text(notification.title).font(.subheadline.weight(.medium)).lineLimit(2)
                 HStack(spacing: 6) {
                     if let c = notification.childName { Text(c) }
                     Text(Fmt.listDate(notification.date))
@@ -274,6 +279,17 @@ struct NotificationRow: View {
             }
         }
         .padding(.vertical, 2)
+    }
+
+    private var tileColor: Color {
+        switch icon {
+        case "bubble.left.fill": return .blue
+        case "photo.fill": return .pink
+        case "newspaper.fill": return .purple
+        case "calendar": return .red
+        case "figure.walk": return .teal
+        default: return .gray
+        }
     }
 
     private var icon: String {

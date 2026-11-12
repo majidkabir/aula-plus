@@ -111,6 +111,16 @@
         }
       }
     },
+    "Alt gemmes på telefonen og opdateres i baggrunden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything is saved on your phone and refreshed in the background."
+          }
+        }
+      }
+    },
     "Annuller": {
       "localizations": {
         "en": {
@@ -237,6 +247,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Message"
+          }
+        }
+      }
+    },
+    "Besked når der sker noget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Know when something happens"
           }
         }
       }
@@ -721,6 +741,16 @@
         }
       }
     },
+    "Hele dagen på ét blik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The whole day at a glance"
+          }
+        }
+      }
+    },
     "Hent ældre beskeder": {
       "localizations": {
         "en": {
@@ -1057,6 +1087,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Check-in/out for %@"
+          }
+        }
+      }
+    },
+    "Komme/gå, skema og beskeder for hvert barn.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-in/out, schedule and messages for each child."
           }
         }
       }
@@ -1427,6 +1467,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Notify about new messages and posts"
+          }
+        }
+      }
+    },
+    "Notifikationer om nye beskeder og opslag.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications about new messages and posts."
           }
         }
       }
@@ -2051,12 +2101,32 @@
         }
       }
     },
+    "· %lld billeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "· %lld photos"
+          }
+        }
+      }
+    },
     "Åbn appen og log ind.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Open the app and log in."
+          }
+        }
+      }
+    },
+    "Åbner med det samme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens instantly"
           }
         }
       }

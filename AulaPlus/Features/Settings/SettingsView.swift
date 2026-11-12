@@ -16,7 +16,10 @@ struct SettingsView: View {
             List {
                 if let s = app.session.value {
                     Section("Logget ind som") {
-                        Text(s.displayName).font(.headline)
+                        HStack(spacing: 12) {
+                            InitialsAvatar(name: s.displayName, color: .accentColor, size: 40)
+                            Text(s.displayName).font(.headline)
+                        }
                     }
                     Section("Børn") {
                         ForEach(s.children) { c in
@@ -32,7 +35,10 @@ struct SettingsView: View {
                 }
                 Section {
                     Toggle(isOn: $notificationsOn) {
-                        Label("Notifikationer om nye beskeder og opslag", systemImage: "bell.badge")
+                        HStack(spacing: 12) {
+                            IconTile(systemImage: "bell.badge.fill", color: .red)
+                            Text("Notifikationer om nye beskeder og opslag")
+                        }
                     }
                     .onChange(of: notificationsOn) { _, on in
                         Task {
@@ -41,16 +47,24 @@ struct SettingsView: View {
                         }
                     }
                     Toggle(isOn: Binding(get: { app.lockEnabled }, set: { app.lockEnabled = $0 })) {
-                        Label("Lås med Face ID", systemImage: "faceid")
+                        HStack(spacing: 12) {
+                            IconTile(systemImage: "faceid", color: .green)
+                            Text("Lås med Face ID")
+                        }
                     }
                 } footer: {
                     Text("Aula+ tjekker for nyt i baggrunden, når iOS tillader det (typisk hvert 15.–60. minut).")
                 }
                 Section {
-                    Picker("Sprog", selection: $language) {
+                    Picker(selection: $language) {
                         Text("Automatisk").tag("")
                         Text(verbatim: "Dansk").tag("da")
                         Text(verbatim: "English").tag("en")
+                    } label: {
+                        HStack(spacing: 12) {
+                            IconTile(systemImage: "globe", color: .blue)
+                            Text("Sprog")
+                        }
                     }
                     .onChange(of: language) { _, lang in
                         if lang.isEmpty {

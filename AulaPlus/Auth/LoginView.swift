@@ -9,8 +9,8 @@ struct LoginView: View {
     @State private var error: String?
 
     var body: some View {
-        VStack(spacing: 28) {
-            Spacer()
+        VStack(spacing: 24) {
+            Spacer(minLength: 12)
             ZStack {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .fill(LinearGradient(colors: [.accentColor, .accentColor.opacity(0.6)],
@@ -24,6 +24,13 @@ struct LoginView: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
             }
+            VStack(alignment: .leading, spacing: 14) {
+                feature("bolt.fill", .orange, "Åbner med det samme", "Alt gemmes på telefonen og opdateres i baggrunden.")
+                feature("figure.and.child.holdinghands", .teal, "Hele dagen på ét blik", "Komme/gå, skema og beskeder for hvert barn.")
+                feature("bell.badge.fill", .red, "Besked når der sker noget", "Notifikationer om nye beskeder og opslag.")
+            }
+            .padding(.horizontal, 32)
+            .padding(.top, 8)
             if let notice = error ?? app.loginNotice {
                 Label(notice, systemImage: "exclamationmark.triangle.fill")
                     .font(.footnote)
@@ -46,11 +53,18 @@ struct LoginView: View {
             .buttonBorderShape(.roundedRectangle(radius: 14))
             .disabled(working)
             .padding(.horizontal, 24)
-            Text("Uofficiel app. Dine data går kun mellem din telefon og Aula.")
+            Label("Uofficiel app. Dine data går kun mellem din telefon og Aula.", systemImage: "lock.fill")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
                 .padding(.bottom, 12)
         }
+        .background(
+            LinearGradient(colors: [Color.accentColor.opacity(0.12), Color(.systemBackground)],
+                           startPoint: .top, endPoint: .center)
+                .ignoresSafeArea()
+        )
         .sheet(isPresented: $showWeb) {
             NavigationStack {
                 MitIDWebView(url: pkce.authorizeURL) { callback in
@@ -67,6 +81,17 @@ struct LoginView: View {
                 }
             }
         }
+    }
+
+    private func feature(_ icon: String, _ color: Color, _ title: LocalizedStringKey, _ text: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: icon).font(.title3).foregroundStyle(color).frame(width: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.subheadline.weight(.semibold))
+                Text(text).font(.subheadline).foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private func finish(_ url: URL) async {
