@@ -217,8 +217,10 @@ struct PersonDTO: Decodable {
     let displayName: String?
     let name: String?
     var best: String {
-        fullName ?? displayName ?? name
-            ?? [firstName, lastName].compactMap { $0 }.joined(separator: " ")
+        let candidates: [String?] = [fullName, displayName, name]
+        if let hit = candidates.compactMap({ $0 }).first { return hit }
+        let parts: [String] = [firstName, lastName].compactMap { $0 }
+        return parts.joined(separator: " ")
     }
 }
 
@@ -234,9 +236,11 @@ struct AttachmentDTO: Decodable {
     let document: DocDTO?
 
     var model: Attachment {
-        let url = media?.file?.url ?? file?.url ?? link?.url
-        let n = name ?? file?.name ?? media?.file?.name ?? media?.title ?? link?.name ?? document?.title ?? "Vedhæftet fil"
-        return Attachment(name: n, url: url.flatMap(URL.init(string:)))
+        let urls: [String?] = [media?.file?.url, file?.url, link?.url]
+        let names: [String?] = [name, file?.name, media?.file?.name, media?.title, link?.name, document?.title]
+        let url: String? = urls.compactMap { $0 }.first
+        let n: String = names.compactMap { $0?.nilIfEmpty }.first ?? "Vedhæftet fil"
+        return Attachment(name: n, url: url.flatMap { URL(string: $0) })
     }
 }
 
