@@ -44,7 +44,7 @@ struct ChildFilterBar: View {
         if app.children.count > 1 {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    chip(title: String(localized: "Alle"), color: .accentColor, selected: app.selectedChildId == nil) {
+                    chip(title: String(localized: "Alle"), color: Color.brand, selected: app.selectedChildId == nil) {
                         app.selectedChildId = nil
                     }
                     ForEach(app.children) { child in

@@ -51,6 +51,14 @@ jobs:
               xcrun simctl io "$UDID" screenshot "shots/$mode-$screen.png"
             done
           done
+          for combo in "light sunset today" "dark forest today" "light lavender settings" "dark graphite calendar"; do
+            set -- $combo
+            xcrun simctl ui "$UDID" appearance $1
+            xcrun simctl terminate "$UDID" com.majidkabir.aulaplus 2>/dev/null || true
+            xcrun simctl launch "$UDID" com.majidkabir.aulaplus -demo YES -screen $3 -demoTheme $2
+            sleep 5
+            xcrun simctl io "$UDID" screenshot "shots/theme-$2-$3.png"
+          done
           xcrun simctl ui "$UDID" appearance light
           xcrun simctl ui "$UDID" content_size accessibility-large
           for screen in today calendar; do

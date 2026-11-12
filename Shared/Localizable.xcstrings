@@ -11,6 +11,16 @@
         }
       }
     },
+    "%lld af %lld færdige": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld done"
+          }
+        }
+      }
+    },
     "%lld afsluttet": {
       "localizations": {
         "en": {
@@ -47,6 +57,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "+%lld more"
+          }
+        }
+      }
+    },
+    "Afhentning": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick-up"
           }
         }
       }
@@ -571,6 +591,16 @@
         }
       }
     },
+    "Fri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
     "Fx Vi er i sommerhus": {
       "localizations": {
         "en": {
@@ -671,6 +701,16 @@
         }
       }
     },
+    "Grafit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Graphite"
+          }
+        }
+      }
+    },
     "Gruppe": {
       "localizations": {
         "en": {
@@ -707,6 +747,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Applies to all children"
+          }
+        }
+      }
+    },
+    "Hav": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocean"
           }
         }
       }
@@ -847,6 +897,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yesterday"
+          }
+        }
+      }
+    },
+    "I morgen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
           }
         }
       }
@@ -1041,6 +1101,16 @@
         }
       }
     },
+    "Intet planlagt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing planned"
+          }
+        }
+      }
+    },
     "Inviterede (%lld)": {
       "localizations": {
         "en": {
@@ -1227,6 +1297,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't refresh"
+          }
+        }
+      }
+    },
+    "Lavendel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lavender"
           }
         }
       }
@@ -1671,6 +1751,16 @@
         }
       }
     },
+    "Skov": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forest"
+          }
+        }
+      }
+    },
     "Skriv en kommentar": {
       "localizations": {
         "en": {
@@ -1707,6 +1797,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete the thread \"%@\"?"
+          }
+        }
+      }
+    },
+    "Solnedgang": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sunset"
           }
         }
       }
@@ -1831,12 +1931,32 @@
         }
       }
     },
+    "Tema": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theme"
+          }
+        }
+      }
+    },
     "Tider gemt.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Times saved."
+          }
+        }
+      }
+    },
+    "Tidslinje for dagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timeline for the day"
           }
         }
       }
@@ -1927,6 +2047,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unread. "
+          }
+        }
+      }
+    },
+    "Ulæste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unread"
           }
         }
       }

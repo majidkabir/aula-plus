@@ -41,6 +41,8 @@ struct MoreView: View {
                     NavigationLink { SettingsView(embedded: true) } label: { row("Profil og indstillinger", "gearshape.fill", .gray) }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .themedBackground()
             .navigationTitle("Mere")
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
@@ -58,7 +60,7 @@ struct MoreView: View {
                         ContentUnavailableView("Ingen opslag", systemImage: "newspaper")
                         Spacer()
                     }
-                    .background(Color(.systemGroupedBackground))
+                    .themedBackground()
                     .navigationTitle("Opslag")
                 }
             }
@@ -117,7 +119,7 @@ struct GalleryView: View {
                 else { ContentUnavailableView("Ingen albums", systemImage: "photo.on.rectangle") }
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .themedBackground()
         .navigationTitle("Galleri")
         .refreshable { await data.albums.refresh() }
         .task { await data.albums.load(maxAge: 600) }

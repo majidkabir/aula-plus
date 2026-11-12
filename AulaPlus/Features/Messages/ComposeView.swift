@@ -36,7 +36,7 @@ struct ComposeView: View {
                                             Image(systemName: "xmark.circle.fill").font(.caption)
                                         }
                                         .padding(.horizontal, 10).padding(.vertical, 5)
-                                        .background(Color.accentColor.opacity(0.15), in: Capsule())
+                                        .background(Color.brand.opacity(0.15), in: Capsule())
                                     }
                                     .buttonStyle(.plain)
                                 }
