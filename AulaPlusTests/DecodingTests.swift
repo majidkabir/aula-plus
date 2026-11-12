@@ -26,6 +26,11 @@ final class DecodingTests: XCTestCase {
         XCTAssertNotNil(AulaDate.parse("2026-03-01T09:00:00+01:00"))
         XCTAssertNotNil(AulaDate.parse("2026-03-01T09:00:00.123+01:00"))
         XCTAssertNotNil(AulaDate.parse("2026-03-01T09:00:00"))
+        let utc = AulaDate.parse("2026-03-01T08:00:00Z")
+        XCTAssertEqual(AulaDate.parse("2026-03-01T09:00:00+0100"), utc)
+        XCTAssertEqual(AulaDate.parse("2026-03-01 09:00:00+01:00"), utc)
+        XCTAssertEqual(AulaDate.parse("2026-03-01T09:00:00"), utc)   // naive = Copenhagen time
+        XCTAssertEqual(AulaDate.parse("2026-03-01 09:00:00"), utc)
         XCTAssertNil(AulaDate.parse(""))
         XCTAssertEqual(AulaDate.shortTime("07:45:00"), "07:45")
         XCTAssertEqual(AulaDate.shortTime("2026-11-12T15:30:00"), "15:30")

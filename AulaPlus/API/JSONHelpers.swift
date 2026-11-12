@@ -91,7 +91,12 @@ enum AulaDate {
 
     /// Parses offset, `Z` and naive timestamps (naive = Copenhagen time).
     static func parse(_ s: String?) -> Date? {
-        guard let s, !s.isEmpty else { return nil }
+        guard var s, !s.isEmpty else { return nil }
+        // "2026-03-01 09:00:00+0100" → "2026-03-01T09:00:00+01:00"
+        if s.count > 10, s[s.index(s.startIndex, offsetBy: 10)] == " " {
+            s.replaceSubrange(s.index(s.startIndex, offsetBy: 10)...s.index(s.startIndex, offsetBy: 10), with: "T")
+        }
+        s = s.replacingOccurrences(of: #"([+-]\d{2})(\d{2})$"#, with: "$1:$2", options: .regularExpression)
         if let d = isoFrac.date(from: s) ?? iso.date(from: s) { return d }
         for f in naive { if let d = f.date(from: s) { return d } }
         return nil
