@@ -4,8 +4,13 @@ import SwiftUI
 /// Stable colour per child, used across calendar, cards and avatars.
 enum Palette {
     /// Child colours never include the brand blue, so a child is never confused with a selected control.
-    static let colors: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown]
-    static func color(for childId: Int, in children: [Child]) -> Color {
+    static let all: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown]
+    /// Child colours minus the ones that clash with the current theme.
+    @MainActor static var colors: [Color] {
+        let clash = ThemeStore.shared.theme.clashingChildColors
+        return all.filter { !clash.contains($0) }
+    }
+    @MainActor static func color(for childId: Int, in children: [Child]) -> Color {
         let i = children.firstIndex { $0.id == childId } ?? abs(childId)
         return colors[i % colors.count]
     }

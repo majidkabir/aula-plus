@@ -18,28 +18,53 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    var brand: Color {
+    /// (light, dark) RGB for the brand colour. Dark variants are lifted for contrast on black.
+    private var brandRGB: ((Double, Double, Double), (Double, Double, Double)) {
         switch self {
-        case .ocean: return Color(red: 0.16, green: 0.40, blue: 0.93)
-        case .forest: return Color(red: 0.10, green: 0.56, blue: 0.40)
-        case .sunset: return Color(red: 0.93, green: 0.36, blue: 0.24)
-        case .lavender: return Color(red: 0.47, green: 0.34, blue: 0.90)
-        case .graphite: return Color(red: 0.25, green: 0.30, blue: 0.38)
+        case .ocean: return ((0.16, 0.40, 0.93), (0.36, 0.58, 1.00))
+        case .forest: return ((0.10, 0.52, 0.36), (0.26, 0.76, 0.52))
+        case .sunset: return ((0.90, 0.33, 0.22), (1.00, 0.50, 0.36))
+        case .lavender: return ((0.45, 0.32, 0.88), (0.66, 0.56, 1.00))
+        case .graphite: return ((0.24, 0.29, 0.37), (0.72, 0.77, 0.84))
         }
     }
 
-    var secondary: Color {
+    private var secondaryRGB: (Double, Double, Double) {
         switch self {
-        case .ocean: return Color(red: 0.20, green: 0.74, blue: 0.95)
-        case .forest: return Color(red: 0.55, green: 0.80, blue: 0.30)
-        case .sunset: return Color(red: 0.99, green: 0.66, blue: 0.22)
-        case .lavender: return Color(red: 0.90, green: 0.45, blue: 0.80)
-        case .graphite: return Color(red: 0.50, green: 0.58, blue: 0.68)
+        case .ocean: return (0.20, 0.74, 0.95)
+        case .forest: return (0.55, 0.80, 0.30)
+        case .sunset: return (0.99, 0.66, 0.22)
+        case .lavender: return (0.90, 0.45, 0.80)
+        case .graphite: return (0.50, 0.58, 0.68)
         }
     }
+
+    var brand: Color {
+        let (l, d) = brandRGB
+        return Color(UIColor { tc in
+            let c = tc.userInterfaceStyle == .dark ? d : l
+            return UIColor(red: c.0, green: c.1, blue: c.2, alpha: 1)
+        })
+    }
+
+    var secondary: Color { Color(red: secondaryRGB.0, green: secondaryRGB.1, blue: secondaryRGB.2) }
+
+    /// Child colours that would be confused with this theme's brand colour.
+    var clashingChildColors: [Color] {
+        switch self {
+        case .ocean: return [.indigo]
+        case .forest: return [.green, .mint, .teal]
+        case .sunset: return [.orange, .brown]
+        case .lavender: return [.purple, .indigo, .pink]
+        case .graphite: return [.brown]
+        }
+    }
+
+    /// Fixed (light) brand colour for gradients behind white text.
+    var gradientStart: Color { Color(red: brandRGB.0.0, green: brandRGB.0.1, blue: brandRGB.0.2) }
 
     var gradient: LinearGradient {
-        LinearGradient(colors: [brand, secondary], startPoint: .topLeading, endPoint: .bottomTrailing)
+        LinearGradient(colors: [gradientStart, secondary], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 }
 

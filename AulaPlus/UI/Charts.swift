@@ -105,7 +105,7 @@ struct WeekPlanChart: View {
 
     var body: some View {
         Chart(rows) { r in
-            BarMark(xStart: .value("Afleveres", r.start), xEnd: .value("Hentes", r.end), y: .value("Dag", r.label), height: 18)
+            BarMark(xStart: .value("Afleveres", r.start), xEnd: .value("Hentes", r.end), y: .value("Dag", r.label), height: 14)
                 .foregroundStyle(r.vacation ? AnyShapeStyle(Color.orange.opacity(0.35)) : AnyShapeStyle(color.gradient))
                 .cornerRadius(9)
                 .annotation(position: .trailing, spacing: 4) {
@@ -114,14 +114,19 @@ struct WeekPlanChart: View {
                         .foregroundStyle(.secondary)
                 }
         }
-        .chartXScale(domain: DayPlanEditor.time("06:00", on: Self.ref)...DayPlanEditor.time("18:30", on: Self.ref))
+        .chartXScale(domain: DayPlanEditor.time("06:00", on: Self.ref)...DayPlanEditor.time("19:00", on: Self.ref))
+        .chartYAxis {
+            AxisMarks(position: .leading) { _ in
+                AxisValueLabel().font(.caption.weight(.semibold))
+            }
+        }
         .chartXAxis {
             AxisMarks(values: .stride(by: .hour, count: 2)) { _ in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
                 AxisValueLabel(format: .dateTime.hour())
             }
         }
-        .frame(height: CGFloat(max(rows.count, 1)) * 30 + 24)
+        .frame(height: CGFloat(max(rows.count, 1)) * 26 + 24)
         .accessibilityElement(children: .combine)
     }
 }

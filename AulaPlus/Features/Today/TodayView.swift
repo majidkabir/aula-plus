@@ -316,6 +316,7 @@ struct ChildDayCard: View {
 
 /// Brand-gradient header: greeting, date and three key numbers for the day.
 struct TodayHero: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     let greeting: String
     let unread: Int
     let pickup: String?
@@ -329,14 +330,17 @@ struct TodayHero: View {
                 Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized)
                     .font(.subheadline.weight(.medium)).opacity(0.85)
             }
-            HStack(alignment: .top, spacing: 0) {
+            let layout = typeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+                : AnyLayout(HStackLayout(alignment: .top, spacing: 0))
+            layout {
                 Button(action: openMessages) {
                     stat(value: "\(unread)", label: String(localized: "Ulæste"), icon: "bubble.left.fill")
                 }
                 .buttonStyle(.plain)
-                divider
+                if !typeSize.isAccessibilitySize { divider }
                 stat(value: pickup ?? "–", label: String(localized: "Afhentning"), icon: "figure.and.child.holdinghands")
-                divider
+                if !typeSize.isAccessibilitySize { divider }
                 stat(value: next?.time ?? "–", label: next?.title ?? String(localized: "Intet planlagt"), icon: "calendar")
             }
         }
@@ -351,7 +355,7 @@ struct TodayHero: View {
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: Color.brand.opacity(0.30), radius: 16, x: 0, y: 8)
+        .shadow(color: ThemeStore.shared.theme.gradientStart.opacity(0.30), radius: 16, x: 0, y: 8)
     }
 
     private var divider: some View {
@@ -362,7 +366,8 @@ struct TodayHero: View {
         VStack(alignment: .leading, spacing: 3) {
             Image(systemName: icon).font(.caption.weight(.semibold)).opacity(0.85)
             Text(value).font(.title3.weight(.bold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
-            Text(label).font(.caption.weight(.medium)).opacity(0.9).lineLimit(1)
+            Text(label).font(.caption.weight(.medium)).opacity(0.9)
+                .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
