@@ -49,7 +49,7 @@ struct ChildFilterBar: View {
         if app.children.count > 1 {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    chip(title: String(localized: "Alle"), color: Color.brand, selected: app.selectedChildId == nil) {
+                    chip(title: String(localized: "Alle"), color: Color.brand, onColor: Color.onBrand, selected: app.selectedChildId == nil) {
                         app.selectedChildId = nil
                     }
                     ForEach(app.children) { child in
@@ -67,14 +67,14 @@ struct ChildFilterBar: View {
         }
     }
 
-    private func chip(title: String, color: Color, selected: Bool, action: @escaping () -> Void) -> some View {
+    private func chip(title: String, color: Color, onColor: Color = .white, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .background(selected ? color : Color(.secondarySystemFill), in: Capsule())
-                .foregroundStyle(selected ? (color == Color.brand ? Color.onBrand : Color.white) : Color.primary)
+                .foregroundStyle(selected ? onColor : Color.primary)
         }
         .buttonStyle(.plain)
     }
