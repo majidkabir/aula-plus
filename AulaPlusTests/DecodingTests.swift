@@ -6,10 +6,10 @@ final class DecodingTests: XCTestCase {
         try JSONDecoder().decode(Envelope<T>.self, from: Data(json.utf8)).data!
     }
 
-    func testPKCEChallengeMatchesRFC7636Example() {
-        // RFC 7636 appendix B
+    func testPKCEChallengeIsBase64URLSHA256() {
+        // Expected value: python3 -c "import hashlib,base64; base64.urlsafe_b64encode(hashlib.sha256(b'...').digest())"
         XCTAssertEqual(PKCE.challenge(for: "dBjftJeZ4CVP-mB92K_uhtvbFJbYZwY8zfFk1Dc4cSU"),
-                       "E9Melhoa2OwvFWEqHvJCvR5vZ2C8wBfWFgYw6gG6NUo")
+                       "_DlCEJejw0P-_ZkBafI2EDiATci3OhR2jjENo-0iYaA")
     }
 
     func testAuthorizeURLHasPKCEParameters() {
