@@ -31,12 +31,12 @@ struct WeekPlanView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ChildFilterBar().padding(.horizontal, -16)
-                    weekSwitcher
+                    ChildFilterBar().padding(.horizontal, -Theme.pad)
+                    WeekSwitcher(date: $weekDate).cardStyle(padding: 6)
                     StaleBanner(error: plan.error, savedAt: plan.savedAt)
 
                     if !visibleTasks.isEmpty {
-                        Text("Opgaver").font(.title3.bold())
+                        SectionTitle(title: "Opgaver", systemImage: "checklist", tint: .green)
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
                                 ForEach(visibleTasks) { t in TaskRow(task: t, showChild: app.children.count > 1) }
@@ -56,12 +56,12 @@ struct WeekPlanView: View {
                     ForEach(visiblePlans, id: \.self) { p in
                         if !p.sections.isEmpty {
                             if !p.childName.isEmpty {
-                                Text(p.childName).font(.title3.bold()).padding(.top, 6)
+                                SectionTitle(title: "\(p.childName)", systemImage: "doc.richtext.fill")
                             }
                             ForEach(p.sections, id: \.self) { s in
                                 Card {
                                     VStack(alignment: .leading, spacing: 8) {
-                                        Text(s.title).font(.headline)
+                                        Text(s.title).font(.headline).foregroundStyle(Color.accentColor)
                                         HTMLText(html: s.html)
                                     }
                                 }
@@ -85,18 +85,6 @@ struct WeekPlanView: View {
                 _ = await (a, b)
             }
         }
-    }
-
-    private var weekSwitcher: some View {
-        HStack {
-            Button { shift(-7) } label: { Image(systemName: "chevron.left") }
-            Spacer()
-            let w = Week.isoWeek(weekDate)
-            Text("Uge \(w.week)").font(.headline)
-            Spacer()
-            Button { shift(7) } label: { Image(systemName: "chevron.right") }
-        }
-        .padding(.vertical, 4)
     }
 
     private func shift(_ days: Int) {

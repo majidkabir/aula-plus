@@ -84,9 +84,11 @@ struct MessagesView: View {
                         Image(systemName: onlyUnread || onlyMarked
                               ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                     }
+                    .accessibilityLabel(Text("Filtrér"))
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { composing = true } label: { Image(systemName: "square.and.pencil") }
+                        .accessibilityLabel(Text("Ny besked"))
                 }
             }
             .sheet(isPresented: $composing) {
@@ -141,6 +143,7 @@ struct MessagesView: View {
 
 struct ThreadRow: View {
     let thread: ThreadSummary
+    @Environment(AppModel.self) private var app
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
@@ -171,17 +174,24 @@ struct ThreadRow: View {
                 }
                 if !thread.preview.isEmpty {
                     Text(thread.preview)
-                        .font(.footnote)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                 }
-                if !thread.regarding.isEmpty {
-                    Text(thread.regarding.joined(separator: ", "))
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                if !thread.regarding.isEmpty, app.children.count > 1 {
+                    HStack(spacing: 4) {
+                        ForEach(thread.regarding, id: \.self) { name in
+                            let child = app.children.first { name.localizedCaseInsensitiveContains($0.firstName) }
+                            ChildTag(name: child?.firstName ?? name,
+                                     color: child.map { Palette.color(for: $0.id, in: app.children) } ?? .gray)
+                        }
+                    }
+                    .padding(.top, 2)
                 }
             }
         }
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(thread.isRead ? "" : String(localized: "Ulæst. ")) + Text("\(thread.sender). \(thread.subject). \(thread.preview)"))
     }
 }

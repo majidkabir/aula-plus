@@ -3,7 +3,8 @@ import SwiftUI
 
 /// Stable colour per child, used across calendar, cards and avatars.
 enum Palette {
-    static let colors: [Color] = [.blue, .orange, .green, .pink, .purple, .teal, .indigo, .red]
+    /// Child colours never include the brand blue, so a child is never confused with a selected control.
+    static let colors: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown]
     static func color(for childId: Int, in children: [Child]) -> Color {
         let i = children.firstIndex { $0.id == childId } ?? abs(childId)
         return colors[i % colors.count]
@@ -101,12 +102,7 @@ struct StaleBanner: View {
 
 struct Card<Content: View>: View {
     @ViewBuilder var content: Content
-    var body: some View {
-        content
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-    }
+    var body: some View { content.cardStyle() }
 }
 
 struct AttachmentList: View {

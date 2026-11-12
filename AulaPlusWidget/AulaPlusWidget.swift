@@ -1,7 +1,7 @@
 import SwiftUI
 import WidgetKit
 
-private let palette: [Color] = [.blue, .orange, .green, .pink, .purple, .teal, .indigo, .red]
+private let palette: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown]
 
 struct SnapshotEntry: TimelineEntry {
     let date: Date

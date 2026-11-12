@@ -3,6 +3,7 @@ import SwiftUI
 struct ThreadView: View {
     let thread: ThreadSummary
     @Environment(DataStore.self) private var data
+    @Environment(AppModel.self) private var app
 
     @State private var older: [Message] = []       // pages 1…n, newest first
     @State private var nextPage = 1
@@ -22,15 +23,20 @@ struct ThreadView: View {
         return newestFirst.filter { seen.insert($0.id).inserted }.reversed()
     }
 
+    private func isMine(_ m: Message) -> Bool {
+        guard let me = app.session.value?.displayName, !me.isEmpty else { return false }
+        return m.sender.localizedCaseInsensitiveCompare(me) == .orderedSame
+    }
+
     private var canLoadOlder: Bool { (page.value?.moreExist ?? false) && !olderExhausted }
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14) {
+                LazyVStack(alignment: .leading, spacing: 10) {
                     Text(page.value?.subject.nilIfEmpty ?? thread.subject)
                         .font(.title2.bold())
-                        .padding(.bottom, 4)
+                        .accessibilityAddTraits(.isHeader)
                     StaleBanner(error: page.error, savedAt: page.savedAt)
 
                     if canLoadOlder {
@@ -46,8 +52,17 @@ struct ThreadView: View {
                         .font(.subheadline)
                     }
 
-                    ForEach(messages) { m in
-                        MessageBubble(message: m).id(m.id)
+                    ForEach(Array(messages.enumerated()), id: \.element.id) { i, m in
+                        let prev = i > 0 ? messages[i - 1] : nil
+                        if let d = m.date, prev?.date.map({ !Calendar.week.isDate($0, inSameDayAs: d) }) ?? true {
+                            Text(d.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized)
+                                .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 6)
+                        }
+                        MessageBubble(message: m, isMine: isMine(m),
+                                      showSender: prev?.sender != m.sender)
+                            .id(m.id)
                     }
                     Color.clear.frame(height: 1).id("bottom")
                 }
@@ -90,6 +105,7 @@ struct ThreadView: View {
                         else { Image(systemName: "arrow.up.circle.fill").font(.system(size: 32)) }
                     }
                     .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sending)
+                    .accessibilityLabel(Text("Send"))
                 }
             }
             .padding(.horizontal)
@@ -143,29 +159,39 @@ struct ThreadView: View {
 
 struct MessageBubble: View {
     let message: Message
+    var isMine = false
+    var showSender = true
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(message.sender.isEmpty ? String(localized: "Ukendt") : message.sender)
-                    .font(.subheadline.weight(.semibold))
-                Spacer()
+        HStack(alignment: .bottom, spacing: 8) {
+            if isMine { Spacer(minLength: 48) }
+            else {
+                InitialsAvatar(name: message.sender, color: .gray, size: 30)
+                    .opacity(showSender ? 1 : 0)
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                if showSender && !isMine {
+                    Text(message.sender.isEmpty ? String(localized: "Ukendt") : message.sender)
+                        .font(.subheadline.weight(.semibold))
+                }
+                HTMLText(html: message.html)
+                AttachmentList(attachments: message.attachments)
                 if let d = message.date {
-                    Text(d.formatted(.dateTime.day().month(.abbreviated).hour().minute()))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(Fmt.time(d))
+                        .font(.caption2).foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
-            HTMLText(html: message.html)
-            AttachmentList(attachments: message.attachments)
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(isMine ? Color.accentColor.opacity(0.16) : Color(.secondarySystemGroupedBackground),
+                        in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            if !isMine { Spacer(minLength: 24) }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .contextMenu {
             Button { UIPasteboard.general.string = HTML.plainText(message.html) } label: {
                 Label("Kopiér tekst", systemImage: "doc.on.doc")
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }

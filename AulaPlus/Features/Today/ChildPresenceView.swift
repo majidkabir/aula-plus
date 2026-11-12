@@ -25,10 +25,14 @@ struct ChildPresenceView: View {
                     ChildAvatar(child: child, size: 56)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(child.name).font(.headline)
+                        Text(child.institutionName).font(.subheadline).foregroundStyle(.secondary)
                         if let s = presence?.status {
-                            Label(s.label, systemImage: s.symbol).foregroundStyle(.secondary)
-                        } else {
-                            Text(child.institutionName).foregroundStyle(.secondary)
+                            let color = Palette.color(for: child.id, in: app.children)
+                            Label(s.label, systemImage: s.symbol)
+                                .font(.subheadline.weight(.semibold))
+                                .padding(.horizontal, 10).padding(.vertical, 4)
+                                .background(color.opacity(0.16), in: Capsule())
+                                .foregroundStyle(color)
                         }
                     }
                 }
@@ -38,22 +42,22 @@ struct ChildPresenceView: View {
                 }
             }
 
-            Section("I dag") {
-                if permissions?.canReportSick != false {
-                    Button {
-                        confirmSick = true
-                    } label: {
-                        Label(isSick ? String(localized: "Fjern sygemelding") : String(localized: "Meld syg i dag"),
-                              systemImage: isSick ? "cross.case" : "cross.case.fill")
+            Section {
+                HStack(spacing: 12) {
+                    if permissions?.canReportSick != false {
+                        ActionTile(title: isSick ? String(localized: "Fjern sygemelding") : String(localized: "Meld syg i dag"),
+                                   systemImage: isSick ? "cross.case" : "cross.case.fill",
+                                   color: isSick ? .accentColor : .red) { confirmSick = true }
+                            .disabled(busy)
                     }
-                    .tint(isSick ? .accentColor : .red)
-                    .disabled(busy)
-                }
-                if permissions?.canAddVacation != false {
-                    Button { showVacation = true } label: {
-                        Label("Meld ferie/fri", systemImage: "sun.max")
+                    if permissions?.canAddVacation != false {
+                        ActionTile(title: String(localized: "Meld ferie/fri"), systemImage: "sun.max.fill", color: .orange) {
+                            showVacation = true
+                        }
                     }
                 }
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
             }
 
             Section {
@@ -70,12 +74,11 @@ struct ChildPresenceView: View {
                     .disabled(permissions?.canEditPickup == false || day < Calendar.week.startOfDay(for: .now))
                 }
             } header: {
-                HStack {
-                    Text("Afhentning — uge \(Week.isoWeek(weekDate).week)")
-                    Spacer()
-                    Button { shift(-7) } label: { Image(systemName: "chevron.left") }
-                    Button { shift(7) } label: { Image(systemName: "chevron.right") }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Afleveres og hentes").font(.headline).foregroundStyle(.primary).textCase(nil)
+                    WeekSwitcher(date: $weekDate).textCase(nil).foregroundStyle(.primary)
                 }
+                .padding(.bottom, 4)
             } footer: {
                 if permissions?.canEditPickup == false {
                     Text("Institutionen tillader ikke at forældre ændrer tider her.")
@@ -168,10 +171,11 @@ struct DayPlanRow: View {
                     }
                 }
             } else {
-                Text("Ingen tider").foregroundStyle(.tertiary)
+                Text("Ingen tider").foregroundStyle(.secondary)
             }
             Spacer()
-            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
         }
         .contentShape(Rectangle())
     }
@@ -318,5 +322,28 @@ struct VacationForm: View {
         } catch {
             self.error = String(localized: "Ikke gemt: \(error.localizedDescription)")
         }
+    }
+}
+
+/// Big tappable action used for quick Komme/Gå actions.
+struct ActionTile: View {
+    let title: String
+    let systemImage: String
+    let color: Color
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 10) {
+                Image(systemName: systemImage).font(.title2).foregroundStyle(color)
+                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, minHeight: 84, alignment: .topLeading)
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground),
+                        in: RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 }

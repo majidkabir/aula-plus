@@ -156,9 +156,11 @@ final class DataStore {
 extension Calendar {
     /// Danish week rules: Monday first, ISO week numbers.
     static let week: Calendar = {
-        var c = Calendar(identifier: .iso8601)
-        c.timeZone = AulaDate.copenhagen
-        c.locale = Locale(identifier: "da_DK")
+        var c = Calendar(identifier: .gregorian)
+        c.firstWeekday = 2              // Monday
+        c.minimumDaysInFirstWeek = 4    // ISO 8601 week numbers
+        c.timeZone = .current           // group by the phone's local day
+        c.locale = .current
         return c
     }()
 }

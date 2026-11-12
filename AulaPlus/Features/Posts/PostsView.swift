@@ -43,32 +43,35 @@ struct PostCard: View {
     var compact = false
 
     var body: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .firstTextBaseline) {
-                    if post.isImportant {
-                        Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.red)
-                    }
-                    Text(post.title).font(.headline).lineLimit(compact ? 2 : nil)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                InitialsAvatar(name: post.author, color: .purple, size: 28)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(post.author).font(.subheadline.weight(.semibold)).lineLimit(1)
+                    Text(Fmt.listDate(post.date)).font(.caption).foregroundStyle(.secondary)
                 }
-                HStack {
-                    Text(post.author)
-                    Spacer()
-                    Text(Fmt.listDate(post.date))
+                Spacer()
+                if post.isImportant {
+                    Label("Vigtigt", systemImage: "exclamationmark.circle.fill")
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(Color.red.opacity(0.12), in: Capsule())
+                        .foregroundStyle(.red)
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                if compact {
-                    Text(HTML.plainText(post.html))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(3)
-                    if !post.attachments.isEmpty {
-                        Label("\(post.attachments.count)", systemImage: "paperclip").font(.caption).foregroundStyle(.secondary)
-                    }
+            }
+            Text(post.title).font(.headline).lineLimit(compact ? 2 : nil)
+            if compact {
+                Text(HTML.plainText(post.html))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+                if !post.attachments.isEmpty {
+                    Label("\(post.attachments.count)", systemImage: "paperclip").font(.caption).foregroundStyle(.secondary)
                 }
             }
         }
+        .cardStyle()
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -83,29 +86,38 @@ struct PostDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                Text(post.title).font(.title2.bold())
-                HStack {
-                    Text(post.author)
-                    Spacer()
-                    if let d = post.date { Text(d.formatted(date: .abbreviated, time: .shortened)) }
+              VStack(alignment: .leading, spacing: 14) {
+                if post.isImportant {
+                    Label("Vigtigt", systemImage: "exclamationmark.circle.fill")
+                        .font(.caption.weight(.bold)).foregroundStyle(.red)
                 }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text(post.title).font(.title2.bold()).accessibilityAddTraits(.isHeader)
+                HStack(spacing: 10) {
+                    InitialsAvatar(name: post.author, color: .purple, size: 32)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(post.author).font(.subheadline.weight(.semibold))
+                        if let d = post.date {
+                            Text(d.formatted(date: .abbreviated, time: .shortened)).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                }
                 Divider()
                 HTMLText(html: post.html)
                 AttachmentList(attachments: post.attachments)
-                Divider().padding(.vertical, 4)
+              }
+              .cardStyle()
                 if post.canComment == true {
                 HStack(alignment: .bottom) {
                     TextField("Skriv en kommentar", text: $newComment, axis: .vertical)
                         .lineLimit(1...4)
-                        .padding(8)
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+                        .padding(.horizontal, 14).padding(.vertical, 10)
+                        .background(Color(.secondarySystemGroupedBackground), in: Capsule())
                     Button {
                         Task { await postComment() }
                     } label: {
-                        if posting { ProgressView() } else { Image(systemName: "paperplane.fill") }
+                        if posting { ProgressView() } else { Image(systemName: "arrow.up.circle.fill").font(.system(size: 32)) }
                     }
+                    .accessibilityLabel(Text("Send"))
                     .disabled(newComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || posting)
                 }
                 if let commentError { Text(commentError).font(.caption).foregroundStyle(.red) }
@@ -121,13 +133,13 @@ struct PostDetailView: View {
                             }
                             HTMLText(html: c.html)
                         }
-                        .padding(12)
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                        .cardStyle(padding: 12)
                     }
                 }
             }
             .padding()
         }
+        .background(Color(.systemGroupedBackground))
         .navigationBarTitleDisplayMode(.inline)
         .task { comments = (try? await AulaAPI.shared.comments(postId: post.id)) ?? [] }
     }

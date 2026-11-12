@@ -8,35 +8,50 @@ struct MoreView: View {
         @Bindable var app = app
         NavigationStack(path: $app.morePath) {
             List {
-                Section {
-                    NavigationLink { PostsList() } label: { Label("Opslag", systemImage: "newspaper") }
-                    NavigationLink { GalleryView() } label: { Label("Galleri", systemImage: "photo.on.rectangle") }
-                    NavigationLink { NotificationsView() } label: {
-                        Label("Notifikationer", systemImage: "bell")
-                    }
-                    NavigationLink { ImportantDatesView() } label: { Label("Vigtige datoer", systemImage: "star") }
-                    NavigationLink { VacationRequestsView() } label: { Label("Ferieanmodninger", systemImage: "sun.max") }
-                    NavigationLink { ContactsView() } label: { Label("Kontakter", systemImage: "person.2") }
-                    NavigationLink { DocumentsView() } label: { Label("Dokumenter", systemImage: "doc.text") }
+                Section("Skole") {
+                    NavigationLink { PostsList() } label: { row("Opslag", "newspaper.fill", .purple) }
+                    NavigationLink { GalleryView() } label: { row("Galleri", "photo.fill.on.rectangle.fill", .pink) }
+                    NavigationLink { ImportantDatesView() } label: { row("Vigtige datoer", "star.fill", .yellow) }
+                    NavigationLink { DocumentsView() } label: { row("Dokumenter", "doc.text.fill", .blue) }
+                    NavigationLink { ContactsView() } label: { row("Kontakter", "person.2.fill", .green) }
                 }
-                Section {
+                Section("Komme/gå") {
                     ForEach(app.children) { c in
                         NavigationLink { ChildPresenceView(child: c) } label: {
                             HStack(spacing: 12) {
-                                ChildAvatar(child: c, size: 30)
-                                Text("Komme/gå for \(c.firstName)")
+                                ChildAvatar(child: c, size: 28)
+                                Text(c.firstName)
+                            }
+                        }
+                    }
+                    NavigationLink { VacationRequestsView() } label: {
+                        HStack {
+                            row("Ferieanmodninger", "sun.max.fill", .orange)
+                            let missing = (data.vacationRequests.value ?? []).filter { $0.isMissingAnswer }.count
+                            if missing > 0 {
+                                Spacer()
+                                Text("\(missing)").font(.caption.bold()).padding(.horizontal, 7).padding(.vertical, 2)
+                                    .background(.red, in: Capsule()).foregroundStyle(.white)
                             }
                         }
                     }
                 }
                 Section {
-                    NavigationLink { SettingsView(embedded: true) } label: { Label("Profil og indstillinger", systemImage: "gearshape") }
+                    NavigationLink { NotificationsView() } label: { row("Notifikationer", "bell.fill", .red) }
+                    NavigationLink { SettingsView(embedded: true) } label: { row("Profil og indstillinger", "gearshape.fill", .gray) }
                 }
             }
             .navigationTitle("Mere")
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Album.self) { AlbumView(album: $0) }
+        }
+    }
+
+    private func row(_ title: LocalizedStringKey, _ icon: String, _ color: Color) -> some View {
+        HStack(spacing: 12) {
+            IconTile(systemImage: icon, color: color)
+            Text(title)
         }
     }
 }
