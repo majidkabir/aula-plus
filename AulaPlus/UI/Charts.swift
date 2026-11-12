@@ -13,6 +13,10 @@ struct DayTimeline: View {
     let color: Color
 
     private var day: Date { Calendar.week.startOfDay(for: .now) }
+    /// Timed events that start and end today; all-day and multi-day ones have no place on a clock axis.
+    private var timed: [Event] {
+        events.filter { !$0.allDay && Calendar.week.isDateInToday($0.start) && Calendar.week.isDateInToday($0.end) }
+    }
     private var stay: (Date, Date)? {
         guard let p = presence,
               let start = timeOn(p.checkIn ?? p.plannedEntry, day),
@@ -20,8 +24,8 @@ struct DayTimeline: View {
         return (start, end)
     }
     private var domain: ClosedRange<Date> {
-        let starts = events.map(\.start) + [stay?.0].compactMap { $0 }
-        let ends = events.map(\.end) + [stay?.1].compactMap { $0 }
+        let starts = timed.map(\.start) + [stay?.0].compactMap { $0 }
+        let ends = timed.map(\.end) + [stay?.1].compactMap { $0 }
         let cal = Calendar.week
         let lo = min(starts.min() ?? cal.date(bySettingHour: 8, minute: 0, second: 0, of: day)!,
                      cal.date(bySettingHour: 8, minute: 0, second: 0, of: day)!)
@@ -46,7 +50,7 @@ struct DayTimeline: View {
                         .cornerRadius(9)
                 }
             }
-            ForEach(events) { ev in
+            ForEach(timed) { ev in
                 BarMark(xStart: .value("Fra", ev.start), xEnd: .value("Til", ev.end), y: .value("Række", "Skema"), height: 14)
                     .foregroundStyle(ev.end < now ? color.opacity(0.35) : color)
                     .cornerRadius(4)
@@ -65,7 +69,7 @@ struct DayTimeline: View {
                 AxisValueLabel(format: .dateTime.hour())
             }
         }
-        .frame(height: events.isEmpty ? 40 : 58)
+        .frame(height: timed.isEmpty ? 40 : 58)
         .accessibilityElement()
         .accessibilityLabel(Text("Tidslinje for dagen"))
         .accessibilityValue(Text(stay.map { "\(Fmt.time($0.0)) – \(Fmt.time($0.1))" } ?? ""))

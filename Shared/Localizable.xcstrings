@@ -951,6 +951,16 @@
         }
       }
     },
+    "Ikke slettet: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not deleted: %@"
+          }
+        }
+      }
+    },
     "Ikke sendt: %@": {
       "localizations": {
         "en": {

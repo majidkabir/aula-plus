@@ -10,9 +10,9 @@ struct CalendarView: View {
     private var week: Loadable<[Event]> { data.events(weekOf: selectedDay) }
 
     private var dayEvents: [Event] {
-        (week.value ?? []).filter { e in
-            Calendar.week.isDate(e.start, inSameDayAs: selectedDay) && matchesChild(e)
-        }
+        (week.value ?? [])
+            .filter { e in e.occurs(on: selectedDay) && matchesChild(e) }
+            .sorted { a, b in a.allDay != b.allDay ? a.allDay : a.start < b.start }
     }
 
     private func matchesChild(_ e: Event) -> Bool {
@@ -89,7 +89,7 @@ struct CalendarView: View {
     /// The "now" marker goes before the first event that hasn't started yet (today only).
     private func showNowLine(before index: Int) -> Bool {
         guard Calendar.week.isDateInToday(selectedDay) else { return false }
-        let firstUpcoming = dayEvents.firstIndex { $0.start > .now } ?? dayEvents.count
+        let firstUpcoming = dayEvents.firstIndex { !$0.allDay && $0.start > .now } ?? dayEvents.count
         return index == firstUpcoming
     }
 
@@ -99,7 +99,7 @@ struct CalendarView: View {
                 let selected = Calendar.week.isDate(day, inSameDayAs: selectedDay)
                 let isToday = Calendar.week.isDateInToday(day)
                 let count = (week.value ?? []).filter {
-                    Calendar.week.isDate($0.start, inSameDayAs: day) && matchesChild($0)
+                    $0.occurs(on: day) && matchesChild($0)
                 }.count
                 Button { selectedDay = day } label: {
                     VStack(spacing: 4) {

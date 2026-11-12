@@ -11,6 +11,8 @@ struct MessagesView: View {
     @State private var older: [ThreadSummary] = []
     @State private var nextPage = 1
     @State private var loadingOlder = false
+    @State private var noMoreOlder = false
+    @State private var actionError: String?
 
     private var threads: [ThreadSummary] {
         var seen = Set<String>()
@@ -52,7 +54,7 @@ struct MessagesView: View {
                         }
                 }
 
-                if search.isEmpty && !threads.isEmpty {
+                if search.isEmpty && !threads.isEmpty && !noMoreOlder {
                     Button {
                         Task { await loadOlder() }
                     } label: {
@@ -106,17 +108,33 @@ struct MessagesView: View {
             .refreshable {
                 older = []
                 nextPage = 1
+                noMoreOlder = false
                 await data.threads.refresh()
             }
             .task { await data.threads.load(maxAge: 30) }
+            // Threads from older pages aren't in the cache: keep their read state in step here.
+            .onChange(of: app.messagesPath) { _, path in
+                if let t = path.last { updateOlder(t.id) { $0.isRead = true } }
+            }
+            .alert(actionError ?? "", isPresented: Binding(get: { actionError != nil }, set: { if !$0 { actionError = nil } })) {
+                Button("OK", role: .cancel) {}
+            }
         }
+    }
+
+    private func updateOlder(_ id: String, _ change: (inout ThreadSummary) -> Void) {
+        if let i = older.firstIndex(where: { $0.id == id }) { change(&older[i]) }
     }
 
     private func toggleMarked(_ t: ThreadSummary) async {
         let new = !(t.isMarked ?? false)
         data.setMarked(threadId: t.id, marked: new)
+        updateOlder(t.id) { $0.isMarked = new }
         do { try await AulaAPI.shared.setMarked(threadId: t.id, marked: new) }
-        catch { data.setMarked(threadId: t.id, marked: !new) }
+        catch {
+            data.setMarked(threadId: t.id, marked: !new)
+            updateOlder(t.id) { $0.isMarked = !new }
+        }
     }
 
     private func delete(_ t: ThreadSummary) async {
@@ -126,6 +144,7 @@ struct MessagesView: View {
             data.removeThread(t.id)
             older.removeAll { $0.id == t.id }
         } catch {
+            actionError = String(localized: "Ikke slettet: \(error.localizedDescription)")
             await data.threads.refresh()
         }
     }
@@ -134,9 +153,13 @@ struct MessagesView: View {
         guard !loadingOlder else { return }
         loadingOlder = true
         defer { loadingOlder = false }
-        if let page = try? await AulaAPI.shared.threads(page: nextPage) {
+        do {
+            let page = try await AulaAPI.shared.threads(page: nextPage)
             older += page.threads
             nextPage += 1
+            noMoreOlder = !page.more || page.threads.isEmpty
+        } catch {
+            actionError = error.localizedDescription
         }
     }
 }

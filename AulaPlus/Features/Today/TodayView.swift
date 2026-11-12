@@ -32,7 +32,7 @@ struct TodayView: View {
                         ChildDayCard(child: child,
                                      presence: data.presence.value?.first { $0.childId == child.id },
                                      events: (todayEvents.value ?? []).filter {
-                                         Calendar.week.isDateInToday($0.start) &&
+                                         $0.occurs(on: .now) &&
                                          ($0.childIds.isEmpty || $0.childIds.contains(child.id))
                                      })
                         }
@@ -90,7 +90,7 @@ struct TodayView: View {
 
     /// The next event today or an upcoming important date.
     private var nextThing: (title: String, time: String)? {
-        if let e = (todayEvents.value ?? []).first(where: { $0.start > .now && Calendar.week.isDateInToday($0.start) }) {
+        if let e = (todayEvents.value ?? []).first(where: { !$0.allDay && $0.start > .now && Calendar.week.isDateInToday($0.start) }) {
             return (e.title, Fmt.time(e.start))
         }
         if let d = (data.importantDates.value ?? []).first(where: { $0.start > .now }) {

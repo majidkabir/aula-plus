@@ -123,6 +123,7 @@ final class AppModel {
         await TokenStore.shared.clear()
         await AulaAPI.shared.reset()
         DiskCache.clear()
+        AulaAPI.clearDownloads()
         DataStore.shared.reset()
         session.forget()
         WidgetSnapshot(children: [], unread: 0, latestSender: nil, latestSubject: nil, updated: .now).save()
