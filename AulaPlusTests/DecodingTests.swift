@@ -114,3 +114,29 @@ final class MoreTests: XCTestCase {
         XCTAssertEqual(d?.timeIntervalSince1970, 1771196400)
     }
 }
+
+final class ActionsTests: XCTestCase {
+    func testCreatedThreadAcceptsAnyShape() throws {
+        func id(_ json: String) throws -> String? {
+            try JSONDecoder().decode(Envelope<CreatedThread>.self, from: Data(json.utf8)).data?.id
+        }
+        XCTAssertEqual(try id(#"{"data":12345}"#), "12345")
+        XCTAssertEqual(try id(#"{"data":{"threadId":77}}"#), "77")
+        XCTAssertEqual(try id(#"{"data":{"id":"abc"}}"#), "abc")
+    }
+
+    func testVacationAnswerDaysSkipWeekends() {
+        var c = DateComponents(); c.year = 2026; c.month = 11; c.day = 13   // Friday
+        let fri = Calendar.week.date(from: c)!
+        let tue = Calendar.week.date(byAdding: .day, value: 4, to: fri)!
+        let req = VacationRequest(id: 1, responseId: 2, childId: 3, childName: "Emma", title: "Jul",
+                                  start: fri, end: tue, deadline: nil, note: nil, isEditable: true,
+                                  isMissingAnswer: true, needsTimes: false)
+        XCTAssertEqual(VacationAnswerForm.days(for: req).count, 3)  // Fri, Mon, Tue
+    }
+
+    func testThreadMarkedFlag() throws {
+        let t = try JSONDecoder().decode(ThreadDTO.self, from: Data(#"{"id":1,"subject":"x","read":true,"marked":true}"#.utf8)).model
+        XCTAssertEqual(t.isMarked, true)
+    }
+}
