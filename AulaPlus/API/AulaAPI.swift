@@ -94,7 +94,8 @@ actor AulaAPI {
                        children: children,
                        institutionProfileIds: Array(Set(instIds)),
                        guardianUserId: ctx.userId?.value,
-                       widgetIds: widgets)
+                       widgetIds: widgets,
+                       guardianProfileIds: profile.institutionProfiles?.items.map(\.id.value) ?? [])
     }
 
     // MARK: Endpoints

@@ -19,6 +19,7 @@ struct Session: Codable {
     let institutionProfileIds: [Int]   // guardian's own + children's
     let guardianUserId: String?        // profileContext.data.userId (widget sessionUUID)
     let widgetIds: Set<String>
+    var guardianProfileIds: [Int]? = nil  // the guardian's own institution profiles
 }
 
 enum PresenceStatus: Int, Codable {
@@ -81,6 +82,7 @@ struct ThreadSummary: Codable, Identifiable, Hashable {
     let isRead: Bool
     let isSensitive: Bool
     let regarding: [String]
+    var isMarked: Bool? = nil
 }
 
 struct Message: Codable, Identifiable, Hashable {
@@ -121,6 +123,7 @@ struct Post: Codable, Identifiable, Hashable {
     let author: String
     let isImportant: Bool
     let attachments: [Attachment]
+    var canComment: Bool? = nil
 }
 
 struct WeekPlan: Codable, Hashable {
@@ -262,6 +265,7 @@ struct ThreadDTO: Decodable {
     let read: Bool?
     let sensitive: Bool?
     let isSensitive: Bool?
+    let marked: Bool?
     let lastMessageDate: String?
     let lastUpdatedDate: String?
     let latestMessage: Latest?
@@ -281,7 +285,8 @@ struct ThreadDTO: Decodable {
             date: AulaDate.parse(dateString),
             isRead: read ?? true,
             isSensitive: sensitiveFlag,
-            regarding: regardingNames)
+            regarding: regardingNames,
+            isMarked: marked ?? false)
     }
 }
 
@@ -363,6 +368,8 @@ struct PostDTO: Decodable {
     let ownerProfile: PersonDTO?
     let isImportant: Bool?
     let attachments: Lossy<AttachmentDTO>?
+    let allowComments: Bool?
+    let canCurrentUserComment: Bool?
 
     var model: Post {
         Post(id: id.value,
@@ -371,7 +378,8 @@ struct PostDTO: Decodable {
              date: AulaDate.parse(publishAt ?? timestamp),
              author: ownerProfile?.best ?? "",
              isImportant: isImportant ?? false,
-             attachments: attachments?.items.map(\.model) ?? [])
+             attachments: attachments?.items.map(\.model) ?? [],
+             canComment: (allowComments ?? false) && (canCurrentUserComment ?? true))
     }
 }
 

@@ -116,9 +116,20 @@ final class DataStore {
             if let i = list.firstIndex(where: { $0.id == threadId }) {
                 let t = list[i]
                 list[i] = ThreadSummary(id: t.id, subject: t.subject, preview: t.preview, sender: t.sender,
-                                        date: t.date, isRead: true, isSensitive: t.isSensitive, regarding: t.regarding)
+                                        date: t.date, isRead: true, isSensitive: t.isSensitive, regarding: t.regarding,
+                                        isMarked: t.isMarked)
             }
         }
+    }
+
+    func setMarked(threadId: String, marked: Bool) {
+        threads.mutate { list in
+            if let i = list.firstIndex(where: { $0.id == threadId }) { list[i].isMarked = marked }
+        }
+    }
+
+    func removeThread(_ threadId: String) {
+        threads.mutate { $0.removeAll { $0.id == threadId } }
     }
 
     func reset() {
