@@ -114,16 +114,16 @@ struct WeekPlanChart: View {
                         .foregroundStyle(.secondary)
                 }
         }
-        .chartXScale(domain: DayPlanEditor.time("06:00", on: Self.ref)...DayPlanEditor.time("19:00", on: Self.ref))
+        .chartXScale(domain: DayPlanEditor.time("06:00", on: Self.ref)...DayPlanEditor.time("19:30", on: Self.ref))
         .chartYAxis {
             AxisMarks(position: .leading) { _ in
                 AxisValueLabel().font(.caption.weight(.semibold))
             }
         }
         .chartXAxis {
-            AxisMarks(values: .stride(by: .hour, count: 2)) { _ in
+            AxisMarks(values: ["06:00", "09:00", "12:00", "15:00", "18:00"].map { DayPlanEditor.time($0, on: Self.ref) }) { _ in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                AxisValueLabel(format: .dateTime.hour())
+                AxisValueLabel(format: .dateTime.hour(), anchor: .top)
             }
         }
         .frame(height: CGFloat(max(rows.count, 1)) * 26 + 24)

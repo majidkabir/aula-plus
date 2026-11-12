@@ -74,7 +74,7 @@ struct ChildFilterBar: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .background(selected ? color : Color(.secondarySystemFill), in: Capsule())
-                .foregroundStyle(selected ? Color.white : Color.primary)
+                .foregroundStyle(selected ? (color == Color.brand ? Color.onBrand : Color.white) : Color.primary)
         }
         .buttonStyle(.plain)
     }

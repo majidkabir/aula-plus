@@ -17,7 +17,7 @@ struct SettingsView: View {
                 if let s = app.session.value {
                     Section("Logget ind som") {
                         HStack(spacing: 12) {
-                            InitialsAvatar(name: s.displayName, color: Color.brand, size: 40)
+                            InitialsAvatar(name: s.displayName, color: ThemeStore.shared.theme.gradientStart, size: 40)
                             Text(s.displayName).font(.headline)
                         }
                     }

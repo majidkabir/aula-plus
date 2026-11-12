@@ -47,6 +47,14 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
         })
     }
 
+    /// Text/icon colour on top of `brand`: dark on the light graphite dark-mode brand, else white.
+    var onBrand: Color {
+        let isGraphite = self == .graphite
+        return Color(UIColor { tc in
+            isGraphite && tc.userInterfaceStyle == .dark ? .black : .white
+        })
+    }
+
     var secondary: Color { Color(red: secondaryRGB.0, green: secondaryRGB.1, blue: secondaryRGB.2) }
 
     /// Child colours that would be confused with this theme's brand colour.
@@ -88,6 +96,7 @@ extension Color {
     /// The current theme's brand colour. Reading it inside `body` tracks theme changes.
     @MainActor static var brand: Color { ThemeStore.shared.theme.brand }
     @MainActor static var brand2: Color { ThemeStore.shared.theme.secondary }
+    @MainActor static var onBrand: Color { ThemeStore.shared.theme.onBrand }
 }
 
 /// Soft brand tint at the top of a screen fading into the grouped background.

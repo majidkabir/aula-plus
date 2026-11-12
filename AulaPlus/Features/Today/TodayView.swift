@@ -54,7 +54,7 @@ struct TodayView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: {
-                        InitialsAvatar(name: app.session.value?.displayName ?? "", color: Color.brand, size: 32)
+                        InitialsAvatar(name: app.session.value?.displayName ?? "", color: ThemeStore.shared.theme.gradientStart, size: 32)
                     }
                     .accessibilityLabel(Text("Profil og indstillinger"))
                 }
