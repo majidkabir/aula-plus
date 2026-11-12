@@ -34,6 +34,13 @@ enum BackgroundRefresh {
     static func disable() {
         UserDefaults.standard.set(false, forKey: enabledKey)
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: taskId)
+        updateBadge(0, force: true)
+    }
+
+    /// Keeps the app icon badge in step with unread threads (also after reading in the app).
+    static func updateBadge(_ unread: Int, force: Bool = false) {
+        guard isEnabled || force else { return }
+        Task { try? await UNUserNotificationCenter.current().setBadgeCount(unread) }
     }
 
     /// Marks what is there now as seen so enabling doesn't spam old items.

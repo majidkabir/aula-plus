@@ -54,11 +54,14 @@ final class DataStore {
             let s = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.vacationRequests(childIds: s.children.map(\.id))
         }
-        presence.onChange = { WidgetWriter.update() }
-        threads.onChange = { WidgetWriter.update() }
         albums = Loadable(key: "albums") {
             let s = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.albums(institutionProfileIds: s.institutionProfileIds)
+        }
+        presence.onChange = { WidgetWriter.update() }
+        threads.onChange = { [weak self] in
+            WidgetWriter.update()
+            BackgroundRefresh.updateBadge((self?.threads.value ?? []).filter { !$0.isRead }.count)
         }
     }
 
