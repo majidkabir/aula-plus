@@ -17,7 +17,7 @@ struct SettingsView: View {
                 if let s = app.session.value {
                     Section("Logget ind som") {
                         HStack(spacing: 12) {
-                            InitialsAvatar(name: s.displayName, color: .accentColor, size: 40)
+                            InitialsAvatar(name: s.displayName, color: ThemeStore.shared.theme.gradientStart, size: 40)
                             Text(s.displayName).font(.headline)
                         }
                     }
@@ -32,6 +32,10 @@ struct SettingsView: View {
                             }
                         }
                     }
+                }
+                Section("Tema") {
+                    ThemePicker()
+                        .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
                 }
                 Section {
                     Toggle(isOn: $notificationsOn) {
@@ -88,6 +92,8 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .themedBackground()
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

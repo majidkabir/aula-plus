@@ -71,7 +71,7 @@ struct HTMLText: View {
             if let text { Text(text) } else { Text(HTML.plainText(html)) }
         }
         .textSelection(.enabled)
-        .tint(.accentColor)
+        .tint(Color.brand)
         .task(id: html) { text = HTML.attributed(html) }
     }
 }

@@ -13,7 +13,7 @@ struct LoginView: View {
             Spacer(minLength: 12)
             ZStack {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(LinearGradient(colors: [.accentColor, .accentColor.opacity(0.6)],
+                    .fill(LinearGradient(colors: [Color.brand, Color.brand.opacity(0.6)],
                                          startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 96, height: 96)
                 Text("A+").font(.system(size: 40, weight: .bold, design: .rounded)).foregroundStyle(.white)
@@ -61,7 +61,7 @@ struct LoginView: View {
                 .padding(.bottom, 12)
         }
         .background(
-            LinearGradient(colors: [Color.accentColor.opacity(0.12), Color(.systemBackground)],
+            LinearGradient(colors: [Color.brand.opacity(0.12), Color(.systemBackground)],
                            startPoint: .top, endPoint: .center)
                 .ignoresSafeArea()
         )

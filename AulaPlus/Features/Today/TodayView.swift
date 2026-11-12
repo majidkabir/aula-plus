@@ -12,12 +12,8 @@ struct TodayView: View {
         NavigationStack(path: $app.todayPath) {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.gap + 4) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(greeting).font(.title3.weight(.semibold))
-                        Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized)
-                            .font(.subheadline).foregroundStyle(.secondary)
-                    }
-                    .padding(.top, -4)
+                    TodayHero(greeting: greeting, unread: data.unreadCount,
+                              pickup: firstPickup, next: nextThing) { app.selectedTab = .messages }
                     ChildFilterBar().padding(.horizontal, -Theme.pad)
                     StaleBanner(error: data.presence.error ?? app.session.error, savedAt: data.presence.savedAt)
                     vacationBanner
@@ -50,7 +46,7 @@ struct TodayView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 24)
             }
-            .background(Color(.systemGroupedBackground))
+            .themedBackground()
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
             .navigationDestination(for: Child.self) { ChildPresenceView(child: $0) }
@@ -58,7 +54,7 @@ struct TodayView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: {
-                        InitialsAvatar(name: app.session.value?.displayName ?? "", color: .accentColor, size: 32)
+                        InitialsAvatar(name: app.session.value?.displayName ?? "", color: ThemeStore.shared.theme.gradientStart, size: 32)
                     }
                     .accessibilityLabel(Text("Profil og indstillinger"))
                 }
@@ -82,6 +78,28 @@ struct TodayView: View {
         let first = app.session.value?.displayName.split(separator: " ").first.map(String.init) ?? ""
         let hello = h < 10 ? String(localized: "Godmorgen") : h < 18 ? String(localized: "Hej") : String(localized: "Godaften")
         return first.isEmpty ? hello : "\(hello), \(first)"
+    }
+
+    /// Earliest planned pick-up among visible children not yet picked up.
+    private var firstPickup: String? {
+        let ids = Set(app.visibleChildren.map(\.id))
+        return (data.presence.value ?? [])
+            .filter { ids.contains($0.childId) && $0.checkOut == nil }
+            .compactMap(\.plannedExit).min()
+    }
+
+    /// The next event today or an upcoming important date.
+    private var nextThing: (title: String, time: String)? {
+        if let e = (todayEvents.value ?? []).first(where: { $0.start > .now && Calendar.week.isDateInToday($0.start) }) {
+            return (e.title, Fmt.time(e.start))
+        }
+        if let d = (data.importantDates.value ?? []).first(where: { $0.start > .now }) {
+            let when = Calendar.week.isDateInTomorrow(d.start)
+                ? String(localized: "I morgen")
+                : d.start.formatted(.dateTime.weekday(.abbreviated).day())
+            return (d.title, when)
+        }
+        return nil
     }
 
     private func refreshAll() async {
@@ -236,6 +254,10 @@ struct ChildDayCard: View {
                 }
             }
 
+            if presence != nil || !events.isEmpty {
+                DayTimeline(presence: presence, events: events, color: color)
+            }
+
             if !events.isEmpty {
                 Divider()
                 if upcoming.isEmpty {
@@ -289,5 +311,65 @@ struct ChildDayCard: View {
         if more > 0 { parts.append(String(localized: "+\(more) mere")) }
         if done > 0 { parts.append(String(localized: "\(done) afsluttet")) }
         return parts.joined(separator: " · ")
+    }
+}
+
+/// Brand-gradient header: greeting, date and three key numbers for the day.
+struct TodayHero: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
+    let greeting: String
+    let unread: Int
+    let pickup: String?
+    let next: (title: String, time: String)?
+    let openMessages: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(greeting).font(.title2.weight(.bold))
+                Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized)
+                    .font(.subheadline.weight(.medium)).opacity(0.85)
+            }
+            let layout = typeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+                : AnyLayout(HStackLayout(alignment: .top, spacing: 0))
+            layout {
+                Button(action: openMessages) {
+                    stat(value: "\(unread)", label: String(localized: "Ulæste"), icon: "bubble.left.fill")
+                }
+                .buttonStyle(.plain)
+                if !typeSize.isAccessibilitySize { divider }
+                stat(value: pickup ?? "–", label: String(localized: "Afhentning"), icon: "figure.and.child.holdinghands")
+                if !typeSize.isAccessibilitySize { divider }
+                stat(value: next?.time ?? "–", label: next?.title ?? String(localized: "Intet planlagt"), icon: "calendar")
+            }
+        }
+        .foregroundStyle(.white)
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            ZStack {
+                ThemeStore.shared.theme.gradient
+                Circle().fill(.white.opacity(0.10)).frame(width: 180).offset(x: 130, y: -60)
+                Circle().fill(.white.opacity(0.07)).frame(width: 120).offset(x: 160, y: 50)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: ThemeStore.shared.theme.gradientStart.opacity(0.30), radius: 16, x: 0, y: 8)
+    }
+
+    private var divider: some View {
+        Rectangle().fill(.white.opacity(0.3)).frame(width: 1, height: 40).padding(.horizontal, 10)
+    }
+
+    private func stat(value: String, label: String, icon: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Image(systemName: icon).font(.caption.weight(.semibold)).opacity(0.85)
+            Text(value).font(.title3.weight(.bold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+            Text(label).font(.caption.weight(.medium)).opacity(0.9)
+                .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 }

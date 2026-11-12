@@ -59,14 +59,19 @@ struct RootView: View {
     @Environment(AppModel.self) private var app
 
     var body: some View {
-        switch app.phase {
-        case .launching:
-            ProgressView()
-        case .loggedOut:
-            LoginView()
-        case .loggedIn:
-            MainTabs()
+        Group {
+            switch app.phase {
+            case .launching:
+                ProgressView()
+            case .loggedOut:
+                LoginView()
+            case .loggedIn:
+                MainTabs()
+            }
         }
+        .tint(Color.brand)
+        .fontDesign(.rounded)
+        .animation(.snappy, value: ThemeStore.shared.theme)
     }
 }
 

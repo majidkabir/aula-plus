@@ -69,7 +69,7 @@ struct ThreadView: View {
                 .padding()
             }
             .scrollDismissesKeyboard(.interactively)
-            .background(Color(.systemGroupedBackground))
+            .themedBackground()
             .overlay {
                 if page.value == nil && page.isLoading { ProgressView() }
             }
@@ -183,7 +183,7 @@ struct MessageBubble: View {
                 }
             }
             .padding(.horizontal, 14).padding(.vertical, 10)
-            .background(isMine ? Color.accentColor.opacity(0.16) : Color(.secondarySystemGroupedBackground),
+            .background(isMine ? Color.brand.opacity(0.16) : Color(.secondarySystemGroupedBackground),
                         in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             if !isMine { Spacer(minLength: 24) }
         }

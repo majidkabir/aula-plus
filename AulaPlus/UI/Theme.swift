@@ -15,6 +15,7 @@ extension View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(.secondarySystemGroupedBackground),
                         in: RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
+            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 3)
     }
 }
 
@@ -23,7 +24,7 @@ struct SectionTitle: View {
     let title: LocalizedStringKey
     var systemImage: String? = nil
     var count: Int? = nil
-    var tint: Color = .accentColor
+    var tint: Color = Color.brand
 
     var body: some View {
         HStack(spacing: 8) {

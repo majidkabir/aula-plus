@@ -148,7 +148,7 @@ struct ThreadRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Circle()
-                .fill(thread.isRead ? Color.clear : Color.accentColor)
+                .fill(thread.isRead ? Color.clear : Color.brand)
                 .frame(width: 9, height: 9)
                 .padding(.top, 6)
             VStack(alignment: .leading, spacing: 3) {

@@ -36,7 +36,10 @@ struct WeekPlanView: View {
                     StaleBanner(error: plan.error, savedAt: plan.savedAt)
 
                     if !visibleTasks.isEmpty {
-                        SectionTitle(title: "Opgaver", systemImage: "checklist", tint: .green)
+                        HStack(alignment: .center) {
+                            SectionTitle(title: "Opgaver", systemImage: "checklist", tint: .green)
+                            ProgressRing(done: visibleTasks.filter(\.isDone).count, total: visibleTasks.count, color: .green)
+                        }
                         Card {
                             VStack(alignment: .leading, spacing: 10) {
                                 ForEach(visibleTasks) { t in TaskRow(task: t, showChild: app.children.count > 1) }
@@ -61,7 +64,7 @@ struct WeekPlanView: View {
                             ForEach(p.sections, id: \.self) { s in
                                 Card {
                                     VStack(alignment: .leading, spacing: 8) {
-                                        Text(s.title).font(.headline).foregroundStyle(Color.accentColor)
+                                        Text(s.title).font(.headline).foregroundStyle(Color.brand)
                                         HTMLText(html: s.html)
                                     }
                                 }
@@ -72,7 +75,7 @@ struct WeekPlanView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 24)
             }
-            .background(Color(.systemGroupedBackground))
+            .themedBackground()
             .navigationTitle("Ugeplan")
             .refreshable {
                 async let a: () = plan.refresh()

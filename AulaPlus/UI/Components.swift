@@ -4,8 +4,13 @@ import SwiftUI
 /// Stable colour per child, used across calendar, cards and avatars.
 enum Palette {
     /// Child colours never include the brand blue, so a child is never confused with a selected control.
-    static let colors: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown]
-    static func color(for childId: Int, in children: [Child]) -> Color {
+    static let all: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown]
+    /// Child colours minus the ones that clash with the current theme.
+    @MainActor static var colors: [Color] {
+        let clash = ThemeStore.shared.theme.clashingChildColors
+        return all.filter { !clash.contains($0) }
+    }
+    @MainActor static func color(for childId: Int, in children: [Child]) -> Color {
         let i = children.firstIndex { $0.id == childId } ?? abs(childId)
         return colors[i % colors.count]
     }
@@ -44,7 +49,7 @@ struct ChildFilterBar: View {
         if app.children.count > 1 {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    chip(title: String(localized: "Alle"), color: .accentColor, selected: app.selectedChildId == nil) {
+                    chip(title: String(localized: "Alle"), color: Color.brand, onColor: Color.onBrand, selected: app.selectedChildId == nil) {
                         app.selectedChildId = nil
                     }
                     ForEach(app.children) { child in
@@ -62,14 +67,14 @@ struct ChildFilterBar: View {
         }
     }
 
-    private func chip(title: String, color: Color, selected: Bool, action: @escaping () -> Void) -> some View {
+    private func chip(title: String, color: Color, onColor: Color = .white, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .background(selected ? color : Color(.secondarySystemFill), in: Capsule())
-                .foregroundStyle(selected ? Color.white : Color.primary)
+                .foregroundStyle(selected ? onColor : Color.primary)
         }
         .buttonStyle(.plain)
     }

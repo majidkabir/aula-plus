@@ -39,7 +39,7 @@ struct CalendarView: View {
                         if Calendar.week.isDateInToday(selectedDay) {
                             Text("I dag").font(.caption.weight(.bold))
                                 .padding(.horizontal, 8).padding(.vertical, 2)
-                                .background(Color.accentColor, in: Capsule()).foregroundStyle(.white)
+                                .background(Color.brand, in: Capsule()).foregroundStyle(Color.onBrand)
                         }
                         Spacer()
                     }
@@ -68,7 +68,7 @@ struct CalendarView: View {
                 .padding(.horizontal, Theme.pad)
                 .padding(.bottom, 24)
             }
-            .background(Color(.systemGroupedBackground))
+            .themedBackground()
             .navigationTitle("Kalender")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -105,16 +105,18 @@ struct CalendarView: View {
                     VStack(spacing: 4) {
                         Text(day.formatted(.dateTime.weekday(.narrow)))
                             .font(.caption2.weight(.semibold))
-                            .foregroundStyle(selected ? Color.white.opacity(0.85) : Color.secondary)
+                            .foregroundStyle(selected ? Color.onBrand.opacity(0.85) : Color.secondary)
                         Text(day.formatted(.dateTime.day()))
                             .font(.callout.weight(selected || isToday ? .bold : .regular))
-                            .foregroundStyle(selected ? Color.white : isToday ? Color.accentColor : Color.primary)
-                        Circle().fill(count > 0 ? (selected ? Color.white : Color.secondary) : Color.clear)
-                            .frame(width: 5, height: 5)
+                            .foregroundStyle(selected ? Color.onBrand : isToday ? Color.brand : Color.primary)
+                        Capsule()
+                            .fill(selected ? Color.onBrand : Color.brand.opacity(0.55))
+                            .frame(width: 4, height: count == 0 ? 0 : CGFloat(min(count, 6)) * 2.5 + 3)
+                            .frame(height: 18, alignment: .bottom)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
-                    .background(selected ? Color.accentColor : Color.clear,
+                    .background(selected ? Color.brand : Color.clear,
                                 in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)

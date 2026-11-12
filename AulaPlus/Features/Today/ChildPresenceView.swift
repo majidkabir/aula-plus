@@ -47,7 +47,7 @@ struct ChildPresenceView: View {
                     if permissions?.canReportSick != false {
                         ActionTile(title: isSick ? String(localized: "Fjern sygemelding") : String(localized: "Meld syg i dag"),
                                    systemImage: isSick ? "cross.case" : "cross.case.fill",
-                                   color: isSick ? .accentColor : .red) { confirmSick = true }
+                                   color: isSick ? Color.brand : .red) { confirmSick = true }
                             .disabled(busy)
                     }
                     if permissions?.canAddVacation != false {
@@ -62,6 +62,11 @@ struct ChildPresenceView: View {
 
             Section {
                 WeekSwitcher(date: $weekDate)
+                if let plans = plans?.value, !plans.isEmpty {
+                    WeekPlanChart(plans: plans, days: Array(Week.days(of: Week.start(of: weekDate)).prefix(5)),
+                                  color: Palette.color(for: child.id, in: app.children))
+                        .padding(.vertical, 6)
+                }
                 ForEach(Week.days(of: Week.start(of: weekDate)).prefix(5), id: \.self) { day in
                     let plan = plans?.value?.first { Calendar.week.isDate($0.date, inSameDayAs: day) }
                     Button {
@@ -83,6 +88,8 @@ struct ChildPresenceView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .themedBackground()
         .navigationTitle(child.firstName)
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await reload() }

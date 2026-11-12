@@ -24,7 +24,7 @@ struct PostsList: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .themedBackground()
         .overlay {
             if posts.isEmpty {
                 if data.posts.isLoading { ProgressView() }
@@ -139,7 +139,7 @@ struct PostDetailView: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .themedBackground()
         .navigationBarTitleDisplayMode(.inline)
         .task { comments = (try? await AulaAPI.shared.comments(postId: post.id)) ?? [] }
     }

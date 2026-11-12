@@ -24,7 +24,7 @@ enum WidgetWriter {
         let latestUnread = threads.first { !$0.isRead }
         WidgetSnapshot(children: lines, unread: threads.filter { !$0.isRead }.count,
                        latestSender: latestUnread?.sender, latestSubject: latestUnread?.subject,
-                       updated: .now).save()
+                       updated: .now, theme: ThemeStore.shared.theme.rawValue).save()
         WidgetCenter.shared.reloadAllTimelines()
     }
 }

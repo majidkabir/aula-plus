@@ -15,6 +15,7 @@ struct WidgetSnapshot: Codable {
     var latestSender: String?
     var latestSubject: String?
     var updated: Date
+    var theme: String? = nil
 
     static let appGroup = "group.com.majidkabir.aulaplus"
 
