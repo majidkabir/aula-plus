@@ -68,23 +68,7 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
         SKIP_INSTALL: YES
-  AulaPlusTests:
-    type: bundle.unit-test
-    platform: iOS
-    sources:
-      - AulaPlusTests
-    dependencies:
-      - target: AulaPlus
-    settings:
-      base:
-        GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.majidkabir.aulaplus.tests
-schemes:
-  AulaPlus:
-    build:
-      targets:
-        AulaPlus: all
-        AulaPlusWidget:
+  AulaPlusWidget:
     type: app-extension
     platform: iOS
     sources:
@@ -108,7 +92,23 @@ schemes:
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
         SKIP_INSTALL: YES
-  AulaPlusTests: [test]
+  AulaPlusTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - AulaPlusTests
+    dependencies:
+      - target: AulaPlus
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.majidkabir.aulaplus.tests
+schemes:
+  AulaPlus:
+    build:
+      targets:
+        AulaPlus: all
+        AulaPlusTests: [test]
     test:
       targets:
         - AulaPlusTests
