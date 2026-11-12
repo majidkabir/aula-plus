@@ -1,0 +1,117 @@
+import Foundation
+import Observation
+
+/// All cached data sources, shared between tabs.
+@MainActor
+@Observable
+final class DataStore {
+    static let shared = DataStore()
+
+    let presence: Loadable<[Presence]>
+    let threads: Loadable<[ThreadSummary]>
+    let posts: Loadable<[Post]>
+
+    @ObservationIgnored private var weeks: [String: Loadable<[Event]>] = [:]
+    @ObservationIgnored private var threadPages: [String: Loadable<ThreadPage>] = [:]
+    @ObservationIgnored private var weekPlans: [String: Loadable<[WeekPlan]>] = [:]
+
+    private init() {
+        presence = Loadable(key: "presence") {
+            let s = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.presence(childIds: s.children.map(\.id))
+        }
+        threads = Loadable(key: "threads") {
+            try await AulaAPI.shared.threads().threads
+        }
+        posts = Loadable(key: "posts") {
+            let s = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.posts(institutionProfileIds: s.institutionProfileIds)
+        }
+    }
+
+    var unreadCount: Int { threads.value?.filter { !$0.isRead }.count ?? 0 }
+
+    /// Events for the Monday-based week containing `date`.
+    func events(weekOf date: Date) -> Loadable<[Event]> {
+        let start = Week.start(of: date)
+        let key = "events-\(Week.key(start))"
+        if let l = weeks[key] { return l }
+        let l = Loadable<[Event]>(key: key) {
+            let s = try await AulaAPI.shared.bootstrap()
+            let end = Calendar.week.date(byAdding: .day, value: 6, to: start)!
+            return try await AulaAPI.shared.events(institutionProfileIds: s.children.map(\.id), from: start, to: end)
+        }
+        weeks[key] = l
+        return l
+    }
+
+    func thread(_ id: String) -> Loadable<ThreadPage> {
+        if let l = threadPages[id] { return l }
+        let l = Loadable<ThreadPage>(key: "thread-\(id)") {
+            try await AulaAPI.shared.messages(threadId: id)
+        }
+        threadPages[id] = l
+        return l
+    }
+
+    func weekPlan(weekOf date: Date) -> Loadable<[WeekPlan]> {
+        let start = Week.start(of: date)
+        let key = "weekplan-\(Week.key(start))"
+        if let l = weekPlans[key] { return l }
+        let l = Loadable<[WeekPlan]>(key: key) {
+            let s = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.weekPlans(session: s, week: Week.isoWeek(start))
+        }
+        weekPlans[key] = l
+        return l
+    }
+
+    func markRead(threadId: String) {
+        threads.mutate { list in
+            if let i = list.firstIndex(where: { $0.id == threadId }) {
+                let t = list[i]
+                list[i] = ThreadSummary(id: t.id, subject: t.subject, preview: t.preview, sender: t.sender,
+                                        date: t.date, isRead: true, isSensitive: t.isSensitive, regarding: t.regarding)
+            }
+        }
+    }
+
+    func reset() {
+        presence.forget()
+        threads.forget()
+        posts.forget()
+        weeks = [:]
+        threadPages = [:]
+        weekPlans = [:]
+    }
+}
+
+extension Calendar {
+    /// Danish week rules: Monday first, ISO week numbers.
+    static let week: Calendar = {
+        var c = Calendar(identifier: .iso8601)
+        c.timeZone = AulaDate.copenhagen
+        c.locale = Locale(identifier: "da_DK")
+        return c
+    }()
+}
+
+enum Week {
+    static func start(of date: Date) -> Date {
+        Calendar.week.dateInterval(of: .weekOfYear, for: date)?.start ?? Calendar.week.startOfDay(for: date)
+    }
+
+    static func isoWeek(_ date: Date) -> (year: Int, week: Int) {
+        let c = Calendar.week.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+        return (c.yearForWeekOfYear ?? 0, c.weekOfYear ?? 0)
+    }
+
+    static func key(_ date: Date) -> String {
+        let w = isoWeek(date)
+        return String(format: "%d-W%02d", w.year, w.week)
+    }
+
+    static func days(of start: Date) -> [Date] {
+        (0..<7).compactMap { Calendar.week.date(byAdding: .day, value: $0, to: start) }
+    }
+}
