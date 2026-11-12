@@ -8,35 +8,67 @@ struct MoreView: View {
         @Bindable var app = app
         NavigationStack(path: $app.morePath) {
             List {
-                Section {
-                    NavigationLink { PostsList() } label: { Label("Opslag", systemImage: "newspaper") }
-                    NavigationLink { GalleryView() } label: { Label("Galleri", systemImage: "photo.on.rectangle") }
-                    NavigationLink { NotificationsView() } label: {
-                        Label("Notifikationer", systemImage: "bell")
-                    }
-                    NavigationLink { ImportantDatesView() } label: { Label("Vigtige datoer", systemImage: "star") }
-                    NavigationLink { VacationRequestsView() } label: { Label("Ferieanmodninger", systemImage: "sun.max") }
-                    NavigationLink { ContactsView() } label: { Label("Kontakter", systemImage: "person.2") }
-                    NavigationLink { DocumentsView() } label: { Label("Dokumenter", systemImage: "doc.text") }
+                Section("Skole") {
+                    NavigationLink { PostsList() } label: { row("Opslag", "newspaper.fill", .purple) }
+                    NavigationLink { GalleryView() } label: { row("Galleri", "photo.fill.on.rectangle.fill", .pink) }
+                    NavigationLink { ImportantDatesView() } label: { row("Vigtige datoer", "star.fill", .yellow) }
+                    NavigationLink { DocumentsView() } label: { row("Dokumenter", "doc.text.fill", .blue) }
+                    NavigationLink { ContactsView() } label: { row("Kontakter", "person.2.fill", .green) }
                 }
-                Section {
+                Section("Komme/gå") {
                     ForEach(app.children) { c in
                         NavigationLink { ChildPresenceView(child: c) } label: {
                             HStack(spacing: 12) {
-                                ChildAvatar(child: c, size: 30)
-                                Text("Komme/gå for \(c.firstName)")
+                                ChildAvatar(child: c, size: 28)
+                                Text(c.firstName)
+                            }
+                        }
+                    }
+                    NavigationLink { VacationRequestsView() } label: {
+                        HStack {
+                            row("Ferieanmodninger", "sun.max.fill", .orange)
+                            let missing = (data.vacationRequests.value ?? []).filter { $0.isMissingAnswer }.count
+                            if missing > 0 {
+                                Spacer()
+                                Text("\(missing)").font(.caption.bold()).padding(.horizontal, 7).padding(.vertical, 2)
+                                    .background(.red, in: Capsule()).foregroundStyle(.white)
                             }
                         }
                     }
                 }
                 Section {
-                    NavigationLink { SettingsView(embedded: true) } label: { Label("Profil og indstillinger", systemImage: "gearshape") }
+                    NavigationLink { NotificationsView() } label: { row("Notifikationer", "bell.fill", .red) }
+                    NavigationLink { SettingsView(embedded: true) } label: { row("Profil og indstillinger", "gearshape.fill", .gray) }
                 }
             }
             .navigationTitle("Mere")
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Album.self) { AlbumView(album: $0) }
+            .navigationDestination(for: DemoRoute.self) { r in
+                switch r {
+                case .notifications: NotificationsView()
+                case .settings: SettingsView(embedded: true)
+                case .gallery: GalleryView()
+                case .empty:
+                    // Screenshot of the offline + empty states.
+                    VStack(spacing: 0) {
+                        StaleBanner(error: AulaError.http(503).localizedDescription, savedAt: Date().addingTimeInterval(-3600))
+                            .padding()
+                        ContentUnavailableView("Ingen opslag", systemImage: "newspaper")
+                        Spacer()
+                    }
+                    .background(Color(.systemGroupedBackground))
+                    .navigationTitle("Opslag")
+                }
+            }
+        }
+    }
+
+    private func row(_ title: LocalizedStringKey, _ icon: String, _ color: Color) -> some View {
+        HStack(spacing: 12) {
+            IconTile(systemImage: icon, color: color)
+            Text(title)
         }
     }
 }
@@ -45,6 +77,7 @@ struct MoreView: View {
 
 struct GalleryView: View {
     @Environment(DataStore.self) private var data
+    static func tint(_ id: Int) -> Color { [Color.pink, .orange, .teal, .purple, .indigo, .green][abs(id) % 6] }
     private let columns = [GridItem(.adaptive(minimum: 160), spacing: 12)]
 
     var body: some View {
@@ -57,14 +90,20 @@ struct GalleryView: View {
                             AsyncImage(url: album.coverURL) { img in
                                 img.resizable().scaledToFill()
                             } placeholder: {
-                                Rectangle().fill(Color(.tertiarySystemFill))
-                                    .overlay(Image(systemName: "photo").foregroundStyle(.secondary))
+                                LinearGradient(colors: [Self.tint(album.id).opacity(0.35), Self.tint(album.id).opacity(0.12)],
+                                               startPoint: .topLeading, endPoint: .bottomTrailing)
+                                    .overlay(Image(systemName: "photo.on.rectangle.angled").font(.title)
+                                        .foregroundStyle(Self.tint(album.id)))
                             }
                             .frame(height: 130)
                             .frame(maxWidth: .infinity)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                             Text(album.title).font(.subheadline.weight(.semibold)).lineLimit(2)
-                            Text(Fmt.listDate(album.date)).font(.caption).foregroundStyle(.secondary)
+                            HStack(spacing: 4) {
+                                Text(Fmt.listDate(album.date))
+                                if let n = album.count { Text("· \(n) billeder") }
+                            }
+                            .font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     .buttonStyle(.plain)
@@ -78,6 +117,7 @@ struct GalleryView: View {
                 else { ContentUnavailableView("Ingen albums", systemImage: "photo.on.rectangle") }
             }
         }
+        .background(Color(.systemGroupedBackground))
         .navigationTitle("Galleri")
         .refreshable { await data.albums.refresh() }
         .task { await data.albums.load(maxAge: 600) }
@@ -237,12 +277,9 @@ struct NotificationRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 28, height: 28)
-                .background(Color.accentColor.opacity(0.12), in: Circle())
+            IconTile(systemImage: icon, color: tileColor)
             VStack(alignment: .leading, spacing: 3) {
-                Text(notification.title).font(.subheadline).lineLimit(2)
+                Text(notification.title).font(.subheadline.weight(.medium)).lineLimit(2)
                 HStack(spacing: 6) {
                     if let c = notification.childName { Text(c) }
                     Text(Fmt.listDate(notification.date))
@@ -252,6 +289,17 @@ struct NotificationRow: View {
             }
         }
         .padding(.vertical, 2)
+    }
+
+    private var tileColor: Color {
+        switch icon {
+        case "bubble.left.fill": return .blue
+        case "photo.fill": return .pink
+        case "newspaper.fill": return .purple
+        case "calendar": return .red
+        case "figure.walk": return .teal
+        default: return .gray
+        }
     }
 
     private var icon: String {

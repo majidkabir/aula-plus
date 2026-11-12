@@ -19,6 +19,11 @@ final class Loadable<T: Codable> {
     init(key: String, fetch: @escaping () async throws -> T) {
         self.key = key
         self.fetch = fetch
+        if Demo.isOn {
+            value = Demo.value(for: key) as? T
+            savedAt = Date()
+            return
+        }
         if let hit = DiskCache.load(T.self, key: key) {
             value = hit.value
             savedAt = hit.savedAt
@@ -32,7 +37,7 @@ final class Loadable<T: Codable> {
     }
 
     func refresh() async {
-        guard !isLoading else { return }
+        guard !isLoading, !Demo.isOn else { return }
         isLoading = true
         defer { isLoading = false }
         do {

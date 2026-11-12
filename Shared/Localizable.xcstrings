@@ -11,12 +11,42 @@
         }
       }
     },
+    "%lld afsluttet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld done"
+          }
+        }
+      }
+    },
+    "%lld begivenheder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld events"
+          }
+        }
+      }
+    },
     "(Intet emne)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "(No subject)"
+          }
+        }
+      }
+    },
+    "+%lld mere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld more"
           }
         }
       }
@@ -51,6 +81,16 @@
         }
       }
     },
+    "Afleveres og hentes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop-off and pick-up"
+          }
+        }
+      }
+    },
     "Album": {
       "localizations": {
         "en": {
@@ -67,6 +107,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "All"
+          }
+        }
+      }
+    },
+    "Alt gemmes på telefonen og opdateres i baggrunden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything is saved on your phone and refreshed in the background."
           }
         }
       }
@@ -201,6 +251,16 @@
         }
       }
     },
+    "Besked når der sker noget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Know when something happens"
+          }
+        }
+      }
+    },
     "Besked til institutionen": {
       "localizations": {
         "en": {
@@ -281,6 +341,16 @@
         }
       }
     },
+    "Dagens program er slut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's schedule is over"
+          }
+        }
+      }
+    },
     "Deltager": {
       "localizations": {
         "en": {
@@ -297,6 +367,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not attending"
+          }
+        }
+      }
+    },
+    "Der er ingen begivenheder denne dag.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There are no events this day."
           }
         }
       }
@@ -421,6 +501,16 @@
         }
       }
     },
+    "Filtrér": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter"
+          }
+        }
+      }
+    },
     "Fjern markering": {
       "localizations": {
         "en": {
@@ -447,6 +537,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cancel the sick report for %@?"
+          }
+        }
+      }
+    },
+    "Forrige uge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous week"
           }
         }
       }
@@ -641,6 +741,16 @@
         }
       }
     },
+    "Hele dagen på ét blik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The whole day at a glance"
+          }
+        }
+      }
+    },
     "Hent ældre beskeder": {
       "localizations": {
         "en": {
@@ -737,6 +847,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yesterday"
+          }
+        }
+      }
+    },
+    "Ikke færdig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not done"
           }
         }
       }
@@ -951,12 +1071,32 @@
         }
       }
     },
+    "Komme/gå": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-in/out"
+          }
+        }
+      }
+    },
     "Komme/gå for %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Check-in/out for %@"
+          }
+        }
+      }
+    },
+    "Komme/gå, skema og beskeder for hvert barn.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-in/out, schedule and messages for each child."
           }
         }
       }
@@ -1077,6 +1217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't download %@."
+          }
+        }
+      }
+    },
+    "Kunne ikke opdatere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't refresh"
           }
         }
       }
@@ -1331,6 +1481,26 @@
         }
       }
     },
+    "Notifikationer om nye beskeder og opslag.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications about new messages and posts."
+          }
+        }
+      }
+    },
+    "Nu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now"
+          }
+        }
+      }
+    },
     "Ny besked": {
       "localizations": {
         "en": {
@@ -1357,6 +1527,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "New post: %@"
+          }
+        }
+      }
+    },
+    "Næste uge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next week"
           }
         }
       }
@@ -1431,6 +1611,16 @@
         }
       }
     },
+    "Se alle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See all"
+          }
+        }
+      }
+    },
     "Selvbestemmer": {
       "localizations": {
         "en": {
@@ -1467,6 +1657,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Secure documents"
+          }
+        }
+      }
+    },
+    "Skole": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "School"
           }
         }
       }
@@ -1721,6 +1921,16 @@
         }
       }
     },
+    "Ulæst. ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unread. "
+          }
+        }
+      }
+    },
     "Ulæste beskeder": {
       "localizations": {
         "en": {
@@ -1781,6 +1991,26 @@
         }
       }
     },
+    "Vigtigt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Important"
+          }
+        }
+      }
+    },
+    "Vikar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Substitute"
+          }
+        }
+      }
+    },
     "Vikar%@": {
       "localizations": {
         "en": {
@@ -1827,6 +2057,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Showing data from %@"
+          }
+        }
+      }
+    },
+    "Viser data fra %@. Træk ned for at prøve igen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Showing data from %@. Pull down to try again."
           }
         }
       }
@@ -1881,12 +2121,32 @@
         }
       }
     },
+    "· %lld billeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "· %lld photos"
+          }
+        }
+      }
+    },
     "Åbn appen og log ind.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Open the app and log in."
+          }
+        }
+      }
+    },
+    "Åbner med det samme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens instantly"
           }
         }
       }
