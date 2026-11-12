@@ -30,7 +30,7 @@ struct CalendarView: View {
                     StaleBanner(error: week.error, savedAt: week.savedAt)
                         .listRowSeparator(.hidden)
                     ForEach(dayEvents) { e in
-                        EventRow(event: e)
+                        NavigationLink { EventDetailView(event: e) } label: { EventRow(event: e) }
                             .swipeActions {
                                 Button { addingEvent = e } label: { Label("Kalender", systemImage: "calendar.badge.plus") }
                                     .tint(.accentColor)

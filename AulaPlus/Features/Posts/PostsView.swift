@@ -31,7 +31,7 @@ struct PostsList: View {
                 else { ContentUnavailableView("Ingen opslag", systemImage: "newspaper") }
             }
         }
-        .searchable(text: $search, prompt: "Søg i opslag")
+        .searchable(text: $search, prompt: String(localized: "Søg i opslag"))
         .navigationTitle("Opslag")
         .refreshable { await data.posts.refresh() }
         .task { await data.posts.load(maxAge: 300) }
@@ -75,6 +75,10 @@ struct PostCard: View {
 struct PostDetailView: View {
     let post: Post
     @State private var comments: [Comment] = []
+    @State private var newComment = ""
+    @State private var posting = false
+    @State private var commentError: String?
+    @Environment(AppModel.self) private var app
 
     var body: some View {
         ScrollView {
@@ -90,8 +94,23 @@ struct PostDetailView: View {
                 Divider()
                 HTMLText(html: post.html)
                 AttachmentList(attachments: post.attachments)
+                Divider().padding(.vertical, 4)
+                if post.canComment == true {
+                HStack(alignment: .bottom) {
+                    TextField("Skriv en kommentar", text: $newComment, axis: .vertical)
+                        .lineLimit(1...4)
+                        .padding(8)
+                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+                    Button {
+                        Task { await postComment() }
+                    } label: {
+                        if posting { ProgressView() } else { Image(systemName: "paperplane.fill") }
+                    }
+                    .disabled(newComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || posting)
+                }
+                if let commentError { Text(commentError).font(.caption).foregroundStyle(.red) }
+                }
                 if !comments.isEmpty {
-                    Divider().padding(.vertical, 4)
                     Text("Kommentarer (\(comments.count))").font(.headline)
                     ForEach(comments) { c in
                         VStack(alignment: .leading, spacing: 4) {
@@ -111,5 +130,22 @@ struct PostDetailView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .task { comments = (try? await AulaAPI.shared.comments(postId: post.id)) ?? [] }
+    }
+
+    private func postComment() async {
+        guard let me = app.session.value?.guardianProfileIds?.first else {
+            commentError = String(localized: "Kunne ikke finde din profil. Træk ned for at opdatere.")
+            return
+        }
+        posting = true
+        commentError = nil
+        defer { posting = false }
+        do {
+            try await AulaAPI.shared.addComment(postId: post.id, text: newComment, asProfile: me)
+            newComment = ""
+            comments = (try? await AulaAPI.shared.comments(postId: post.id)) ?? comments
+        } catch {
+            commentError = String(localized: "Ikke sendt: \(error.localizedDescription)")
+        }
     }
 }

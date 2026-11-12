@@ -8,10 +8,12 @@ enum AulaError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .http(let c): return "Aula svarede med HTTP \(c)."
-        case .rejected(let m, let c, let s): return "Aula afviste \(m) (kode \(c)\(s.map { "/\($0)" } ?? ""))."
-        case .stepUpRequired: return "Kræver MitID-login på højeste niveau."
-        case .decoding(let m): return "Uventet svar fra Aula: \(m)"
+        case .http(let c): return String(localized: "Aula svarede med HTTP \(c).")
+        case .rejected(let m, let c, let s):
+            let code = s.map { "\(c)/\($0)" } ?? "\(c)"
+            return String(localized: "Aula afviste \(m) (kode \(code)).")
+        case .stepUpRequired: return String(localized: "Kræver MitID-login på højeste niveau.")
+        case .decoding(let m): return String(localized: "Uventet svar fra Aula: \(m)")
         }
     }
 }
@@ -94,7 +96,8 @@ actor AulaAPI {
                        children: children,
                        institutionProfileIds: Array(Set(instIds)),
                        guardianUserId: ctx.userId?.value,
-                       widgetIds: widgets)
+                       widgetIds: widgets,
+                       guardianProfileIds: profile.institutionProfiles?.items.map(\.id.value) ?? [])
     }
 
     // MARK: Endpoints
@@ -240,7 +243,7 @@ actor AulaAPI {
                 let letters = (p.institutioner?.items ?? []).flatMap { $0.ugebreve?.items ?? [] }
                 return WeekPlan(childName: p.navn ?? "", sections: letters.compactMap { l in
                     guard let html = l.indhold?.nilIfEmpty else { return nil }
-                    return .init(title: l.tilknytningNavn ?? "Ugebrev", html: html)
+                    return .init(title: l.tilknytningNavn ?? String(localized: "Ugebrev"), html: html)
                 })
             }
         }
@@ -255,8 +258,8 @@ actor AulaAPI {
     private static func weekdayTitle(_ s: String?) -> String {
         guard let d = AulaDate.parse(s) else { return s ?? "" }
         let f = DateFormatter()
-        f.locale = Locale(identifier: "da_DK")
-        f.dateFormat = "EEEE d. MMM"
+        f.locale = .current
+        f.setLocalizedDateFormatFromTemplate("EEEEdMMM")
         return f.string(from: d).capitalized
     }
 

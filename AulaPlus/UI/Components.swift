@@ -43,7 +43,7 @@ struct ChildFilterBar: View {
         if app.children.count > 1 {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    chip(title: "Alle", color: .accentColor, selected: app.selectedChildId == nil) {
+                    chip(title: String(localized: "Alle"), color: .accentColor, selected: app.selectedChildId == nil) {
                         app.selectedChildId = nil
                     }
                     ForEach(app.children) { child in
@@ -149,7 +149,7 @@ struct AttachmentList: View {
         Task {
             defer { loading = nil }
             do { preview = try await AulaAPI.shared.download(url, suggestedName: a.name) }
-            catch { self.error = "Kunne ikke hente \(a.name)." }
+            catch { self.error = String(localized: "Kunne ikke hente \(a.name).") }
         }
     }
 
@@ -170,7 +170,7 @@ enum Fmt {
         guard let d else { return "" }
         let cal = Calendar.current
         if cal.isDateInToday(d) { return d.formatted(date: .omitted, time: .shortened) }
-        if cal.isDateInYesterday(d) { return "I går" }
+        if cal.isDateInYesterday(d) { return String(localized: "I går") }
         if let days = cal.dateComponents([.day], from: d, to: .now).day, days < 7 {
             return d.formatted(.dateTime.weekday(.wide)).capitalized
         }

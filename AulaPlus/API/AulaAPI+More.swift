@@ -143,7 +143,7 @@ extension AulaAPI {
         let dto: AlbumsDTO = try await call("gallery.getAlbums", query: q)
         return (dto.albums?.items ?? []).map { a in
             let cover: String? = a.thumbnailsUrls?.items.compactMap(\.url).first
-            return Album(id: a.id.value, title: a.title?.nilIfEmpty ?? "Album",
+            return Album(id: a.id.value, title: a.title?.nilIfEmpty ?? String(localized: "Album"),
                          date: AulaDate.parse(a.creationDate),
                          coverURL: cover.flatMap { URL(string: $0) },
                          count: a.size ?? a.totalSize)
@@ -182,7 +182,7 @@ extension AulaAPI {
         return list.items.map { n in
             let titles: [String?] = [n.title, n.heading, n.postTitle, n.threadSubject,
                                      n.messageText.map { HTML.plainText($0) }, n.notificationEventType]
-            let title: String = titles.compactMap { $0?.nilIfEmpty }.first ?? "Notifikation"
+            let title: String = titles.compactMap { $0?.nilIfEmpty }.first ?? String(localized: "Notifikation")
             let id: String = (n.id ?? n.notificationId)?.value ?? UUID().uuidString
             return AulaNotification(id: id, title: title,
                                     module: n.module ?? n.notificationArea,
@@ -213,7 +213,7 @@ extension AulaAPI {
         ])
         return list.items.compactMap { d in
             guard let start = AulaDate.parse(d.startDateTime ?? d.startDate) else { return nil }
-            return ImportantDate(id: d.id?.value ?? UUID().uuidString, title: d.title?.nilIfEmpty ?? "Begivenhed",
+            return ImportantDate(id: d.id?.value ?? UUID().uuidString, title: d.title?.nilIfEmpty ?? String(localized: "Begivenhed"),
                                  start: start, allDay: d.allDay ?? false)
         }
     }

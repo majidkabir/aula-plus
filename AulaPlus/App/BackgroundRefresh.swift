@@ -54,12 +54,12 @@ enum BackgroundRefresh {
 
         let defaults = UserDefaults.standard
         if let threads = try? await AulaAPI.shared.threads().threads {
-            DiskCache.save(threads, key: "threads")
+            await MainActor.run { DataStore.shared.threads.replace(threads) }
             let unread = threads.filter { !$0.isRead }
             let seen = Set(defaults.stringArray(forKey: seenThreadsKey) ?? [])
             for t in unread where !seen.contains(t.id) {
                 await notify(id: "thread-\(t.id)",
-                             title: t.sender.isEmpty ? "Ny besked" : t.sender,
+                             title: t.sender.isEmpty ? String(localized: "Ny besked") : t.sender,
                              body: t.subject + (t.preview.isEmpty ? "" : "\n" + t.preview),
                              info: ["threadId": t.id])
             }
@@ -69,10 +69,10 @@ enum BackgroundRefresh {
 
         if let s = try? await AulaAPI.shared.bootstrap(),
            let posts = try? await AulaAPI.shared.posts(institutionProfileIds: s.institutionProfileIds) {
-            DiskCache.save(posts, key: "posts")
+            await MainActor.run { DataStore.shared.posts.replace(posts) }
             let seen = Set(defaults.array(forKey: seenPostsKey) as? [Int] ?? [])
             for p in posts.prefix(10) where !seen.contains(p.id) {
-                await notify(id: "post-\(p.id)", title: "Nyt opslag: \(p.title)",
+                await notify(id: "post-\(p.id)", title: String(localized: "Nyt opslag: \(p.title)"),
                              body: HTML.plainText(p.html), info: ["postId": p.id])
             }
             defaults.set(posts.map(\.id), forKey: seenPostsKey)

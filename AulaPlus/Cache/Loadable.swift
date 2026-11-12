@@ -13,6 +13,8 @@ final class Loadable<T: Codable> {
 
     let key: String
     private let fetch: () async throws -> T
+    /// Called after the value changes (used to update the widget).
+    @ObservationIgnored var onChange: (() -> Void)?
 
     init(key: String, fetch: @escaping () async throws -> T) {
         self.key = key
@@ -39,6 +41,7 @@ final class Loadable<T: Codable> {
             savedAt = Date()
             error = nil
             DiskCache.save(fresh, key: key)
+            onChange?()
         } catch is CancellationError {
         } catch let e as URLError where e.code == .cancelled {
         } catch AuthError.notLoggedIn {
@@ -46,6 +49,14 @@ final class Loadable<T: Codable> {
         } catch {
             self.error = error.localizedDescription
         }
+    }
+
+    /// Replace with data fetched elsewhere (e.g. by the background refresh).
+    func replace(_ fresh: T) {
+        value = fresh
+        savedAt = Date()
+        DiskCache.save(fresh, key: key)
+        onChange?()
     }
 
     func forget() {
@@ -60,5 +71,6 @@ final class Loadable<T: Codable> {
         change(&v)
         value = v
         DiskCache.save(v, key: key)
+        onChange?()
     }
 }

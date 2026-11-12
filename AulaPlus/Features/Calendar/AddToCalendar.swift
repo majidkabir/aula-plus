@@ -22,7 +22,7 @@ struct AddToCalendarSheet: UIViewControllerRepresentable {
         e.endDate = event.end > event.start ? event.end : event.start.addingTimeInterval(3600)
         e.isAllDay = event.allDay
         e.location = event.location
-        e.notes = [event.teacher.map { "Lærer: \($0)" }, event.substitute.map { "Vikar: \($0)" }]
+        e.notes = [event.teacher.map { String(localized: "Lærer: \($0)") }, event.substitute.map { String(localized: "Vikar: \($0)") }]
             .compactMap { $0 }.joined(separator: "\n")
         vc.event = e
         vc.editViewDelegate = context.coordinator

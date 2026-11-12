@@ -49,6 +49,8 @@ final class DataStore {
             _ = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.importantDates()
         }
+        presence.onChange = { WidgetWriter.update() }
+        threads.onChange = { WidgetWriter.update() }
         albums = Loadable(key: "albums") {
             let s = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.albums(institutionProfileIds: s.institutionProfileIds)
@@ -66,6 +68,9 @@ final class DataStore {
             let s = try await AulaAPI.shared.bootstrap()
             let end = Calendar.week.date(byAdding: .day, value: 6, to: start)!
             return try await AulaAPI.shared.events(institutionProfileIds: s.children.map(\.id), from: start, to: end)
+        }
+        if Calendar.week.isDate(start, inSameDayAs: Week.start(of: .now)) {
+            l.onChange = { WidgetWriter.update() }
         }
         weeks[key] = l
         return l
@@ -111,9 +116,20 @@ final class DataStore {
             if let i = list.firstIndex(where: { $0.id == threadId }) {
                 let t = list[i]
                 list[i] = ThreadSummary(id: t.id, subject: t.subject, preview: t.preview, sender: t.sender,
-                                        date: t.date, isRead: true, isSensitive: t.isSensitive, regarding: t.regarding)
+                                        date: t.date, isRead: true, isSensitive: t.isSensitive, regarding: t.regarding,
+                                        isMarked: t.isMarked)
             }
         }
+    }
+
+    func setMarked(threadId: String, marked: Bool) {
+        threads.mutate { list in
+            if let i = list.firstIndex(where: { $0.id == threadId }) { list[i].isMarked = marked }
+        }
+    }
+
+    func removeThread(_ threadId: String) {
+        threads.mutate { $0.removeAll { $0.id == threadId } }
     }
 
     func reset() {

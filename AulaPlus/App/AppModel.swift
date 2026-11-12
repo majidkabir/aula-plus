@@ -47,7 +47,7 @@ final class AppModel {
             isLocked = false   // no passcode set on device: nothing to unlock with
             return
         }
-        if (try? await ctx.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Lås Aula+ op")) == true {
+        if (try? await ctx.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: String(localized: "Lås Aula+ op"))) == true {
             isLocked = false
         }
     }
@@ -96,7 +96,7 @@ final class AppModel {
 
     func sessionExpired() {
         guard phase == .loggedIn else { return }
-        loginNotice = "Din Aula-session er udløbet. Log ind med MitID igen."
+        loginNotice = String(localized: "Din Aula-session er udløbet. Log ind med MitID igen.")
         phase = .loggedOut
     }
 
@@ -106,6 +106,7 @@ final class AppModel {
         DiskCache.clear()
         DataStore.shared.reset()
         session.forget()
+        WidgetSnapshot(children: [], unread: 0, latestSender: nil, latestSubject: nil, updated: .now).save()
         selectedChildId = nil
         phase = .loggedOut
     }

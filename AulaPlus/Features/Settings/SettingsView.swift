@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var confirmLogout = false
     @State private var notificationsOn = BackgroundRefresh.isEnabled
+    @State private var language: String = (UserDefaults.standard.array(forKey: "AppleLanguagesOverride") as? [String])?.first ?? ""
 
     var body: some View {
         if embedded { content } else { NavigationStack { content } }
@@ -44,6 +45,24 @@ struct SettingsView: View {
                     }
                 } footer: {
                     Text("Aula+ tjekker for nyt i baggrunden, når iOS tillader det (typisk hvert 15.–60. minut).")
+                }
+                Section {
+                    Picker("Sprog", selection: $language) {
+                        Text("Automatisk").tag("")
+                        Text(verbatim: "Dansk").tag("da")
+                        Text(verbatim: "English").tag("en")
+                    }
+                    .onChange(of: language) { _, lang in
+                        if lang.isEmpty {
+                            UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+                            UserDefaults.standard.removeObject(forKey: "AppleLanguagesOverride")
+                        } else {
+                            UserDefaults.standard.set([lang], forKey: "AppleLanguages")
+                            UserDefaults.standard.set([lang], forKey: "AppleLanguagesOverride")
+                        }
+                    }
+                } footer: {
+                    Text("Kræver genstart af appen.")
                 }
                 Section {
                     Button("Ryd cache") { DiskCache.clear() }

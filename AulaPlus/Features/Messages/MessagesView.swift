@@ -5,6 +5,9 @@ struct MessagesView: View {
     @Environment(DataStore.self) private var data
     @State private var search = ""
     @State private var onlyUnread = false
+    @State private var onlyMarked = false
+    @State private var composing = false
+    @State private var deleting: ThreadSummary?
     @State private var older: [ThreadSummary] = []
     @State private var nextPage = 1
     @State private var loadingOlder = false
@@ -14,6 +17,7 @@ struct MessagesView: View {
         let all = ((data.threads.value ?? []) + older).filter { seen.insert($0.id).inserted }
         return all.filter { t in
             if onlyUnread && t.isRead { return false }
+            if onlyMarked && t.isMarked != true { return false }
             if let id = app.selectedChildId, let child = app.child(id), !t.regarding.isEmpty,
                !t.regarding.contains(where: { $0.localizedCaseInsensitiveContains(child.firstName) }) {
                 return false
@@ -36,6 +40,16 @@ struct MessagesView: View {
 
                 ForEach(threads) { t in
                     NavigationLink(value: t) { ThreadRow(thread: t) }
+                        .swipeActions(edge: .leading) {
+                            Button { Task { await toggleMarked(t) } } label: {
+                                Label(t.isMarked == true ? String(localized: "Fjern markering") : String(localized: "Markér"),
+                                      systemImage: t.isMarked == true ? "star.slash" : "star.fill")
+                            }
+                            .tint(.yellow)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) { deleting = t } label: { Label("Slet", systemImage: "trash") }
+                        }
                 }
 
                 if search.isEmpty && !threads.isEmpty {
@@ -54,19 +68,37 @@ struct MessagesView: View {
             .overlay {
                 if threads.isEmpty {
                     if data.threads.isLoading { ProgressView() }
-                    else { ContentUnavailableView(onlyUnread ? "Ingen ulæste beskeder" : "Ingen beskeder",
+                    else { ContentUnavailableView(onlyUnread ? String(localized: "Ingen ulæste beskeder") : String(localized: "Ingen beskeder"),
                                                   systemImage: "tray") }
                 }
             }
-            .searchable(text: $search, prompt: "Søg i beskeder")
+            .searchable(text: $search, prompt: String(localized: "Søg i beskeder"))
             .navigationTitle("Beskeder")
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Toggle(isOn: $onlyUnread) {
-                        Image(systemName: onlyUnread ? "envelope.badge.fill" : "envelope.badge")
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        Toggle("Kun ulæste", isOn: $onlyUnread)
+                        Toggle("Kun markerede", isOn: $onlyMarked)
+                    } label: {
+                        Image(systemName: onlyUnread || onlyMarked
+                              ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                     }
-                    .toggleStyle(.button)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { composing = true } label: { Image(systemName: "square.and.pencil") }
+                }
+            }
+            .sheet(isPresented: $composing) {
+                ComposeView { sent in
+                    composing = false
+                    if sent { Task { await data.threads.refresh() } }
+                }
+            }
+            .confirmationDialog("Slet tråden \"\(deleting?.subject ?? "")\"?", isPresented: Binding(
+                get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
+                Button("Slet", role: .destructive) {
+                    if let t = deleting { Task { await delete(t) } }
                 }
             }
             .refreshable {
@@ -75,6 +107,24 @@ struct MessagesView: View {
                 await data.threads.refresh()
             }
             .task { await data.threads.load(maxAge: 30) }
+        }
+    }
+
+    private func toggleMarked(_ t: ThreadSummary) async {
+        let new = !(t.isMarked ?? false)
+        data.setMarked(threadId: t.id, marked: new)
+        do { try await AulaAPI.shared.setMarked(threadId: t.id, marked: new) }
+        catch { data.setMarked(threadId: t.id, marked: !new) }
+    }
+
+    private func delete(_ t: ThreadSummary) async {
+        deleting = nil
+        do {
+            try await AulaAPI.shared.deleteThread(t.id)
+            data.removeThread(t.id)
+            older.removeAll { $0.id == t.id }
+        } catch {
+            await data.threads.refresh()
         }
     }
 
@@ -109,6 +159,9 @@ struct ThreadRow: View {
                         .foregroundStyle(.secondary)
                 }
                 HStack(spacing: 4) {
+                    if thread.isMarked == true {
+                        Image(systemName: "star.fill").font(.caption2).foregroundStyle(.yellow)
+                    }
                     if thread.isSensitive {
                         Image(systemName: "lock.fill").font(.caption2).foregroundStyle(.orange)
                     }

@@ -43,7 +43,7 @@ struct ChildPresenceView: View {
                     Button {
                         confirmSick = true
                     } label: {
-                        Label(isSick ? "Fjern sygemelding" : "Meld syg i dag",
+                        Label(isSick ? String(localized: "Fjern sygemelding") : String(localized: "Meld syg i dag"),
                               systemImage: isSick ? "cross.case" : "cross.case.fill")
                     }
                     .tint(isSick ? .accentColor : .red)
@@ -87,9 +87,9 @@ struct ChildPresenceView: View {
         .refreshable { await reload() }
         .task(id: Week.key(weekDate)) { await reload() }
         .task { permissions = try? await AulaAPI.shared.presencePermissions(childIds: [child.id]).first }
-        .confirmationDialog(isSick ? "Fjern sygemelding for \(child.firstName)?" : "Meld \(child.firstName) syg i dag?",
+        .confirmationDialog(isSick ? String(localized: "Fjern sygemelding for \(child.firstName)?") : String(localized: "Meld \(child.firstName) syg i dag?"),
                             isPresented: $confirmSick, titleVisibility: .visible) {
-            Button(isSick ? "Fjern sygemelding" : "Meld syg", role: isSick ? nil : .destructive) {
+            Button(isSick ? String(localized: "Fjern sygemelding") : String(localized: "Meld syg"), role: isSick ? nil : .destructive) {
                 Task { await toggleSick() }
             }
         }
@@ -97,7 +97,7 @@ struct ChildPresenceView: View {
             DayPlanEditor(child: child, plan: plan) { saved in
                 editing = nil
                 if saved {
-                    message = "Tider gemt."
+                    message = String(localized: "Tider gemt.")
                     Task { await reload() }
                 }
             }
@@ -106,7 +106,7 @@ struct ChildPresenceView: View {
             VacationForm(child: child) { saved in
                 showVacation = false
                 if saved {
-                    message = "Ferie/fri er meldt."
+                    message = String(localized: "Ferie/fri er meldt.")
                     Task { await data.presence.refresh() }
                 }
             }
@@ -137,10 +137,10 @@ struct ChildPresenceView: View {
         defer { busy = false }
         do {
             try await AulaAPI.shared.setSick(childIds: [child.id], sick: !isSick)
-            message = isSick ? "Sygemelding fjernet." : "\(child.firstName) er meldt syg."
+            message = isSick ? String(localized: "Sygemelding fjernet.") : "\(child.firstName) er meldt syg."
             await data.presence.refresh()
         } catch {
-            message = "Ikke gemt: \(error.localizedDescription)"
+            message = String(localized: "Ikke gemt: \(error.localizedDescription)")
         }
     }
 }
@@ -239,10 +239,10 @@ struct DayPlanEditor: View {
 
     private func save() async {
         if (plan.kind ?? .pickedUpBy).needsName, (plan.exitWith ?? "").isEmpty {
-            error = "Vælg hvem der henter."
+            error = String(localized: "Vælg hvem der henter.")
             return
         }
-        guard exit > entry else { error = "Hentetid skal være efter afleveringstid."; return }
+        guard exit > entry else { error = String(localized: "Hentetid skal være efter afleveringstid."); return }
         saving = true
         defer { saving = false }
         plan.entry = Self.hhmm(entry)
@@ -251,7 +251,7 @@ struct DayPlanEditor: View {
             try await AulaAPI.shared.savePlan(plan)
             done(true)
         } catch {
-            self.error = "Ikke gemt: \(error.localizedDescription)"
+            self.error = String(localized: "Ikke gemt: \(error.localizedDescription)")
         }
     }
 
@@ -308,7 +308,7 @@ struct VacationForm: View {
     }
 
     private func save() async {
-        guard comment.count <= 250 else { error = "Højst 250 tegn."; return }
+        guard comment.count <= 250 else { error = String(localized: "Højst 250 tegn."); return }
         saving = true
         defer { saving = false }
         let ids = allChildren ? app.children.map(\.id) : [child.id]
@@ -316,7 +316,7 @@ struct VacationForm: View {
             try await AulaAPI.shared.addVacation(childIds: ids, from: from, to: to, comment: comment)
             done(true)
         } catch {
-            self.error = "Ikke gemt: \(error.localizedDescription)"
+            self.error = String(localized: "Ikke gemt: \(error.localizedDescription)")
         }
     }
 }

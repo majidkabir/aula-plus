@@ -15,6 +15,8 @@ struct MoreView: View {
                         Label("Notifikationer", systemImage: "bell")
                     }
                     NavigationLink { ImportantDatesView() } label: { Label("Vigtige datoer", systemImage: "star") }
+                    NavigationLink { ContactsView() } label: { Label("Kontakter", systemImage: "person.2") }
+                    NavigationLink { DocumentsView() } label: { Label("Dokumenter", systemImage: "doc.text") }
                 }
                 Section {
                     ForEach(app.children) { c in
