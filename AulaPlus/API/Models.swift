@@ -79,7 +79,7 @@ struct ThreadSummary: Codable, Identifiable, Hashable {
     let preview: String
     let sender: String
     let date: Date?
-    let isRead: Bool
+    var isRead: Bool
     let isSensitive: Bool
     let regarding: [String]
     var isMarked: Bool? = nil
