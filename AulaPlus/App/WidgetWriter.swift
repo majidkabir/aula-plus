@@ -11,7 +11,7 @@ enum WidgetWriter {
         let lines: [WidgetSnapshot.ChildLine] = app.children.enumerated().map { i, child in
             let p = data.presence.value?.first { $0.childId == child.id }
             let next = today.first {
-                $0.end > .now && Calendar.week.isDateInToday($0.start)
+                !$0.allDay && $0.end > .now && Calendar.week.isDateInToday($0.start)
                     && ($0.childIds.isEmpty || $0.childIds.contains(child.id))
             }
             var detail: String?

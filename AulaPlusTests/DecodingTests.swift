@@ -101,6 +101,21 @@ final class DecodingTests: XCTestCase {
 }
 
 final class MessagingTests: XCTestCase {
+    func testEntities() {
+        XCTAssertEqual(HTML.plainText("don&#8217;t &#x2013; ok"), "don’t – ok")
+        XCTAssertEqual(HTML.decodeEntities("&amp;lt;b&amp;gt; &amp; &aelig;"), "&lt;b&gt; & æ")
+        XCTAssertEqual(HTML.decodeEntities("&unknown;"), "&unknown;")
+        XCTAssertEqual(HTML.plainText("<p>Husk <b>madpakke</b>&nbsp;i morgen</p>"), "Husk madpakke i morgen")
+    }
+
+    func testMultiDayEvents() {
+        let start = AulaDate.parse("2026-12-21T00:00:00")!
+        let holiday = Event(id: "h", title: "Juleferie", start: start, end: AulaDate.parse("2026-12-24T00:00:00")!, allDay: true,
+                            location: nil, teacher: nil, substitute: nil, hasSubstitute: false, type: nil, childIds: [])
+        XCTAssertTrue(holiday.occurs(on: AulaDate.parse("2026-12-23T12:00:00")!))
+        XCTAssertFalse(holiday.occurs(on: AulaDate.parse("2026-12-24T12:00:00")!))
+    }
+
     func testReplyHTMLEscapesAndKeepsParagraphs() {
         XCTAssertEqual(AulaAPI.htmlFromPlainText("Hej <3\nfra os\n\nTak & hilsen"),
                        "<p>Hej &lt;3<br>fra os</p><p>Tak &amp; hilsen</p>")

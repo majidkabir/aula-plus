@@ -2,20 +2,45 @@ import SwiftUI
 import UIKit
 
 enum HTML {
-    private static let entities: [String: String] = [
-        "&nbsp;": " ", "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": "\"",
-        "&#39;": "'", "&apos;": "'", "&aelig;": "æ", "&oslash;": "ø", "&aring;": "å",
-        "&AElig;": "Æ", "&Oslash;": "Ø", "&Aring;": "Å", "&ndash;": "–", "&mdash;": "—",
-        "&hellip;": "…",
+    private static let named: [String: String] = [
+        "nbsp": " ", "amp": "&", "lt": "<", "gt": ">", "quot": "\"", "apos": "'",
+        "aelig": "æ", "oslash": "ø", "aring": "å", "AElig": "Æ", "Oslash": "Ø", "Aring": "Å",
+        "ndash": "–", "mdash": "—", "hellip": "…", "laquo": "«", "raquo": "»", "bull": "•",
+        "rsquo": "’", "lsquo": "‘", "rdquo": "”", "ldquo": "“", "euro": "€", "eacute": "é",
+        "uuml": "ü", "ouml": "ö", "auml": "ä",
     ]
+    private static let entity = try! NSRegularExpression(pattern: "&(#[xX][0-9a-fA-F]{1,6}|#[0-9]{1,7}|[a-zA-Z]{2,8});")
+
+    /// Decodes named and numeric entities in one pass (so "&amp;lt;" stays "&lt;").
+    static func decodeEntities(_ s: String) -> String {
+        let ns = s as NSString
+        var out = ""
+        var last = 0
+        for m in entity.matches(in: s, range: NSRange(location: 0, length: ns.length)) {
+            out += ns.substring(with: NSRange(location: last, length: m.range.location - last))
+            let e = ns.substring(with: m.range(at: 1))
+            var rep: String?
+            if e.hasPrefix("#x") || e.hasPrefix("#X") {
+                rep = UInt32(e.dropFirst(2), radix: 16).flatMap { Unicode.Scalar($0) }.map { String(Character($0)) }
+            } else if e.hasPrefix("#") {
+                rep = UInt32(e.dropFirst()).flatMap { Unicode.Scalar($0) }.map { String(Character($0)) }
+            } else {
+                rep = named[e]
+            }
+            out += rep ?? ns.substring(with: m.range)
+            last = m.range.location + m.range.length
+        }
+        out += ns.substring(from: last)
+        return out
+    }
 
     /// Fast tag strip for list previews.
     static func plainText(_ html: String) -> String {
         var s = html
         s = s.replacingOccurrences(of: #"<(br|/p|/div|/li)[^>]*>"#, with: "\n", options: [.regularExpression, .caseInsensitive])
         s = s.replacingOccurrences(of: #"<[^>]+>"#, with: "", options: .regularExpression)
-        for (k, v) in entities { s = s.replacingOccurrences(of: k, with: v) }
-        s = s.replacingOccurrences(of: #"&#(\d+);"#, with: "", options: .regularExpression)
+        s = decodeEntities(s)
+        s = s.replacingOccurrences(of: "\u{00A0}", with: " ")
         s = s.replacingOccurrences(of: #"[ \t]+"#, with: " ", options: .regularExpression)
         s = s.replacingOccurrences(of: #"\n\s*\n+"#, with: "\n", options: .regularExpression)
         return s.trimmingCharacters(in: .whitespacesAndNewlines)

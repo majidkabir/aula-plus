@@ -113,6 +113,15 @@ struct Event: Codable, Identifiable, Hashable {
     let hasSubstitute: Bool
     let type: String?
     let childIds: [Int]
+
+    /// True on every day the event covers (multi-day holidays too; an all-day end at midnight is exclusive).
+    func occurs(on day: Date) -> Bool {
+        let cal = Calendar.week
+        let first = cal.startOfDay(for: start)
+        let last = cal.startOfDay(for: max(start, end.addingTimeInterval(-0.001)))
+        let d = cal.startOfDay(for: day)
+        return d >= first && d <= last
+    }
 }
 
 struct Post: Codable, Identifiable, Hashable {
