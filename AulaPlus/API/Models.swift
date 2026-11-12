@@ -234,13 +234,14 @@ struct AttachmentDTO: Decodable {
     struct LinkDTO: Decodable { let name: String?; let url: String? }
     struct DocDTO: Decodable { let title: String? }
     let name: String?
+    let url: String?
     let file: FileDTO?
     let media: MediaDTO?
     let link: LinkDTO?
     let document: DocDTO?
 
     var model: Attachment {
-        let urls: [String?] = [media?.file?.url, file?.url, link?.url]
+        let urls: [String?] = [media?.file?.url, file?.url, url, link?.url]
         let names: [String?] = [name, file?.name, media?.file?.name, media?.title, link?.name, document?.title]
         let url: String? = urls.compactMap { $0 }.first
         let n: String = names.compactMap { $0?.nilIfEmpty }.first ?? String(localized: "Vedhæftet fil")

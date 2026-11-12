@@ -2,6 +2,7 @@ import SwiftUI
 
 /// New message: search recipients, subject, text.
 struct ComposeView: View {
+    var initialRecipients: [Recipient] = []
     let done: (Bool) -> Void
 
     @State private var query = ""
@@ -67,6 +68,7 @@ struct ComposeView: View {
                 }
                 if let error { Section { Text(error).foregroundStyle(.red).font(.footnote) } }
             }
+            .onAppear { if recipients.isEmpty { recipients = initialRecipients } }
             .navigationTitle("Ny besked")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

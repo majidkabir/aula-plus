@@ -71,6 +71,16 @@
         }
       }
     },
+    "Ansatte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Staff"
+          }
+        }
+      }
+    },
     "Aula afviste %@ (kode %@).": {
       "localizations": {
         "en": {
@@ -301,6 +311,26 @@
         }
       }
     },
+    "Dokument": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Document"
+          }
+        }
+      }
+    },
+    "Dokumenter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Documents"
+          }
+        }
+      }
+    },
     "Du er ikke logget ind.": {
       "localizations": {
         "en": {
@@ -337,6 +367,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Holiday/day off registered."
+          }
+        }
+      }
+    },
+    "Fil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File"
           }
         }
       }
@@ -381,6 +421,16 @@
         }
       }
     },
+    "Forældre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parents"
+          }
+        }
+      }
+    },
     "Fra": {
       "localizations": {
         "en": {
@@ -397,6 +447,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "E.g. We're at the summer house"
+          }
+        }
+      }
+    },
+    "Fælles filer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared files"
           }
         }
       }
@@ -477,6 +537,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Good morning"
+          }
+        }
+      }
+    },
+    "Gruppe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
           }
         }
       }
@@ -711,6 +781,16 @@
         }
       }
     },
+    "Ingen kontakter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No contacts"
+          }
+        }
+      }
+    },
     "Ingen notifikationer": {
       "localizations": {
         "en": {
@@ -847,6 +927,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comments (%lld)"
+          }
+        }
+      }
+    },
+    "Kontakter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contacts"
           }
         }
       }
@@ -1291,6 +1381,16 @@
         }
       }
     },
+    "Sikre dokumenter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure documents"
+          }
+        }
+      }
+    },
     "Skriv en kommentar": {
       "localizations": {
         "en": {
@@ -1437,6 +1537,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Search teacher, educator, parent…"
+          }
+        }
+      }
+    },
+    "Søg navn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search name"
           }
         }
       }
@@ -1607,6 +1717,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Substitute: %@"
+          }
+        }
+      }
+    },
+    "Vis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show"
           }
         }
       }
