@@ -30,6 +30,7 @@ struct TodayView: View {
                         .buttonStyle(.plain)
                     }
 
+                    vacationBanner
                     unreadSection
                     importantPosts
                     upcomingDates
@@ -55,7 +56,8 @@ struct TodayView: View {
                 async let c: () = data.threads.load(maxAge: 60)
                 async let d: () = data.posts.load(maxAge: 300)
                 async let e: () = data.importantDates.load(maxAge: 1800)
-                _ = await (a, b, c, d, e)
+                async let f: () = data.vacationRequests.load(maxAge: 1800)
+                _ = await (a, b, c, d, e, f)
             }
         }
     }
@@ -88,6 +90,27 @@ struct TodayView: View {
                     }
                 }
             }
+        }
+    }
+
+    @ViewBuilder private var vacationBanner: some View {
+        let missing = (data.vacationRequests.value ?? []).filter { $0.isMissingAnswer && $0.isEditable }
+        if !missing.isEmpty {
+            NavigationLink { VacationRequestsView() } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "sun.max.fill").font(.title2).foregroundStyle(.orange)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Institutionen spørger om ferie").font(.subheadline.weight(.semibold))
+                        Text(missing.map { "\($0.childName): \($0.title)" }.joined(separator: "\n"))
+                            .font(.caption).foregroundStyle(.secondary).lineLimit(3)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").foregroundStyle(.tertiary)
+                }
+                .padding(14)
+                .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+            }
+            .buttonStyle(.plain)
         }
     }
 

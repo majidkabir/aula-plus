@@ -15,6 +15,7 @@ struct MoreView: View {
                         Label("Notifikationer", systemImage: "bell")
                     }
                     NavigationLink { ImportantDatesView() } label: { Label("Vigtige datoer", systemImage: "star") }
+                    NavigationLink { VacationRequestsView() } label: { Label("Ferieanmodninger", systemImage: "sun.max") }
                     NavigationLink { ContactsView() } label: { Label("Kontakter", systemImage: "person.2") }
                     NavigationLink { DocumentsView() } label: { Label("Dokumenter", systemImage: "doc.text") }
                 }
