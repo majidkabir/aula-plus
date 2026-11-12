@@ -19,12 +19,15 @@ struct TodayView: View {
                     }
 
                     ForEach(app.visibleChildren) { child in
+                        NavigationLink(value: child) {
                         ChildDayCard(child: child,
                                      presence: data.presence.value?.first { $0.childId == child.id },
                                      events: (todayEvents.value ?? []).filter {
                                          Calendar.week.isDateInToday($0.start) &&
                                          ($0.childIds.isEmpty || $0.childIds.contains(child.id))
                                      })
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     unreadSection
@@ -36,6 +39,7 @@ struct TodayView: View {
             .background(Color(.systemGroupedBackground))
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
+            .navigationDestination(for: Child.self) { ChildPresenceView(child: $0) }
             .navigationTitle(greeting)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
