@@ -263,15 +263,19 @@ struct ThreadDTO: Decodable {
     let regardingChildren: Lossy<PersonDTO>?
 
     var model: ThreadSummary {
-        ThreadSummary(
+        let senderName: String = latestMessage?.sender?.best.nilIfEmpty ?? creator?.best ?? ""
+        let dateString: String? = latestMessage?.sendDateTime ?? lastMessageDate ?? lastUpdatedDate
+        let regardingNames: [String] = (regardingChildren?.items ?? []).map(\.best).filter { !$0.isEmpty }
+        let sensitiveFlag: Bool = sensitive ?? isSensitive ?? false
+        return ThreadSummary(
             id: id.value,
             subject: subject?.nilIfEmpty ?? "(Intet emne)",
             preview: HTML.plainText(latestMessage?.text?.html ?? ""),
-            sender: latestMessage?.sender?.best.nilIfEmpty ?? creator?.best ?? "",
-            date: AulaDate.parse(latestMessage?.sendDateTime ?? lastMessageDate ?? lastUpdatedDate),
+            sender: senderName,
+            date: AulaDate.parse(dateString),
             isRead: read ?? true,
-            isSensitive: sensitive ?? isSensitive ?? false,
-            regarding: regardingChildren?.items.map(\.best).filter { !$0.isEmpty } ?? [])
+            isSensitive: sensitiveFlag,
+            regarding: regardingNames)
     }
 }
 
