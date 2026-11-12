@@ -3,6 +3,17 @@ import WidgetKit
 
 private let palette: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown]
 
+/// Mirrors the app's themes (brand → secondary) for the widget background.
+private func themeColors(_ id: String?) -> [Color] {
+    switch id {
+    case "forest": return [Color(red: 0.10, green: 0.52, blue: 0.36), Color(red: 0.55, green: 0.80, blue: 0.30)]
+    case "sunset": return [Color(red: 0.90, green: 0.33, blue: 0.22), Color(red: 0.99, green: 0.66, blue: 0.22)]
+    case "lavender": return [Color(red: 0.45, green: 0.32, blue: 0.88), Color(red: 0.90, green: 0.45, blue: 0.80)]
+    case "graphite": return [Color(red: 0.24, green: 0.29, blue: 0.37), Color(red: 0.50, green: 0.58, blue: 0.68)]
+    default: return [Color(red: 0.16, green: 0.40, blue: 0.93), Color(red: 0.20, green: 0.74, blue: 0.95)]
+    }
+}
+
 struct SnapshotEntry: TimelineEntry {
     let date: Date
     let snapshot: WidgetSnapshot?
@@ -39,21 +50,28 @@ struct AulaWidgetView: View {
                 }
             }
         }
-        .containerBackground(.fill.tertiary, for: .widget)
+        .containerBackground(for: .widget) {
+            if family == .systemSmall {
+                LinearGradient(colors: themeColors(entry.snapshot?.theme), startPoint: .topLeading, endPoint: .bottomTrailing)
+            } else {
+                Color(.systemBackground)
+            }
+        }
+        .foregroundStyle(family == .systemSmall ? Color.white : Color.primary)
     }
 
     private func small(_ s: WidgetSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Image(systemName: "bubble.left.fill").foregroundStyle(.tint)
+                Image(systemName: "bubble.left.fill")
                 Spacer()
                 Text("\(s.unread)").font(.title.bold()).contentTransition(.numericText())
             }
-            Text(s.unread == 1 ? "ulæst besked" : "ulæste beskeder").font(.caption).foregroundStyle(.secondary)
+            Text(s.unread == 1 ? "ulæst besked" : "ulæste beskeder").font(.caption).opacity(0.85)
             Spacer(minLength: 0)
             if let subject = s.latestSubject {
                 Text(s.latestSender ?? "").font(.caption2.weight(.semibold)).lineLimit(1)
-                Text(subject).font(.caption2).lineLimit(2).foregroundStyle(.secondary)
+                Text(subject).font(.caption2).lineLimit(2).opacity(0.85)
             }
         }
     }
@@ -77,6 +95,7 @@ struct AulaWidgetView: View {
             Spacer(minLength: 0)
             VStack(alignment: .trailing, spacing: 2) {
                 Text("\(s.unread)").font(.title.bold())
+                    .foregroundStyle(LinearGradient(colors: themeColors(s.theme), startPoint: .top, endPoint: .bottom))
                 Text("ulæste").font(.caption2).foregroundStyle(.secondary)
                 Spacer(minLength: 0)
                 Text(s.updated, style: .time).font(.caption2).foregroundStyle(.tertiary)
@@ -89,7 +108,7 @@ struct AulaWidgetView: View {
 struct AulaPlusWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "AulaPlusWidget", provider: Provider()) { entry in
-            AulaWidgetView(entry: entry)
+            AulaWidgetView(entry: entry).fontDesign(.rounded)
         }
         .configurationDisplayName("Aula+")
         .description("Børnenes status i dag og ulæste beskeder.")

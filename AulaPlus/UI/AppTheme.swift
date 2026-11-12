@@ -73,7 +73,10 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
 final class ThemeStore {
     static let shared = ThemeStore()
     var theme: AppTheme {
-        didSet { UserDefaults.standard.set(theme.rawValue, forKey: "theme") }
+        didSet {
+            UserDefaults.standard.set(theme.rawValue, forKey: "theme")
+            WidgetWriter.update()
+        }
     }
     private init() {
         let demo = UserDefaults.standard.string(forKey: "demoTheme")
