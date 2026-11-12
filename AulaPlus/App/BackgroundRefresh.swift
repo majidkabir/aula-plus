@@ -54,7 +54,7 @@ enum BackgroundRefresh {
 
         let defaults = UserDefaults.standard
         if let threads = try? await AulaAPI.shared.threads().threads {
-            DiskCache.save(threads, key: "threads")
+            await MainActor.run { DataStore.shared.threads.replace(threads) }
             let unread = threads.filter { !$0.isRead }
             let seen = Set(defaults.stringArray(forKey: seenThreadsKey) ?? [])
             for t in unread where !seen.contains(t.id) {
@@ -69,7 +69,7 @@ enum BackgroundRefresh {
 
         if let s = try? await AulaAPI.shared.bootstrap(),
            let posts = try? await AulaAPI.shared.posts(institutionProfileIds: s.institutionProfileIds) {
-            DiskCache.save(posts, key: "posts")
+            await MainActor.run { DataStore.shared.posts.replace(posts) }
             let seen = Set(defaults.array(forKey: seenPostsKey) as? [Int] ?? [])
             for p in posts.prefix(10) where !seen.contains(p.id) {
                 await notify(id: "post-\(p.id)", title: "Nyt opslag: \(p.title)",

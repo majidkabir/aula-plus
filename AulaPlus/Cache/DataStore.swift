@@ -49,6 +49,8 @@ final class DataStore {
             _ = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.importantDates()
         }
+        presence.onChange = { WidgetWriter.update() }
+        threads.onChange = { WidgetWriter.update() }
         albums = Loadable(key: "albums") {
             let s = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.albums(institutionProfileIds: s.institutionProfileIds)
@@ -66,6 +68,9 @@ final class DataStore {
             let s = try await AulaAPI.shared.bootstrap()
             let end = Calendar.week.date(byAdding: .day, value: 6, to: start)!
             return try await AulaAPI.shared.events(institutionProfileIds: s.children.map(\.id), from: start, to: end)
+        }
+        if Calendar.week.isDate(start, inSameDayAs: Week.start(of: .now)) {
+            l.onChange = { WidgetWriter.update() }
         }
         weeks[key] = l
         return l

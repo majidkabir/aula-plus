@@ -106,6 +106,7 @@ final class AppModel {
         DiskCache.clear()
         DataStore.shared.reset()
         session.forget()
+        WidgetSnapshot(children: [], unread: 0, latestSender: nil, latestSubject: nil, updated: .now).save()
         selectedChildId = nil
         phase = .loggedOut
     }
