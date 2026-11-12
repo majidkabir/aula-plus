@@ -12,10 +12,12 @@ struct TodayView: View {
         NavigationStack(path: $app.todayPath) {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.gap + 4) {
-                    Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .padding(.top, -6)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(greeting).font(.title3.weight(.semibold))
+                        Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized)
+                            .font(.subheadline).foregroundStyle(.secondary)
+                    }
+                    .padding(.top, -4)
                     ChildFilterBar().padding(.horizontal, -Theme.pad)
                     StaleBanner(error: data.presence.error ?? app.session.error, savedAt: data.presence.savedAt)
                     vacationBanner
@@ -47,7 +49,7 @@ struct TodayView: View {
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
             .navigationDestination(for: Child.self) { ChildPresenceView(child: $0) }
-            .navigationTitle(greeting)
+            .navigationTitle("I dag")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: {
@@ -178,21 +180,24 @@ struct ChildDayCard: View {
     var body: some View {
         let color = Palette.color(for: child.id, in: app.children)
         VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
                 ChildAvatar(child: child, size: 46)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(child.firstName).font(.title3.weight(.semibold))
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(child.firstName).font(.title3.weight(.semibold))
+                        Spacer(minLength: 4)
+                        Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
                     Text(child.institutionName).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
-                }
-                Spacer(minLength: 4)
-                if let status = presence?.status {
-                    Label(status.label, systemImage: status.symbol)
-                        .font(.subheadline.weight(.semibold))
-                        .labelStyle(.titleAndIcon)
-                        .padding(.horizontal, 10).padding(.vertical, 6)
-                        .background(color.opacity(0.16), in: Capsule())
-                        .foregroundStyle(color)
-                        .fixedSize()
+                    if let status = presence?.status {
+                        Label(status.label, systemImage: status.symbol)
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 10).padding(.vertical, 4)
+                            .background(color.opacity(0.16), in: Capsule())
+                            .foregroundStyle(color)
+                            .padding(.top, 2)
+                    }
                 }
             }
 

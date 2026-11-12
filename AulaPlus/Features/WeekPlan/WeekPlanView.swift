@@ -96,21 +96,30 @@ struct TaskRow: View {
     let task: SchoolTask
     let showChild: Bool
 
+    private var meta: String {
+        var parts: [String] = []
+        if let s = task.subject { parts.append(s) }
+        if let d = task.due { parts.append(String(localized: "Afleveres \(d.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))")) }
+        else if let w = task.weekday { parts.append(w) }
+        if showChild, let first = task.childName.split(separator: " ").first { parts.append(String(first)) }
+        return parts.joined(separator: " · ")
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
+                .font(.title3)
                 .foregroundStyle(task.isDone ? Color.green : Color.secondary)
             VStack(alignment: .leading, spacing: 2) {
-                Text(task.title).font(.subheadline.weight(.medium)).strikethrough(task.isDone)
-                HStack(spacing: 6) {
-                    if let s = task.subject { Text(s) }
-                    if let d = task.due { Text("Afleveres \(d.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))") }
-                    else if let w = task.weekday { Text(w) }
-                    if showChild, !task.childName.isEmpty { Text("· \(task.childName)") }
+                Text(task.title).font(.body.weight(.medium))
+                    .strikethrough(task.isDone)
+                    .foregroundStyle(task.isDone ? Color.secondary : Color.primary)
+                if !meta.isEmpty {
+                    Text(meta).font(.subheadline).foregroundStyle(.secondary)
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(Text(task.isDone ? "Færdig" : "Ikke færdig"))
     }
 }

@@ -821,6 +821,16 @@
         }
       }
     },
+    "Ikke færdig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not done"
+          }
+        }
+      }
+    },
     "Ikke gemt: %@": {
       "localizations": {
         "en": {

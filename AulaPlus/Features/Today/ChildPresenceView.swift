@@ -61,6 +61,7 @@ struct ChildPresenceView: View {
             }
 
             Section {
+                WeekSwitcher(date: $weekDate)
                 ForEach(Week.days(of: Week.start(of: weekDate)).prefix(5), id: \.self) { day in
                     let plan = plans?.value?.first { Calendar.week.isDate($0.date, inSameDayAs: day) }
                     Button {
@@ -72,13 +73,10 @@ struct ChildPresenceView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(permissions?.canEditPickup == false || day < Calendar.week.startOfDay(for: .now))
+                    .opacity(day < Calendar.week.startOfDay(for: .now) ? 0.55 : 1)
                 }
             } header: {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Afleveres og hentes").font(.headline).foregroundStyle(.primary).textCase(nil)
-                    WeekSwitcher(date: $weekDate).textCase(nil).foregroundStyle(.primary)
-                }
-                .padding(.bottom, 4)
+                Text("Afleveres og hentes")
             } footer: {
                 if permissions?.canEditPickup == false {
                     Text("Institutionen tillader ikke at forældre ændrer tider her.")

@@ -72,8 +72,9 @@ struct CalendarView: View {
             .navigationTitle("Kalender")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("I dag") { selectedDay = Calendar.week.startOfDay(for: .now) }
-                        .disabled(Calendar.week.isDateInToday(selectedDay))
+                    if !Calendar.week.isDateInToday(selectedDay) {
+                        Button("I dag") { selectedDay = Calendar.week.startOfDay(for: .now) }
+                    }
                 }
             }
             .refreshable { await week.refresh() }
