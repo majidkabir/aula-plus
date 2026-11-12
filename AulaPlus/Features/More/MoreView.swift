@@ -53,10 +53,9 @@ struct MoreView: View {
                 case .empty:
                     // Screenshot of the offline + empty states.
                     VStack(spacing: 0) {
-                        StaleBanner(error: String(localized: "Aula svarede med HTTP 503."), savedAt: Date().addingTimeInterval(-3600))
+                        StaleBanner(error: AulaError.http(503).localizedDescription, savedAt: Date().addingTimeInterval(-3600))
                             .padding()
-                        ContentUnavailableView("Ingen opslag", systemImage: "newspaper",
-                                               description: Text("Der er ingen begivenheder denne dag."))
+                        ContentUnavailableView("Ingen opslag", systemImage: "newspaper")
                         Spacer()
                     }
                     .background(Color(.systemGroupedBackground))
