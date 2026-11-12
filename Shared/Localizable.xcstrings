@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "da",
   "strings": {
+    "%@ · %@ – %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ – %@"
+          }
+        }
+      }
+    },
     "(Intet emne)": {
       "localizations": {
         "en": {
@@ -367,6 +377,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Holiday/day off registered."
+          }
+        }
+      }
+    },
+    "Ferieanmodning": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Holiday request"
+          }
+        }
+      }
+    },
+    "Ferieanmodninger": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Holiday requests"
           }
         }
       }
@@ -781,6 +811,16 @@
         }
       }
     },
+    "Ingen ferieanmodninger": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No holiday requests"
+          }
+        }
+      }
+    },
     "Ingen kontakter": {
       "localizations": {
         "en": {
@@ -847,6 +887,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No important dates"
+          }
+        }
+      }
+    },
+    "Institutionen spørger om ferie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The institution is asking about holidays"
           }
         }
       }
@@ -927,6 +977,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comments (%lld)"
+          }
+        }
+      }
+    },
+    "Kommer alle dage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming every day"
+          }
+        }
+      }
+    },
+    "Kommer ikke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not coming"
           }
         }
       }
@@ -1117,6 +1187,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Teacher: %@"
+          }
+        }
+      }
+    },
+    "Mangler svar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs answer"
           }
         }
       }

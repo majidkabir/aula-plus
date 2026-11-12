@@ -13,6 +13,7 @@ final class DataStore {
     let notifications: Loadable<[AulaNotification]>
     let importantDates: Loadable<[ImportantDate]>
     let albums: Loadable<[Album]>
+    let vacationRequests: Loadable<[VacationRequest]>
 
     @ObservationIgnored private var weeks: [String: Loadable<[Event]>] = [:]
     @ObservationIgnored private var threadPages: [String: Loadable<ThreadPage>] = [:]
@@ -48,6 +49,10 @@ final class DataStore {
         importantDates = Loadable(key: "important-dates") {
             _ = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.importantDates()
+        }
+        vacationRequests = Loadable(key: "vacation-requests") {
+            let s = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.vacationRequests(childIds: s.children.map(\.id))
         }
         presence.onChange = { WidgetWriter.update() }
         threads.onChange = { WidgetWriter.update() }
@@ -139,6 +144,7 @@ final class DataStore {
         notifications.forget()
         importantDates.forget()
         albums.forget()
+        vacationRequests.forget()
         albumMedia = [:]
         weeks = [:]
         threadPages = [:]

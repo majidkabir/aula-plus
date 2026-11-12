@@ -2,11 +2,15 @@
 
 A faster, cleaner, unofficial iOS client for [Aula](https://www.aula.dk), built with SwiftUI.
 
-- **I dag:** each child's presence (Komme/Gå), today's lessons, unread messages and new posts on one screen
-- **Beskeder:** threads with search, an unread filter, and messages shown oldest-first like a chat; opening a thread marks it read in Aula
-- **Kalender:** a swipeable week strip, colour per child, substitute-teacher badges
-- **Ugeplan:** Meebook and Min Uddannelse week plans
-- **Opslag:** posts with search and attachments
+- **I dag:** each child's presence (Komme/Gå), today's lessons, unread messages, new posts, upcoming important dates, holiday requests that still need an answer
+- **Komme/Gå:** report a child sick (or undo it), register ferie/fri, edit drop-off/pick-up times and who picks up, per day
+- **Beskeder:** search, unread/starred filters, star and delete with swipes, reply, start new threads with recipient search, older messages, attachments in Quick Look
+- **Kalender:** a swipeable week strip, a colour per child, substitute-teacher badges, event details with RSVP, add any event to the iOS Calendar
+- **Ugeplan:** Meebook and Min Uddannelse week plans, plus Min Uddannelse tasks (opgaver)
+- **Mere:** posts (with comments), photo gallery with full-screen viewer and save, notifications feed, important dates, holiday requests, contacts (class lists with call/mail/message), secure documents and shared files
+- **Notifications:** background refresh posts local notifications for new messages and posts; tapping one opens the item
+- **Home-screen widget:** each child's status and unread count
+- **Face ID lock**, **Danish and English** (follows the phone's language, or set it in Profile)
 - **Offline-first:** every screen opens instantly from the on-disk cache, then refreshes in the background
 - **Login:** MitID through Aula's own OIDC flow (PKCE). Tokens stay in the Keychain and refresh silently.
 
@@ -24,8 +28,10 @@ xcodegen generate
 open AulaPlus.xcodeproj
 ```
 
-In Xcode, open **AulaPlus target → Signing & Capabilities**, pick your Team, and then run it on your iPhone.
-A free Apple ID works, but the app expires after 7 days. A paid developer account gives you a year, or TestFlight.
+In Xcode, select your Team under **Signing & Capabilities** for both the **AulaPlus** and **AulaPlusWidget** targets, and then run it on your iPhone.
+
+- A paid developer account is needed for the widget (it uses an App Group).
+- With a free Apple ID, delete the `dependencies:` block under the `AulaPlus` target in `project.yml` and run `xcodegen generate` again. The app works without the widget, but expires after 7 days.
 
 ## How it works
 
@@ -39,12 +45,10 @@ A free Apple ID works, but the app expires after 7 days. A paid developer accoun
 
 The API knowledge comes from [nickknissen/aula](https://github.com/nickknissen/aula) and [scaarup/aula](https://github.com/scaarup/aula).
 
-## Not yet
+## Notes
 
-- Replying to or writing messages
-- Older messages in long threads (only the first page loads)
-- EasyIQ / Docendo week plans
-- Push notifications (needs a small server that polls Aula)
+- Some write calls (reply, new thread, RSVP, star/delete, comments, holiday answers) use request shapes from the decompiled official app ([eisbaw/aulalibre](https://github.com/eisbaw/aulalibre)). If Aula rejects one, the app shows Aula's error.
+- Not done: attaching files to messages, EasyIQ/Docendo week plans, true push (background refresh is used instead).
 
 ## Disclaimer
 
