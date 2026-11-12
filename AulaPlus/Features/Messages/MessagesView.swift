@@ -42,7 +42,7 @@ struct MessagesView: View {
                     NavigationLink(value: t) { ThreadRow(thread: t) }
                         .swipeActions(edge: .leading) {
                             Button { Task { await toggleMarked(t) } } label: {
-                                Label(t.isMarked == true ? "Fjern markering" : "Markér",
+                                Label(t.isMarked == true ? String(localized: "Fjern markering") : String(localized: "Markér"),
                                       systemImage: t.isMarked == true ? "star.slash" : "star.fill")
                             }
                             .tint(.yellow)
@@ -68,11 +68,11 @@ struct MessagesView: View {
             .overlay {
                 if threads.isEmpty {
                     if data.threads.isLoading { ProgressView() }
-                    else { ContentUnavailableView(onlyUnread ? "Ingen ulæste beskeder" : "Ingen beskeder",
+                    else { ContentUnavailableView(onlyUnread ? String(localized: "Ingen ulæste beskeder") : String(localized: "Ingen beskeder"),
                                                   systemImage: "tray") }
                 }
             }
-            .searchable(text: $search, prompt: "Søg i beskeder")
+            .searchable(text: $search, prompt: String(localized: "Søg i beskeder"))
             .navigationTitle("Beskeder")
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .toolbar {

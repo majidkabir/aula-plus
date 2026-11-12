@@ -15,7 +15,7 @@ enum WidgetWriter {
                     && ($0.childIds.isEmpty || $0.childIds.contains(child.id))
             }
             var detail: String?
-            if let exit = p?.plannedExit, p?.checkOut == nil { detail = "Hentes \(exit)" }
+            if let exit = p?.plannedExit, p?.checkOut == nil { detail = String(localized: "Hentes \(exit)") }
             else if let next { detail = "\(next.title) \(Fmt.time(next.start))" }
             return .init(name: child.firstName, status: p?.status?.label, symbol: p?.status?.symbol,
                          detail: detail, colorIndex: i)

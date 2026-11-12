@@ -61,7 +61,7 @@ struct EventDetailView: View {
                     Text("Svar")
                 } footer: {
                     if let dl = d.responseDeadline {
-                        Text(d.deadlineExceeded ? "Svarfristen er overskredet." : "Svarfrist \(dl.formatted(date: .abbreviated, time: .shortened))")
+                        Text(d.deadlineExceeded ? String(localized: "Svarfristen er overskredet.") : String(localized: "Svarfrist \(dl.formatted(date: .abbreviated, time: .shortened))"))
                     }
                 }
             }
@@ -151,7 +151,7 @@ struct EventDetailView: View {
             try await AulaAPI.shared.respond(eventId: id, as: pid, response: r)
             await load()
         } catch {
-            self.error = "Svaret blev ikke sendt: \(error.localizedDescription)"
+            self.error = String(localized: "Svaret blev ikke sendt: \(error.localizedDescription)")
         }
     }
 }

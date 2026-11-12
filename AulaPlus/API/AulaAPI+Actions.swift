@@ -9,10 +9,10 @@ enum RSVP: String, Codable, CaseIterable {
 
     var label: String {
         switch self {
-        case .accepted: return "Deltager"
-        case .declined: return "Deltager ikke"
-        case .tentative: return "Måske"
-        case .waiting: return "Ikke svaret"
+        case .accepted: return String(localized: "Deltager")
+        case .declined: return String(localized: "Deltager ikke")
+        case .tentative: return String(localized: "Måske")
+        case .waiting: return String(localized: "Ikke svaret")
         }
     }
 }
@@ -104,7 +104,7 @@ extension AulaAPI {
                          response: i.responseType.flatMap { RSVP(rawValue: $0.lowercased()) })
         }
         return EventDetail(id: d.id.value,
-                           title: d.title?.nilIfEmpty ?? "Begivenhed",
+                           title: d.title?.nilIfEmpty ?? String(localized: "Begivenhed"),
                            html: d.description?.html ?? "",
                            start: AulaDate.parse(d.startDateTime),
                            end: AulaDate.parse(d.endDateTime),
@@ -138,7 +138,7 @@ extension AulaAPI {
         return (dto.results?.items ?? []).compactMap { r in
             guard let id = r.docId.flatMap({ Int($0.value) }) else { return nil }
             let detail: [String?] = [r.description?.nilIfEmpty, r.institutionName?.nilIfEmpty]
-            return Recipient(id: id, name: r.name ?? "Ukendt",
+            return Recipient(id: id, name: r.name ?? String(localized: "Ukendt"),
                              detail: detail.compactMap { $0 }.first,
                              type: r.docType ?? "Profile")
         }

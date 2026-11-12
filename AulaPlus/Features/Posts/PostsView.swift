@@ -31,7 +31,7 @@ struct PostsList: View {
                 else { ContentUnavailableView("Ingen opslag", systemImage: "newspaper") }
             }
         }
-        .searchable(text: $search, prompt: "Søg i opslag")
+        .searchable(text: $search, prompt: String(localized: "Søg i opslag"))
         .navigationTitle("Opslag")
         .refreshable { await data.posts.refresh() }
         .task { await data.posts.load(maxAge: 300) }
@@ -134,7 +134,7 @@ struct PostDetailView: View {
 
     private func postComment() async {
         guard let me = app.session.value?.guardianProfileIds?.first else {
-            commentError = "Kunne ikke finde din profil. Træk ned for at opdatere."
+            commentError = String(localized: "Kunne ikke finde din profil. Træk ned for at opdatere.")
             return
         }
         posting = true
@@ -145,7 +145,7 @@ struct PostDetailView: View {
             newComment = ""
             comments = (try? await AulaAPI.shared.comments(postId: post.id)) ?? comments
         } catch {
-            commentError = "Ikke sendt: \(error.localizedDescription)"
+            commentError = String(localized: "Ikke sendt: \(error.localizedDescription)")
         }
     }
 }

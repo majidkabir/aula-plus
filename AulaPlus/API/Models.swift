@@ -28,16 +28,16 @@ enum PresenceStatus: Int, Codable {
 
     var label: String {
         switch self {
-        case .notPresent: return "Ikke kommet"
-        case .sick: return "Syg"
-        case .reportedAbsent: return "Ferie/fri"
-        case .present: return "Til stede"
-        case .fieldTrip: return "På tur"
-        case .sleeping: return "Sover"
-        case .spareTimeActivity: return "Til aktivitet"
+        case .notPresent: return String(localized: "Ikke kommet")
+        case .sick: return String(localized: "Syg")
+        case .reportedAbsent: return String(localized: "Ferie/fri")
+        case .present: return String(localized: "Til stede")
+        case .fieldTrip: return String(localized: "På tur")
+        case .sleeping: return String(localized: "Sover")
+        case .spareTimeActivity: return String(localized: "Til aktivitet")
         case .physicalPlacement: return "Fysisk placering"
-        case .checkedOut: return "Gået hjem"
-        case .notArrived: return "Ikke mødt"
+        case .checkedOut: return String(localized: "Gået hjem")
+        case .notArrived: return String(localized: "Ikke mødt")
         }
     }
 
@@ -171,7 +171,7 @@ struct ChildDTO: Decodable {
 
     func toChild(fallbackInstitution: String? = nil) -> Child {
         Child(id: id.value,
-              name: name ?? "Barn",
+              name: name ?? String(localized: "Barn"),
               institutionName: institutionProfile?.institutionName ?? fallbackInstitution ?? "",
               institutionCode: (institutionProfile?.institutionCode ?? institutionCode)?.value,
               userId: userId?.value,
@@ -243,7 +243,7 @@ struct AttachmentDTO: Decodable {
         let urls: [String?] = [media?.file?.url, file?.url, link?.url]
         let names: [String?] = [name, file?.name, media?.file?.name, media?.title, link?.name, document?.title]
         let url: String? = urls.compactMap { $0 }.first
-        let n: String = names.compactMap { $0?.nilIfEmpty }.first ?? "Vedhæftet fil"
+        let n: String = names.compactMap { $0?.nilIfEmpty }.first ?? String(localized: "Vedhæftet fil")
         let linkOnly: Bool = link?.url != nil && media?.file?.url == nil && file?.url == nil
         return Attachment(name: n, url: url.flatMap { URL(string: $0) }, isLink: linkOnly)
     }
@@ -279,7 +279,7 @@ struct ThreadDTO: Decodable {
         let sensitiveFlag: Bool = sensitive ?? isSensitive ?? false
         return ThreadSummary(
             id: id.value,
-            subject: subject?.nilIfEmpty ?? "(Intet emne)",
+            subject: subject?.nilIfEmpty ?? String(localized: "(Intet emne)"),
             preview: HTML.plainText(latestMessage?.text?.html ?? ""),
             sender: senderName,
             date: AulaDate.parse(dateString),
@@ -345,7 +345,7 @@ struct EventDTO: Decodable {
         let teacher = people.first { $0.participantRole == "primaryTeacher" }?.teacherName
         let sub = people.first { $0.participantRole == "substituteTeacher" }?.teacherName
         return Event(id: id.value,
-                     title: title?.nilIfEmpty ?? "Begivenhed",
+                     title: title?.nilIfEmpty ?? String(localized: "Begivenhed"),
                      start: start, end: end,
                      allDay: allDay ?? false,
                      location: primaryResource?.name,
@@ -373,7 +373,7 @@ struct PostDTO: Decodable {
 
     var model: Post {
         Post(id: id.value,
-             title: title?.nilIfEmpty ?? "Opslag",
+             title: title?.nilIfEmpty ?? String(localized: "Opslag"),
              html: content?.html ?? "",
              date: AulaDate.parse(publishAt ?? timestamp),
              author: ownerProfile?.best ?? "",

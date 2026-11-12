@@ -18,7 +18,6 @@ struct AulaPlusApp: App {
             RootView()
                 .environment(app)
                 .environment(data)
-                .environment(\.locale, Locale(identifier: "da_DK"))
                 .task {
                     await app.start()
                     BackgroundRefresh.schedule()

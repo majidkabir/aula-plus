@@ -45,7 +45,7 @@ extension AulaAPI {
         return (dto.opgaver?.items ?? []).map { t in
             let subject: String? = t.hold?.items.compactMap { $0.fagNavn ?? $0.navn }.first
             return SchoolTask(id: t.id?.value ?? UUID().uuidString,
-                              title: t.title?.nilIfEmpty ?? t.opgaveType ?? "Opgave",
+                              title: t.title?.nilIfEmpty ?? t.opgaveType ?? String(localized: "Opgave"),
                               subject: subject,
                               due: Self.parseDotNetDate(t.afleveringsdato),
                               weekday: t.ugedag?.nilIfEmpty,

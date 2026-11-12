@@ -98,7 +98,7 @@ struct ComposeView: View {
             try await AulaAPI.shared.startThread(subject: subject, text: text, recipients: recipients, sensitive: sensitive)
             done(true)
         } catch {
-            self.error = "Beskeden blev ikke sendt: \(error.localizedDescription)"
+            self.error = String(localized: "Beskeden blev ikke sendt: \(error.localizedDescription)")
         }
     }
 }

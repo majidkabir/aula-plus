@@ -63,7 +63,7 @@ struct TodayView: View {
     private var greeting: String {
         let h = Calendar.current.component(.hour, from: .now)
         let first = app.session.value?.displayName.split(separator: " ").first.map(String.init) ?? ""
-        let hello = h < 10 ? "Godmorgen" : h < 18 ? "Hej" : "Godaften"
+        let hello = h < 10 ? String(localized: "Godmorgen") : h < 18 ? String(localized: "Hej") : String(localized: "Godaften")
         return first.isEmpty ? hello : "\(hello), \(first)"
     }
 
@@ -120,7 +120,7 @@ struct TodayView: View {
 }
 
 struct SectionHeader: View {
-    let title: String
+    let title: LocalizedStringKey
     let count: Int?
     var body: some View {
         HStack {
@@ -142,10 +142,10 @@ struct ChildDayCard: View {
 
     static func facts(_ p: Presence) -> [Fact] {
         let raw: [(String, String?)] = [
-            ("Kom", p.checkIn), ("Gik", p.checkOut),
-            ("Afleveres", p.checkIn == nil ? p.plannedEntry : nil),
-            ("Hentes", p.checkOut == nil ? p.plannedExit : nil),
-            ("Hentes af", p.exitWith), ("Lokation", p.location),
+            (String(localized: "Kom"), p.checkIn), (String(localized: "Gik"), p.checkOut),
+            (String(localized: "Afleveres"), p.checkIn == nil ? p.plannedEntry : nil),
+            (String(localized: "Hentes"), p.checkOut == nil ? p.plannedExit : nil),
+            (String(localized: "Hentes af"), p.exitWith), (String(localized: "Lokation"), p.location),
         ]
         return raw.compactMap { pair in pair.1.map { Fact(label: pair.0, value: $0) } }
     }
@@ -197,7 +197,7 @@ struct ChildDayCard: View {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(events.prefix(8)) { e in
                             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                                Text(e.allDay ? "Hele dagen" : Fmt.time(e.start))
+                                Text(e.allDay ? String(localized: "Hele dagen") : Fmt.time(e.start))
                                     .font(.caption.monospacedDigit())
                                     .foregroundStyle(.secondary)
                                     .frame(width: 64, alignment: .leading)

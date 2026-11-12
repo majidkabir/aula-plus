@@ -111,7 +111,7 @@ struct ThreadView: View {
             await page.refresh()
             await data.threads.refresh()
         } catch {
-            sendError = "Svaret blev ikke sendt: \(error.localizedDescription)"
+            sendError = String(localized: "Svaret blev ikke sendt: \(error.localizedDescription)")
         }
     }
 
@@ -147,7 +147,7 @@ struct MessageBubble: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text(message.sender.isEmpty ? "Ukendt" : message.sender)
+                Text(message.sender.isEmpty ? String(localized: "Ukendt") : message.sender)
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 if let d = message.date {

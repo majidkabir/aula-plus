@@ -7,10 +7,10 @@ enum PickupKind: Int, Codable, CaseIterable, Identifiable {
     var id: Int { rawValue }
     var label: String {
         switch self {
-        case .pickedUpBy: return "Hentes af"
-        case .selfDecider: return "Selvbestemmer"
-        case .sendHome: return "Sendes hjem"
-        case .goHomeWith: return "Går hjem med"
+        case .pickedUpBy: return String(localized: "Hentes af")
+        case .selfDecider: return String(localized: "Selvbestemmer")
+        case .sendHome: return String(localized: "Sendes hjem")
+        case .goHomeWith: return String(localized: "Går hjem med")
         }
     }
     var needsName: Bool { self == .pickedUpBy || self == .goHomeWith }

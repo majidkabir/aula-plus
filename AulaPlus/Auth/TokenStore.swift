@@ -23,8 +23,8 @@ enum AuthError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notLoggedIn: return "Du er ikke logget ind."
-        case .stateMismatch: return "Login blev afbrudt (state passede ikke). Prøv igen."
+        case .notLoggedIn: return String(localized: "Du er ikke logget ind.")
+        case .stateMismatch: return String(localized: "Login blev afbrudt (state passede ikke). Prøv igen.")
         case .missingCode: return "Aula sendte ingen login-kode tilbage."
         case .tokenEndpoint(let code): return "Aula login fejlede (HTTP \(code))."
         }

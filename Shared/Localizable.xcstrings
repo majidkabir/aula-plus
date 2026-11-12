@@ -1,0 +1,1696 @@
+{
+  "sourceLanguage": "da",
+  "strings": {
+    "(Intet emne)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(No subject)"
+          }
+        }
+      }
+    },
+    "Afhentning — uge %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick-up — week %lld"
+          }
+        }
+      }
+    },
+    "Afleveres": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop-off"
+          }
+        }
+      }
+    },
+    "Afleveres %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Due %@"
+          }
+        }
+      }
+    },
+    "Album": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Album"
+          }
+        }
+      }
+    },
+    "Alle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All"
+          }
+        }
+      }
+    },
+    "Annuller": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Aula afviste %@ (kode %@).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula rejected %@ (code %@)."
+          }
+        }
+      }
+    },
+    "Aula svarede med HTTP %lld.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula answered with HTTP %lld."
+          }
+        }
+      }
+    },
+    "Aula+": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+"
+          }
+        }
+      }
+    },
+    "Aula+ er en uofficiel app og er ikke lavet af eller godkendt af Aula/KOMBIT. Den bruger samme API som Aulas egen app.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ is an unofficial app, not made or endorsed by Aula/KOMBIT. It uses the same API as Aula's own app."
+          }
+        }
+      }
+    },
+    "Aula+ er låst": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ is locked"
+          }
+        }
+      }
+    },
+    "Aula+ tjekker for nyt i baggrunden, når iOS tillader det (typisk hvert 15.–60. minut).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ checks for new items in the background when iOS allows it (usually every 15–60 minutes)."
+          }
+        }
+      }
+    },
+    "Automatisk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
+          }
+        }
+      }
+    },
+    "Barn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Child"
+          }
+        }
+      }
+    },
+    "Begivenhed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event"
+          }
+        }
+      }
+    },
+    "Bemærkning": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
+    "Besked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message"
+          }
+        }
+      }
+    },
+    "Besked til institutionen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message to the institution"
+          }
+        }
+      }
+    },
+    "Beskeden blev ikke sendt: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The message was not sent: %@"
+          }
+        }
+      }
+    },
+    "Beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messages"
+          }
+        }
+      }
+    },
+    "Beskeder, kalender og ugeplan —\nhurtigt og overskueligt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messages, calendar and week plan —\nfast and clear."
+          }
+        }
+      }
+    },
+    "Beskrivelse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description"
+          }
+        }
+      }
+    },
+    "Børn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Children"
+          }
+        }
+      }
+    },
+    "Børnenes status i dag og ulæste beskeder.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your children's status today and unread messages."
+          }
+        }
+      }
+    },
+    "Dagen følger en fast ugeplan. Ændringen gælder kun denne dag.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This day follows a recurring plan. The change applies to this day only."
+          }
+        }
+      }
+    },
+    "Deltager": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attending"
+          }
+        }
+      }
+    },
+    "Deltager ikke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not attending"
+          }
+        }
+      }
+    },
+    "Din Aula-session er udløbet. Log ind med MitID igen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Aula session has expired. Log in with MitID again."
+          }
+        }
+      }
+    },
+    "Din skole bruger en ugeplan-udbyder, som Aula+ ikke kender endnu (understøtter Meebook og Min Uddannelse).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your school uses a week-plan provider Aula+ doesn't support yet (Meebook and Min Uddannelse are supported)."
+          }
+        }
+      }
+    },
+    "Du er ikke logget ind.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are not logged in."
+          }
+        }
+      }
+    },
+    "Emne": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subject"
+          }
+        }
+      }
+    },
+    "Ferie/fri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Holiday/day off"
+          }
+        }
+      }
+    },
+    "Ferie/fri er meldt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Holiday/day off registered."
+          }
+        }
+      }
+    },
+    "Filer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files"
+          }
+        }
+      }
+    },
+    "Fjern markering": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unstar"
+          }
+        }
+      }
+    },
+    "Fjern sygemelding": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel sick report"
+          }
+        }
+      }
+    },
+    "Fjern sygemelding for %@?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel the sick report for %@?"
+          }
+        }
+      }
+    },
+    "Fra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From"
+          }
+        }
+      }
+    },
+    "Fx Vi er i sommerhus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g. We're at the summer house"
+          }
+        }
+      }
+    },
+    "Færdig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Føj til min kalender": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to my calendar"
+          }
+        }
+      }
+    },
+    "Følsom besked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensitive message"
+          }
+        }
+      }
+    },
+    "Galleri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gallery"
+          }
+        }
+      }
+    },
+    "Gem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Gik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left"
+          }
+        }
+      }
+    },
+    "Godaften": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good evening"
+          }
+        }
+      }
+    },
+    "Godmorgen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good morning"
+          }
+        }
+      }
+    },
+    "Gået hjem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gone home"
+          }
+        }
+      }
+    },
+    "Går hjem med": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goes home with"
+          }
+        }
+      }
+    },
+    "Gælder alle børn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies to all children"
+          }
+        }
+      }
+    },
+    "Hej": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hi"
+          }
+        }
+      }
+    },
+    "Hele\ndagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All\nday"
+          }
+        }
+      }
+    },
+    "Hele dagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All day"
+          }
+        }
+      }
+    },
+    "Hent ældre beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Load older messages"
+          }
+        }
+      }
+    },
+    "Hentes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick-up"
+          }
+        }
+      }
+    },
+    "Hentes %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick-up %@"
+          }
+        }
+      }
+    },
+    "Hentes af": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Picked up by"
+          }
+        }
+      }
+    },
+    "Hentetid skal være efter afleveringstid.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick-up must be after drop-off."
+          }
+        }
+      }
+    },
+    "Hvem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who"
+          }
+        }
+      }
+    },
+    "Hvordan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How"
+          }
+        }
+      }
+    },
+    "Højst 250 tegn.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "250 characters max."
+          }
+        }
+      }
+    },
+    "I dag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "I går": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yesterday"
+          }
+        }
+      }
+    },
+    "Ikke gemt: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not saved: %@"
+          }
+        }
+      }
+    },
+    "Ikke kommet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not arrived"
+          }
+        }
+      }
+    },
+    "Ikke mødt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Absent"
+          }
+        }
+      }
+    },
+    "Ikke sendt: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not sent: %@"
+          }
+        }
+      }
+    },
+    "Ikke svaret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No answer"
+          }
+        }
+      }
+    },
+    "Ingen albums": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No albums"
+          }
+        }
+      }
+    },
+    "Ingen beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No messages"
+          }
+        }
+      }
+    },
+    "Ingen notifikationer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No notifications"
+          }
+        }
+      }
+    },
+    "Ingen opslag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No posts"
+          }
+        }
+      }
+    },
+    "Ingen tider": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No times"
+          }
+        }
+      }
+    },
+    "Ingen ugeplan for denne uge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No week plan for this week"
+          }
+        }
+      }
+    },
+    "Ingen ulæste beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No unread messages"
+          }
+        }
+      }
+    },
+    "Ingen vigtige datoer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No important dates"
+          }
+        }
+      }
+    },
+    "Institutionen tillader ikke at forældre ændrer tider her.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The institution doesn't let parents change times here."
+          }
+        }
+      }
+    },
+    "Intet i kalenderen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing in the calendar"
+          }
+        }
+      }
+    },
+    "Inviterede (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invited (%lld)"
+          }
+        }
+      }
+    },
+    "Kalender": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar"
+          }
+        }
+      }
+    },
+    "Kom": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrived"
+          }
+        }
+      }
+    },
+    "Komme/gå for %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-in/out for %@"
+          }
+        }
+      }
+    },
+    "Kommende": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming up"
+          }
+        }
+      }
+    },
+    "Kommentarer (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comments (%lld)"
+          }
+        }
+      }
+    },
+    "Kopiér tekst": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy text"
+          }
+        }
+      }
+    },
+    "Kræver MitID-login på højeste niveau.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requires the highest MitID login level."
+          }
+        }
+      }
+    },
+    "Kræver genstart af appen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Takes effect after restarting the app."
+          }
+        }
+      }
+    },
+    "Kun markerede": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starred only"
+          }
+        }
+      }
+    },
+    "Kun ulæste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unread only"
+          }
+        }
+      }
+    },
+    "Kunne ikke finde din profil. Træk ned for at opdatere.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't find your profile. Pull down to refresh."
+          }
+        }
+      }
+    },
+    "Kunne ikke hente %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't download %@."
+          }
+        }
+      }
+    },
+    "Log ind med MitID": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log in with MitID"
+          }
+        }
+      }
+    },
+    "Log ud": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log out"
+          }
+        }
+      }
+    },
+    "Log ud af Aula+?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log out of Aula+?"
+          }
+        }
+      }
+    },
+    "Logget ind som": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged in as"
+          }
+        }
+      }
+    },
+    "Login blev afbrudt (state passede ikke). Prøv igen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Login was interrupted (state mismatch). Try again."
+          }
+        }
+      }
+    },
+    "Lokation": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location"
+          }
+        }
+      }
+    },
+    "Luk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Lås Aula+ op": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock Aula+"
+          }
+        }
+      }
+    },
+    "Lås med Face ID": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock with Face ID"
+          }
+        }
+      }
+    },
+    "Lås op": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock"
+          }
+        }
+      }
+    },
+    "Lærer: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teacher: %@"
+          }
+        }
+      }
+    },
+    "Markér": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Star"
+          }
+        }
+      }
+    },
+    "Meld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Register"
+          }
+        }
+      }
+    },
+    "Meld %@ syg i dag?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report %@ sick today?"
+          }
+        }
+      }
+    },
+    "Meld ferie/fri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Register holiday/day off"
+          }
+        }
+      }
+    },
+    "Meld syg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report sick"
+          }
+        }
+      }
+    },
+    "Meld syg i dag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report sick today"
+          }
+        }
+      }
+    },
+    "Mere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More"
+          }
+        }
+      }
+    },
+    "MitID": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MitID"
+          }
+        }
+      }
+    },
+    "Måske": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maybe"
+          }
+        }
+      }
+    },
+    "Navn (fx Mor)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name (e.g. Mom)"
+          }
+        }
+      }
+    },
+    "Notifikation": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notification"
+          }
+        }
+      }
+    },
+    "Notifikationer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
+        }
+      }
+    },
+    "Notifikationer om nye beskeder og opslag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notify about new messages and posts"
+          }
+        }
+      }
+    },
+    "Ny besked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New message"
+          }
+        }
+      }
+    },
+    "Nye opslag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New posts"
+          }
+        }
+      }
+    },
+    "Nyt opslag: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New post: %@"
+          }
+        }
+      }
+    },
+    "Opgave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Task"
+          }
+        }
+      }
+    },
+    "Opgaver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks"
+          }
+        }
+      }
+    },
+    "Opslag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posts"
+          }
+        }
+      }
+    },
+    "Profil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        }
+      }
+    },
+    "Profil og indstillinger": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile and settings"
+          }
+        }
+      }
+    },
+    "På tur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On a trip"
+          }
+        }
+      }
+    },
+    "Ryd cache": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear cache"
+          }
+        }
+      }
+    },
+    "Selvbestemmer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leaves on own"
+          }
+        }
+      }
+    },
+    "Send": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        }
+      }
+    },
+    "Sendes hjem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sent home"
+          }
+        }
+      }
+    },
+    "Skriv en kommentar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a comment"
+          }
+        }
+      }
+    },
+    "Skriv et svar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a reply"
+          }
+        }
+      }
+    },
+    "Slet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "Slet tråden \"%@\"?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the thread \"%@\"?"
+          }
+        }
+      }
+    },
+    "Sover": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleeping"
+          }
+        }
+      }
+    },
+    "Sprog": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        }
+      }
+    },
+    "Svar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reply"
+          }
+        }
+      }
+    },
+    "Svaret blev ikke sendt: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The reply was not sent: %@"
+          }
+        }
+      }
+    },
+    "Svarfrist %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reply by %@"
+          }
+        }
+      }
+    },
+    "Svarfristen er overskredet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The reply deadline has passed."
+          }
+        }
+      }
+    },
+    "Syg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sick"
+          }
+        }
+      }
+    },
+    "Sygemelding fjernet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sick report cancelled."
+          }
+        }
+      }
+    },
+    "Søg i beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search messages"
+          }
+        }
+      }
+    },
+    "Søg i opslag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search posts"
+          }
+        }
+      }
+    },
+    "Søg lærer, pædagog, forælder…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search teacher, educator, parent…"
+          }
+        }
+      }
+    },
+    "Tider gemt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Times saved."
+          }
+        }
+      }
+    },
+    "Til": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To"
+          }
+        }
+      }
+    },
+    "Til aktivitet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At an activity"
+          }
+        }
+      }
+    },
+    "Til stede": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Present"
+          }
+        }
+      }
+    },
+    "Uge %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week %lld"
+          }
+        }
+      }
+    },
+    "Ugebrev": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly letter"
+          }
+        }
+      }
+    },
+    "Ugeplan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week plan"
+          }
+        }
+      }
+    },
+    "Ugeplan ikke understøttet endnu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week plan not supported yet"
+          }
+        }
+      }
+    },
+    "Ukendt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
+          }
+        }
+      }
+    },
+    "Ulæste beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unread messages"
+          }
+        }
+      }
+    },
+    "Uofficiel app. Dine data går kun mellem din telefon og Aula.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unofficial app. Your data only travels between your phone and Aula."
+          }
+        }
+      }
+    },
+    "Uventet svar fra Aula: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected answer from Aula: %@"
+          }
+        }
+      }
+    },
+    "Valgfri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optional"
+          }
+        }
+      }
+    },
+    "Vedhæftet fil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attachment"
+          }
+        }
+      }
+    },
+    "Vigtige datoer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Important dates"
+          }
+        }
+      }
+    },
+    "Vikar%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Substitute%@"
+          }
+        }
+      }
+    },
+    "Vikar: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Substitute: %@"
+          }
+        }
+      }
+    },
+    "Vis ældre beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show older messages"
+          }
+        }
+      }
+    },
+    "Viser data fra %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Showing data from %@"
+          }
+        }
+      }
+    },
+    "Vælg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose"
+          }
+        }
+      }
+    },
+    "Vælg hvem der henter.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose who picks up."
+          }
+        }
+      }
+    },
+    "ulæst besked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unread message"
+          }
+        }
+      }
+    },
+    "ulæste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unread"
+          }
+        }
+      }
+    },
+    "ulæste beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unread messages"
+          }
+        }
+      }
+    },
+    "Åbn appen og log ind.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the app and log in."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
