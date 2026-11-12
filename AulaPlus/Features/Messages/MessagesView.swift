@@ -24,7 +24,8 @@ struct MessagesView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        @Bindable var app = app
+        NavigationStack(path: $app.messagesPath) {
             List {
                 Section {
                     ChildFilterBar().listRowInsets(EdgeInsets()).listRowBackground(Color.clear)

@@ -94,3 +94,23 @@ final class DecodingTests: XCTestCase {
         XCTAssertEqual(Calendar.week.component(.weekday, from: Week.start(of: d)), 2) // Monday
     }
 }
+
+final class MessagingTests: XCTestCase {
+    func testReplyHTMLEscapesAndKeepsParagraphs() {
+        XCTAssertEqual(AulaAPI.htmlFromPlainText("Hej <3\nfra os\n\nTak & hilsen"),
+                       "<p>Hej &lt;3<br>fra os</p><p>Tak &amp; hilsen</p>")
+    }
+
+    func testLinkAttachmentIsMarked() throws {
+        let a = try JSONDecoder().decode(AttachmentDTO.self, from: Data(#"{"link":{"name":"Site","url":"https://x.dk"}}"#.utf8)).model
+        XCTAssertEqual(a.isLink, true)
+        XCTAssertEqual(a.name, "Site")
+    }
+}
+
+final class MoreTests: XCTestCase {
+    func testDotNetDate() {
+        let d = AulaAPI.parseDotNetDate("/Date(1771196400000-0000)/")
+        XCTAssertEqual(d?.timeIntervalSince1970, 1771196400)
+    }
+}

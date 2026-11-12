@@ -1,40 +1,40 @@
 import SwiftUI
 
-struct PostsView: View {
+/// Posts list without its own NavigationStack (pushed from Mere).
+struct PostsList: View {
     @Environment(DataStore.self) private var data
     @State private var search = ""
 
     private var posts: [Post] {
         let all = data.posts.value ?? []
         guard !search.isEmpty else { return all }
-        return all.filter { [$0.title, $0.author, HTML.plainText($0.html)].contains { $0.localizedCaseInsensitiveContains(search) } }
+        return all.filter { p in
+            [p.title, p.author, HTML.plainText(p.html)].contains { $0.localizedCaseInsensitiveContains(search) }
+        }
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    StaleBanner(error: data.posts.error, savedAt: data.posts.savedAt)
-                    ForEach(posts) { post in
-                        NavigationLink(value: post) { PostCard(post: post, compact: true) }
-                            .buttonStyle(.plain)
-                    }
-                }
-                .padding()
-            }
-            .background(Color(.systemGroupedBackground))
-            .overlay {
-                if posts.isEmpty {
-                    if data.posts.isLoading { ProgressView() }
-                    else { ContentUnavailableView("Ingen opslag", systemImage: "newspaper") }
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                StaleBanner(error: data.posts.error, savedAt: data.posts.savedAt)
+                ForEach(posts) { post in
+                    NavigationLink(value: post) { PostCard(post: post, compact: true) }
+                        .buttonStyle(.plain)
                 }
             }
-            .searchable(text: $search, prompt: "Søg i opslag")
-            .navigationTitle("Opslag")
-            .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
-            .refreshable { await data.posts.refresh() }
-            .task { await data.posts.load(maxAge: 300) }
+            .padding()
         }
+        .background(Color(.systemGroupedBackground))
+        .overlay {
+            if posts.isEmpty {
+                if data.posts.isLoading { ProgressView() }
+                else { ContentUnavailableView("Ingen opslag", systemImage: "newspaper") }
+            }
+        }
+        .searchable(text: $search, prompt: "Søg i opslag")
+        .navigationTitle("Opslag")
+        .refreshable { await data.posts.refresh() }
+        .task { await data.posts.load(maxAge: 300) }
     }
 }
 
@@ -74,6 +74,7 @@ struct PostCard: View {
 
 struct PostDetailView: View {
     let post: Post
+    @State private var comments: [Comment] = []
 
     var body: some View {
         ScrollView {
@@ -89,9 +90,26 @@ struct PostDetailView: View {
                 Divider()
                 HTMLText(html: post.html)
                 AttachmentList(attachments: post.attachments)
+                if !comments.isEmpty {
+                    Divider().padding(.vertical, 4)
+                    Text("Kommentarer (\(comments.count))").font(.headline)
+                    ForEach(comments) { c in
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(c.author).font(.subheadline.weight(.semibold))
+                                Spacer()
+                                Text(Fmt.listDate(c.date)).font(.caption).foregroundStyle(.secondary)
+                            }
+                            HTMLText(html: c.html)
+                        }
+                        .padding(12)
+                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    }
+                }
             }
             .padding()
         }
         .navigationBarTitleDisplayMode(.inline)
+        .task { comments = (try? await AulaAPI.shared.comments(postId: post.id)) ?? [] }
     }
 }

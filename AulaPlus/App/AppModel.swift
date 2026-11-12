@@ -1,5 +1,7 @@
 import Foundation
+import LocalAuthentication
 import Observation
+import SwiftUI
 
 @MainActor
 @Observable
@@ -20,6 +22,55 @@ final class AppModel {
 
     /// nil = all children.
     var selectedChildId: Int?
+
+    enum Tab: Hashable { case today, messages, calendar, weekPlan, more }
+    var selectedTab: Tab = .today
+    var messagesPath: [ThreadSummary] = []
+    var morePath = NavigationPath()
+
+    // MARK: App lock (Face ID / passcode)
+
+    static let lockKey = "lock.enabled"
+    var lockEnabled: Bool = UserDefaults.standard.bool(forKey: AppModel.lockKey) {
+        didSet { UserDefaults.standard.set(lockEnabled, forKey: Self.lockKey) }
+    }
+    private(set) var isLocked: Bool = UserDefaults.standard.bool(forKey: AppModel.lockKey)
+
+    func lockIfNeeded() {
+        if lockEnabled && phase == .loggedIn { isLocked = true }
+    }
+
+    func unlock() async {
+        let ctx = LAContext()
+        var err: NSError?
+        guard ctx.canEvaluatePolicy(.deviceOwnerAuthentication, error: &err) else {
+            isLocked = false   // no passcode set on device: nothing to unlock with
+            return
+        }
+        if (try? await ctx.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Lås Aula+ op")) == true {
+            isLocked = false
+        }
+    }
+
+    // MARK: Deep links (notification taps)
+
+    func openThread(id: String) {
+        let known = DataStore.shared.threads.value?.first { $0.id == id }
+        let thread = known ?? ThreadSummary(id: id, subject: "", preview: "", sender: "", date: nil,
+                                            isRead: false, isSensitive: false, regarding: [])
+        selectedTab = .messages
+        messagesPath = [thread]
+    }
+
+    func openPost(id: Int) {
+        selectedTab = .more
+        Task {
+            if let post = try? await AulaAPI.shared.post(id: id) {
+                morePath = NavigationPath()
+                morePath.append(post)
+            }
+        }
+    }
 
     var children: [Child] { session.value?.children ?? [] }
 

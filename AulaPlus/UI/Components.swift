@@ -1,3 +1,4 @@
+import QuickLook
 import SwiftUI
 
 /// Stable colour per child, used across calendar, cards and avatars.
@@ -110,18 +111,56 @@ struct Card<Content: View>: View {
 
 struct AttachmentList: View {
     let attachments: [Attachment]
+    @State private var preview: URL?
+    @State private var loading: Attachment?
+    @State private var error: String?
+    @Environment(\.openURL) private var openURL
+
     var body: some View {
         if !attachments.isEmpty {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 ForEach(attachments, id: \.self) { a in
-                    if let url = a.url {
-                        Link(destination: url) { Label(a.name, systemImage: "paperclip") }
-                    } else {
-                        Label(a.name, systemImage: "paperclip").foregroundStyle(.secondary)
+                    Button { open(a) } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: a.isLink == true ? "link" : Self.icon(for: a.name))
+                                .frame(width: 22)
+                            Text(a.name).lineLimit(1).truncationMode(.middle)
+                            Spacer(minLength: 0)
+                            if loading == a { ProgressView().controlSize(.small) }
+                        }
+                        .padding(.horizontal, 10).padding(.vertical, 8)
+                        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 10))
                     }
+                    .buttonStyle(.plain)
+                    .disabled(a.url == nil || loading != nil)
                 }
+                if let error { Text(error).font(.caption).foregroundStyle(.red) }
             }
             .font(.subheadline)
+            .quickLookPreview($preview)
+        }
+    }
+
+    private func open(_ a: Attachment) {
+        guard let url = a.url else { return }
+        if a.isLink == true { openURL(url); return }
+        loading = a
+        error = nil
+        Task {
+            defer { loading = nil }
+            do { preview = try await AulaAPI.shared.download(url, suggestedName: a.name) }
+            catch { self.error = "Kunne ikke hente \(a.name)." }
+        }
+    }
+
+    static func icon(for name: String) -> String {
+        switch (name as NSString).pathExtension.lowercased() {
+        case "pdf": return "doc.richtext"
+        case "jpg", "jpeg", "png", "heic", "gif": return "photo"
+        case "mp4", "mov": return "film"
+        case "doc", "docx", "pages": return "doc.text"
+        case "xls", "xlsx", "numbers": return "tablecells"
+        default: return "paperclip"
         }
     }
 }

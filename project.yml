@@ -25,6 +25,9 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
+        NSFaceIDUsageDescription: Aula+ kan låses med Face ID, så andre ikke kan læse beskeder om dine børn.
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [com.majidkabir.aulaplus.refresh]
         CFBundleDevelopmentRegion: da
         CFBundleLocalizations: [da, en]
     settings:

@@ -19,16 +19,20 @@ struct TodayView: View {
                     }
 
                     ForEach(app.visibleChildren) { child in
+                        NavigationLink(value: child) {
                         ChildDayCard(child: child,
                                      presence: data.presence.value?.first { $0.childId == child.id },
                                      events: (todayEvents.value ?? []).filter {
                                          Calendar.week.isDateInToday($0.start) &&
                                          ($0.childIds.isEmpty || $0.childIds.contains(child.id))
                                      })
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     unreadSection
                     importantPosts
+                    upcomingDates
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 24)
@@ -36,6 +40,7 @@ struct TodayView: View {
             .background(Color(.systemGroupedBackground))
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
+            .navigationDestination(for: Child.self) { ChildPresenceView(child: $0) }
             .navigationTitle(greeting)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -49,7 +54,8 @@ struct TodayView: View {
                 async let b: () = todayEvents.load(maxAge: 300)
                 async let c: () = data.threads.load(maxAge: 60)
                 async let d: () = data.posts.load(maxAge: 300)
-                _ = await (a, b, c, d)
+                async let e: () = data.importantDates.load(maxAge: 1800)
+                _ = await (a, b, c, d, e)
             }
         }
     }
@@ -80,6 +86,20 @@ struct TodayView: View {
                             .buttonStyle(.plain)
                         if i < unread.count - 1 { Divider() }
                     }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var upcomingDates: some View {
+        let soon = (data.importantDates.value ?? []).filter {
+            $0.start.timeIntervalSinceNow > -86_400 && $0.start.timeIntervalSinceNow < 14 * 86_400
+        }.prefix(3)
+        if !soon.isEmpty {
+            SectionHeader(title: "Kommende", count: nil)
+            Card {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(Array(soon)) { ImportantDateRow(date: $0) }
                 }
             }
         }

@@ -4,6 +4,7 @@ struct CalendarView: View {
     @Environment(AppModel.self) private var app
     @Environment(DataStore.self) private var data
     @State private var selectedDay = Calendar.week.startOfDay(for: .now)
+    @State private var addingEvent: Event?
 
     private var weekStart: Date { Week.start(of: selectedDay) }
     private var week: Loadable<[Event]> { data.events(weekOf: selectedDay) }
@@ -28,7 +29,16 @@ struct CalendarView: View {
                 List {
                     StaleBanner(error: week.error, savedAt: week.savedAt)
                         .listRowSeparator(.hidden)
-                    ForEach(dayEvents) { e in EventRow(event: e) }
+                    ForEach(dayEvents) { e in
+                        EventRow(event: e)
+                            .swipeActions {
+                                Button { addingEvent = e } label: { Label("Kalender", systemImage: "calendar.badge.plus") }
+                                    .tint(.accentColor)
+                            }
+                            .contextMenu {
+                                Button { addingEvent = e } label: { Label("Føj til min kalender", systemImage: "calendar.badge.plus") }
+                            }
+                    }
                 }
                 .listStyle(.plain)
                 .overlay {
@@ -47,6 +57,10 @@ struct CalendarView: View {
                 }
             }
             .task(id: weekStart) { await week.load(maxAge: 600) }
+            .sheet(item: $addingEvent) { e in
+                AddToCalendarSheet(event: e, childNames: e.childIds.compactMap { app.child($0)?.firstName })
+                    .ignoresSafeArea()
+            }
         }
     }
 
