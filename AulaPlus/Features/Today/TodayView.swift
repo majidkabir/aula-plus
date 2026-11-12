@@ -8,7 +8,8 @@ struct TodayView: View {
     private var todayEvents: Loadable<[Event]> { data.events(weekOf: .now) }
 
     var body: some View {
-        NavigationStack {
+        @Bindable var app = app
+        NavigationStack(path: $app.todayPath) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     ChildFilterBar().padding(.horizontal, -16)

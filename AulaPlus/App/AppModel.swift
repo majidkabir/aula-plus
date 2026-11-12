@@ -27,6 +27,7 @@ final class AppModel {
     var selectedTab: Tab = .today
     var messagesPath: [ThreadSummary] = []
     var morePath = NavigationPath()
+    var todayPath = NavigationPath()
 
     // MARK: App lock (Face ID / passcode)
 
@@ -82,6 +83,20 @@ final class AppModel {
     func child(_ id: Int) -> Child? { children.first { $0.id == id } }
 
     func start() async {
+        if Demo.isOn {
+            phase = .loggedIn
+            switch Demo.screen {
+            case "messages": selectedTab = .messages
+            case "thread": selectedTab = .messages; messagesPath = [Demo.threads[0]]
+            case "calendar": selectedTab = .calendar
+            case "weekPlan": selectedTab = .weekPlan
+            case "more": selectedTab = .more
+            case "post": selectedTab = .more; morePath.append(Demo.posts[0])
+            case "child": todayPath.append(Demo.noah)
+            default: break
+            }
+            return
+        }
         let hasTokens = await TokenStore.shared.hasTokens
         phase = hasTokens ? .loggedIn : .loggedOut
         if hasTokens { await session.load() }

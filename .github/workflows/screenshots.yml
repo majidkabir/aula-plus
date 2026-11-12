@@ -1,0 +1,56 @@
+name: Screenshots
+
+on:
+  push:
+    branches: ['ui/**']
+
+concurrency:
+  group: shots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shots:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen && xcodegen generate
+      - name: Pick and boot simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)['devices']
+          c=[x for k,v in sorted(d.items(),reverse=True) if 'iOS' in k for x in v if x['name'].startswith('iPhone')]
+          pro=[x for x in c if x['name'].endswith('Pro')]
+          print((pro or c)[0]['udid'])")
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild build -project AulaPlus.xcodeproj -scheme AulaPlus \
+            -destination "id=${{ steps.sim.outputs.udid }}" -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO | grep -E "error:|\*\* BUILD" || true
+          test -d build/Build/Products/Debug-iphonesimulator/AulaPlus.app
+      - name: Capture
+        run: |
+          UDID=${{ steps.sim.outputs.udid }}
+          xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/AulaPlus.app
+          mkdir -p shots
+          for mode in light dark; do
+            xcrun simctl ui "$UDID" appearance $mode
+            for screen in today messages thread calendar weekPlan more post child; do
+              xcrun simctl terminate "$UDID" com.majidkabir.aulaplus 2>/dev/null || true
+              xcrun simctl launch "$UDID" com.majidkabir.aulaplus -demo YES -screen $screen
+              sleep 5
+              xcrun simctl io "$UDID" screenshot "shots/$mode-$screen.png"
+            done
+          done
+          ls -la shots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: shots
+          retention-days: 7
