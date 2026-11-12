@@ -8,6 +8,9 @@ concurrency:
   group: shots-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   shots:
     runs-on: macos-15
@@ -49,8 +52,15 @@ jobs:
             done
           done
           ls -la shots
-      - uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: shots
-          retention-days: 7
+      - name: Publish to screenshots branch
+        run: |
+          for f in shots/*.png; do sips -Z 1100 "$f" >/dev/null; done
+          SHA=${GITHUB_SHA::7}
+          mkdir /tmp/pub && cp shots/*.png /tmp/pub/
+          cd /tmp/pub
+          git init -q -b screenshots
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          echo "$GITHUB_SHA" > SOURCE
+          git add -A && git commit -qm "Screenshots for $SHA"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" screenshots
