@@ -8,6 +8,8 @@ struct LoginView: View {
     @State private var showWeb = false
     @State private var working = false
     @State private var error: String?
+    /// One silent second attempt per tap (see `finish`).
+    @State private var retried = false
 
     var body: some View {
         VStack(spacing: 24) {
@@ -34,10 +36,8 @@ struct LoginView: View {
             }
             Spacer()
             Button {
-                pkce = PKCE.make()
-                LoginAttempts.add(pkce)
-                error = nil
-                showWeb = true
+                retried = false
+                startLogin()
             } label: {
                 Group {
                     if working { ProgressView().tint(.white) } else { Text("Log ind med MitID") }
@@ -94,6 +94,13 @@ struct LoginView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private func startLogin() {
+        pkce = PKCE.make()
+        LoginAttempts.add(pkce)
+        error = nil
+        showWeb = true
+    }
+
     private func finish(_ url: URL) async {
         working = true
         defer { working = false }
@@ -120,6 +127,15 @@ struct LoginView: View {
             } catch {
                 lastError = error
             }
+        }
+        // Aula sometimes rejects the code from the first MitID round trip, while a second
+        // login right after goes through at once without MitID (Aula now knows you).
+        // So do that second login automatically, once.
+        if !retried, let authError = lastError as? AuthError, case .tokenEndpoint = authError {
+            retried = true
+            try? await Task.sleep(for: .milliseconds(700))   // let the sheet finish closing
+            startLogin()
+            return
         }
         self.error = lastError.localizedDescription
     }
