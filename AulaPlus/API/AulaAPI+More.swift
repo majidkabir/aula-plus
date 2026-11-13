@@ -141,7 +141,9 @@ extension AulaAPI {
         ]
         q += institutionProfileIds.map { .init(name: "filterInstProfileIds[]", value: String($0)) }
         let dto: AlbumsDTO = try await call("gallery.getAlbums", query: q)
-        return (dto.albums?.items ?? []).map { a in
+        var seenAlbums = Set<Int>()
+        let albums = (dto.albums?.items ?? []).filter { seenAlbums.insert($0.id.value).inserted }
+        return albums.map { a in
             let cover: String? = a.thumbnailsUrls?.items.compactMap(\.url).first
             return Album(id: a.id.value, title: a.title?.nilIfEmpty ?? String(localized: "Album"),
                          date: AulaDate.parse(a.creationDate),
@@ -161,7 +163,10 @@ extension AulaAPI {
         ]
         q += institutionProfileIds.map { .init(name: "filterInstProfileIds[]", value: String($0)) }
         let dto: MediaListDTO = try await call("gallery.getMedia", query: q)
-        return (dto.results?.items ?? []).map { m in
+        // Aula lists a photo once per child it's shared with; show each photo once.
+        var seen = Set<Int>()
+        let unique = (dto.results?.items ?? []).filter { seen.insert($0.id.value).inserted }
+        return unique.map { m in
             let thumbs: [String?] = [m.mediumThumbnailUrl, m.thumbnailUrl, m.smallThumbnailUrl, m.largeThumbnailUrl, m.file?.url]
             let fulls: [String?] = [m.file?.url, m.largeThumbnailUrl, m.mediumThumbnailUrl]
             let thumb: String? = thumbs.compactMap { $0 }.first

@@ -68,10 +68,10 @@ final class AppModel {
             case "more": selectedTab = .more
             case "post": selectedTab = .more; morePath.append(Demo.posts[0])
             case "child": todayPath.append(Demo.noah)
-            case "gallery": selectedTab = .more; morePath.append(DemoRoute.gallery)
-            case "notifications": selectedTab = .more; morePath.append(DemoRoute.notifications)
-            case "settings": selectedTab = .more; morePath.append(DemoRoute.settings)
-            case "empty": selectedTab = .more; morePath.append(DemoRoute.empty)
+            case "gallery": selectedTab = .more; morePath.append(Route.gallery)
+            case "notifications": selectedTab = .more; morePath.append(Route.notifications)
+            case "settings": selectedTab = .more; morePath.append(Route.settings)
+            case "empty": selectedTab = .more; morePath.append(Route.empty)
             default: break
             }
             AppLock.shared.sync(loggedIn: false)

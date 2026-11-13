@@ -50,6 +50,7 @@ struct TodayView: View {
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
             .navigationDestination(for: Child.self) { ChildPresenceView(child: $0) }
+            .navigationDestination(for: Route.self) { RouteView(route: $0) }
             .navigationTitle("I dag")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -131,7 +132,7 @@ struct TodayView: View {
     @ViewBuilder private var vacationBanner: some View {
         let missing = (data.vacationRequests.value ?? []).filter { $0.isMissingAnswer && $0.isEditable }
         if !missing.isEmpty {
-            NavigationLink { VacationRequestsView() } label: {
+            NavigationLink(value: Route.vacations) {
                 HStack(spacing: 12) {
                     Image(systemName: "sun.max.fill").font(.title2).foregroundStyle(.orange)
                     VStack(alignment: .leading, spacing: 2) {
