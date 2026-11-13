@@ -37,6 +37,12 @@ final class AppLock {
 
     private var backgroundedAt: Date?
     private var authenticating = false
+    private var isActive = false
+    /// Ask once on launch and once per return from the background — never on every activation:
+    /// the Face ID sheet itself makes the app inactive/active, so that would loop after a cancel.
+    private var wantsPrompt = true
+    /// No prompt before the app knows whether anyone is logged in (else Face ID could pop up over the login screen).
+    private var knowsLogin = false
 
     // MARK: What this device offers
 
@@ -71,19 +77,32 @@ final class AppLock {
 
     func didEnterBackground(loggedIn: Bool) {
         backgroundedAt = .now
+        isActive = false
+        wantsPrompt = true
         // Lock before iOS takes the app-switcher snapshot.
         if isEnabled && loggedIn && delay == .immediately { isLocked = true }
     }
 
     func didBecomeActive(loggedIn: Bool) {
-        defer { backgroundedAt = nil }
-        guard isEnabled, loggedIn, let since = backgroundedAt else { return }
-        if Date.now.timeIntervalSince(since) >= Double(delay.rawValue) { isLocked = true }
+        isActive = true
+        if isEnabled, loggedIn, let since = backgroundedAt, Date.now.timeIntervalSince(since) >= Double(delay.rawValue) {
+            isLocked = true
+        }
+        backgroundedAt = nil
+        promptIfNeeded()
     }
 
     /// Called when the login state is known or changes.
     func sync(loggedIn: Bool) {
         if !loggedIn || !isEnabled { isLocked = false }
+        knowsLogin = true
+        promptIfNeeded()
+    }
+
+    private func promptIfNeeded() {
+        guard isLocked, isActive, knowsLogin, wantsPrompt, !Demo.isOn else { return }
+        wantsPrompt = false
+        Task { await unlock() }
     }
 
     func showLockedForDemo() { isLocked = true }
@@ -144,7 +163,6 @@ struct AppMark: View {
 
 struct LockView: View {
     @Environment(AppModel.self) private var app
-    @Environment(\.scenePhase) private var scenePhase
     @State private var confirmLogout = false
     private let lock = AppLock.shared
 
@@ -177,11 +195,6 @@ struct LockView: View {
             Button("Log ud", role: .destructive) { Task { await app.logout() } }
         } message: {
             Text("Du skal logge ind med MitID igen.")
-        }
-        // Ask straight away, and again each time the app comes back while still locked.
-        .task { if scenePhase == .active && !Demo.isOn { await lock.unlock() } }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active && !Demo.isOn { Task { await lock.unlock() } }
         }
     }
 }

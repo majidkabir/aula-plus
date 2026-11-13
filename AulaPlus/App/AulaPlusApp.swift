@@ -17,6 +17,8 @@ struct AulaPlusApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                // While locked, VoiceOver must not read the screens behind the lock.
+                .accessibilityHidden(lock.isLocked)
                 .task {
                     await app.start()
                     BackgroundRefresh.schedule()
@@ -35,7 +37,7 @@ struct AulaPlusApp: App {
         .backgroundTask(.appRefresh(BackgroundRefresh.taskId)) {
             await BackgroundRefresh.run()
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase, initial: true) { _, phase in
             switch phase {
             case .background:
                 lock.didEnterBackground(loggedIn: app.phase == .loggedIn)
