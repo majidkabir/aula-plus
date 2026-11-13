@@ -2830,6 +2830,56 @@
           }
         }
       }
+    },
+    "Ingen ugeplan i Aula": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No week plan in Aula"
+          }
+        }
+      }
+    },
+    "Dine børns institution deler ingen ugeplan i Aula. Det er normalt for vuggestuer og børnehaver.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your children's institution doesn't share a week plan in Aula. That's normal for nurseries and kindergartens."
+          }
+        }
+      }
+    },
+    "Ugeplanen kan ikke vises endnu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week plan can't be shown yet"
+          }
+        }
+      }
+    },
+    "Skolen lægger ugeplanen i %@. Aula+ kan indtil videre kun vise Meebook og Min Uddannelse.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The school puts the week plan in %@. Aula+ can only show Meebook and Min Uddannelse so far."
+          }
+        }
+      }
+    },
+    "Aula viser disse værktøjer: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula shows these tools: %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
