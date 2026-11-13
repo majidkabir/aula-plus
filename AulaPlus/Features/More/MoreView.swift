@@ -89,17 +89,22 @@ struct GalleryView: View {
                 ForEach(data.albums.value ?? []) { album in
                     NavigationLink(value: album) {
                         VStack(alignment: .leading, spacing: 6) {
-                            AsyncImage(url: album.coverURL) { img in
-                                img.resizable().scaledToFill()
-                            } placeholder: {
-                                LinearGradient(colors: [Self.tint(album.id).opacity(0.35), Self.tint(album.id).opacity(0.12)],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing)
-                                    .overlay(Image(systemName: "photo.on.rectangle.angled").font(.title)
-                                        .foregroundStyle(Self.tint(album.id)))
-                            }
-                            .frame(height: 130)
-                            .frame(maxWidth: .infinity)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            // Fixed tile first, photo filled inside it: a wide photo can't widen the
+                            // column or reach into the neighbour's tap area.
+                            Color.clear
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 130)
+                                .overlay {
+                                    AsyncImage(url: album.coverURL) { img in
+                                        img.resizable().scaledToFill()
+                                    } placeholder: {
+                                        LinearGradient(colors: [Self.tint(album.id).opacity(0.35), Self.tint(album.id).opacity(0.12)],
+                                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                                            .overlay(Image(systemName: "photo.on.rectangle.angled").font(.title)
+                                                .foregroundStyle(Self.tint(album.id)))
+                                    }
+                                }
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                             Text(album.title).font(.subheadline.weight(.semibold)).lineLimit(2)
                             HStack(spacing: 4) {
                                 Text(Fmt.listDate(album.date))
@@ -107,6 +112,8 @@ struct GalleryView: View {
                             }
                             .font(.caption).foregroundStyle(.secondary)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -139,20 +146,25 @@ struct AlbumView: View {
             LazyVGrid(columns: columns, spacing: 3) {
                 ForEach(media.value ?? []) { m in
                     Button { viewing = m } label: {
-                        AsyncImage(url: m.thumbURL) { img in
-                            img.resizable().scaledToFill()
-                        } placeholder: {
-                            Color(.tertiarySystemFill)
-                        }
-                        .frame(minWidth: 0, maxWidth: .infinity)
-                        .frame(height: 115)
-                        .clipped()
-                        .overlay(alignment: .bottomTrailing) {
-                            if m.isVideo {
-                                Image(systemName: "play.circle.fill").foregroundStyle(.white).padding(4)
+                        Color(.tertiarySystemFill)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 115)
+                            .overlay {
+                                AsyncImage(url: m.thumbURL) { img in
+                                    img.resizable().scaledToFill()
+                                } placeholder: {
+                                    Color.clear
+                                }
                             }
-                        }
+                            .clipped()
+                            .contentShape(Rectangle())
+                            .overlay(alignment: .bottomTrailing) {
+                                if m.isVideo {
+                                    Image(systemName: "play.circle.fill").foregroundStyle(.white).padding(4)
+                                }
+                            }
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -170,7 +182,14 @@ struct AlbumView: View {
 struct MediaViewer: View {
     let items: [Media]
     let start: Media
-    @State private var current: Int = 0
+    @State private var current: Int
+
+    init(items: [Media], start: Media) {
+        self.items = items
+        self.start = start
+        // Set before the first render; changing the page in onAppear is sometimes ignored by TabView.
+        _current = State(initialValue: items.firstIndex(of: start) ?? 0)
+    }
     @State private var sharing: URL?
     @State private var busy = false
     @Environment(\.dismiss) private var dismiss
@@ -216,7 +235,6 @@ struct MediaViewer: View {
                 }
             }
             .onChange(of: current) { _, _ in sharing = nil }
-            .onAppear { current = items.firstIndex(of: start) ?? 0 }
         }
     }
 
