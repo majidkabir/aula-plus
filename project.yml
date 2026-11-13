@@ -33,6 +33,7 @@ targets:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
         NSFaceIDUsageDescription: Aula+ kan låses med Face ID, så andre ikke kan læse beskeder om dine børn.
+        NSPhotoLibraryAddUsageDescription: Aula+ gemmer billeder og videoer fra galleriet i dine Fotos.
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers: [com.majidkabir.aulaplus.refresh]
         CFBundleDevelopmentRegion: da

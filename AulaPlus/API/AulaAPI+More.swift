@@ -348,12 +348,23 @@ extension AulaAPI {
         }
     }
 
-    /// Replaces the people tagged in a photo, like Aula's web app (`gallery.updateMedia` with the full tag list).
-    func setTags(_ media: Media, tagIds: [Int]) async throws {
-        var item: [String: Any] = ["id": media.id, "tags": tagIds]
-        item["title"] = media.title ?? NSNull()
-        item["description"] = media.description ?? NSNull()
-        let _: Ignored = try await call("gallery.updateMedia", body: ["media": [item]])
+    /// Tags or untags one person in a photo. Aula's own app uses `gallery.addTag`/`removeTag`
+    /// (`gallery.updateMedia` needs edit rights a guardian usually lacks); the web call is the fallback.
+    func setTag(_ profileId: Int, on media: Media, tagged: Bool, allTagIds: [Int]) async throws {
+        let body: [String: Any] = ["mediaId": media.id, "instProfileId": profileId, "tagId": profileId]
+        do {
+            let _: Ignored = try await call(tagged ? "gallery.addTag" : "gallery.removeTag", body: body)
+        } catch let first as AulaError {
+            if case .stepUpRequired = first { throw first }
+            var item: [String: Any] = ["id": media.id, "tags": allTagIds]
+            item["title"] = media.title ?? NSNull()
+            item["description"] = media.description ?? NSNull()
+            do {
+                let _: Ignored = try await call("gallery.updateMedia", body: ["media": [item]])
+            } catch {
+                throw first
+            }
+        }
     }
 
     /// Marks notifications as seen (Aula deletes them, like the web app does).

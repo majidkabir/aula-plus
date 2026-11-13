@@ -2720,6 +2720,56 @@
           }
         }
       }
+    },
+    "Gem i Fotos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save to Photos"
+          }
+        }
+      }
+    },
+    "Del …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share …"
+          }
+        }
+      }
+    },
+    "Gemt i Fotos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved to Photos"
+          }
+        }
+      }
+    },
+    "Noget gik galt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong"
+          }
+        }
+      }
+    },
+    "Aula+ må ikke gemme i Fotos. Slå det til under Indstillinger → Aula+ → Fotos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ may not save to Photos. Turn it on in Settings → Aula+ → Photos."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
