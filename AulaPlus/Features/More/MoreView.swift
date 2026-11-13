@@ -421,8 +421,9 @@ struct MediaViewer: View {
         // Set before the first render; changing the page in onAppear is sometimes ignored by TabView.
         _current = State(initialValue: items.firstIndex(where: { $0.id == start.id }) ?? 0)
     }
-    @State private var sharing: URL?
+    @State private var sharing: SharedFile?
     @State private var busy = false
+    @State private var savedNote: String?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
@@ -461,19 +462,30 @@ struct MediaViewer: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Luk") { dismiss() } }
                 ToolbarItem(placement: .primaryAction) { tagMenu }
                 ToolbarItem(placement: .primaryAction) {
-                    if let url = sharing {
-                        ShareLink(item: url)
-                    } else {
-                        Button {
-                            Task { await prepareShare() }
-                        } label: {
-                            if busy { ProgressView() } else { Image(systemName: "square.and.arrow.down") }
-                        }
+                    Menu {
+                        Button { Task { await save() } } label: { Label("Gem i Fotos", systemImage: "square.and.arrow.down") }
+                        Button { Task { await share() } } label: { Label("Del …", systemImage: "square.and.arrow.up") }
+                    } label: {
+                        if busy { ProgressView() } else { Image(systemName: "square.and.arrow.down") }
+                    } primaryAction: {
+                        Task { await save() }
                     }
+                    .disabled(busy || items.isEmpty)
+                    .accessibilityLabel(Text("Gem i Fotos"))
                 }
             }
-            .onChange(of: current) { _, _ in sharing = nil }
-            .alert("Kunne ikke ændre tag", isPresented: Binding(get: { tagError != nil }, set: { if !$0 { tagError = nil } })) {
+            .overlay(alignment: .center) {
+                if let savedNote {
+                    Label(savedNote, systemImage: "checkmark.circle.fill")
+                        .font(.headline)
+                        .padding(.horizontal, 18).padding(.vertical, 12)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .transition(.opacity)
+                }
+            }
+            .sheet(item: $sharing) { file in ShareSheet(items: [file.url]) }
+
+            .alert("Noget gik galt", isPresented: Binding(get: { tagError != nil }, set: { if !$0 { tagError = nil } })) {
                 Button("OK", role: .cancel) {}
             } message: { Text(tagError ?? "") }
         }
@@ -554,12 +566,34 @@ struct MediaViewer: View {
         }
     }
 
-    /// Downloads the full image so it can be saved to Photos or shared.
-    private func prepareShare() async {
-        guard items.indices.contains(current), let url = items[current].fullURL else { return }
+    /// Downloads the current photo or video in full size.
+    private func download() async throws -> URL {
+        guard items.indices.contains(current) else { throw AulaError.http(404) }
+        let m = items[current]
+        guard let url = m.fullURL ?? m.thumbURL else { throw AulaError.http(404) }
+        return try await AulaAPI.shared.download(url, suggestedName: "aula-\(m.id)" + (m.isVideo ? ".mp4" : ".jpg"))
+    }
+
+    /// Saves the current photo or video straight to Photos (add-only access).
+    private func save() async {
         busy = true
         defer { busy = false }
-        sharing = try? await AulaAPI.shared.download(url, suggestedName: "aula-\(items[current].id)")
+        do {
+            let file = try await download()
+            let isVideo = items.indices.contains(current) && items[current].isVideo
+            try await PhotoSaver.save(file, isVideo: isVideo)
+            withAnimation { savedNote = String(localized: "Gemt i Fotos") }
+            try? await Task.sleep(for: .seconds(1.5))
+            withAnimation { savedNote = nil }
+        } catch {
+            tagError = error.localizedDescription
+        }
+    }
+
+    private func share() async {
+        busy = true
+        defer { busy = false }
+        do { sharing = SharedFile(url: try await download()) } catch { tagError = error.localizedDescription }
     }
 }
 

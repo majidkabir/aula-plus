@@ -43,7 +43,9 @@ final class DataStore {
     func setTagged(_ child: Child, _ tagged: Bool, in media: Media) async throws -> Media {
         var tags = media.tagList.filter { $0.id != child.id }
         if tagged { tags.append(MediaTag(id: child.id, name: child.name)) }
-        if !Demo.isOn { try await AulaAPI.shared.setTags(media, tagIds: tags.map(\.id)) }
+        if !Demo.isOn {
+            try await AulaAPI.shared.setTag(child.id, on: media, tagged: tagged, allTagIds: tags.map(\.id))
+        }
         var updated = media
         updated.tags = tags
         for (key, list) in albumMedia {
