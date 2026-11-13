@@ -160,5 +160,12 @@ enum Demo {
     }
 }
 
-/// Extra navigation targets used only by screenshot runs.
-enum DemoRoute: Hashable { case notifications, settings, gallery, empty }
+/// Screens opened inside the Today and More tabs. Everything goes through the tab's
+/// navigation path: mixing `NavigationLink { View }` with value links in a path-based
+/// stack makes SwiftUI push the wrong screens (e.g. the gallery again on top of an album).
+enum Route: Hashable {
+    case posts, gallery, importantDates, documents, contacts, vacations, notifications, settings
+    case child(Child)
+    case document(SecureDocument)
+    case empty          // screenshot runs only
+}

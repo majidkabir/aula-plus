@@ -9,22 +9,22 @@ struct MoreView: View {
         NavigationStack(path: $app.morePath) {
             List {
                 Section("Skole") {
-                    NavigationLink { PostsList() } label: { row("Opslag", "newspaper.fill", .purple) }
-                    NavigationLink { GalleryView() } label: { row("Galleri", "photo.fill.on.rectangle.fill", .pink) }
-                    NavigationLink { ImportantDatesView() } label: { row("Vigtige datoer", "star.fill", .yellow) }
-                    NavigationLink { DocumentsView() } label: { row("Dokumenter", "doc.text.fill", .blue) }
-                    NavigationLink { ContactsView() } label: { row("Kontakter", "person.2.fill", .green) }
+                    NavigationLink(value: Route.posts) { row("Opslag", "newspaper.fill", .purple) }
+                    NavigationLink(value: Route.gallery) { row("Galleri", "photo.fill.on.rectangle.fill", .pink) }
+                    NavigationLink(value: Route.importantDates) { row("Vigtige datoer", "star.fill", .yellow) }
+                    NavigationLink(value: Route.documents) { row("Dokumenter", "doc.text.fill", .blue) }
+                    NavigationLink(value: Route.contacts) { row("Kontakter", "person.2.fill", .green) }
                 }
                 Section("Komme/gå") {
                     ForEach(app.children) { c in
-                        NavigationLink { ChildPresenceView(child: c) } label: {
+                        NavigationLink(value: Route.child(c)) {
                             HStack(spacing: 12) {
                                 ChildAvatar(child: c, size: 28)
                                 Text(c.firstName)
                             }
                         }
                     }
-                    NavigationLink { VacationRequestsView() } label: {
+                    NavigationLink(value: Route.vacations) {
                         HStack {
                             row("Ferieanmodninger", "sun.max.fill", .orange)
                             let missing = (data.vacationRequests.value ?? []).filter { $0.isMissingAnswer }.count
@@ -37,8 +37,8 @@ struct MoreView: View {
                     }
                 }
                 Section {
-                    NavigationLink { NotificationsView() } label: { row("Notifikationer", "bell.fill", .red) }
-                    NavigationLink { SettingsView(embedded: true) } label: { row("Profil og indstillinger", "gearshape.fill", .gray) }
+                    NavigationLink(value: Route.notifications) { row("Notifikationer", "bell.fill", .red) }
+                    NavigationLink(value: Route.settings) { row("Profil og indstillinger", "gearshape.fill", .gray) }
                 }
             }
             .scrollContentBackground(.hidden)
@@ -47,23 +47,7 @@ struct MoreView: View {
             .navigationDestination(for: Post.self) { PostDetailView(post: $0) }
             .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
             .navigationDestination(for: Album.self) { AlbumView(album: $0) }
-            .navigationDestination(for: DemoRoute.self) { r in
-                switch r {
-                case .notifications: NotificationsView()
-                case .settings: SettingsView(embedded: true)
-                case .gallery: GalleryView()
-                case .empty:
-                    // Screenshot of the offline + empty states.
-                    VStack(spacing: 0) {
-                        StaleBanner(error: AulaError.http(503).localizedDescription, savedAt: Date().addingTimeInterval(-3600))
-                            .padding()
-                        ContentUnavailableView("Ingen opslag", systemImage: "newspaper")
-                        Spacer()
-                    }
-                    .themedBackground()
-                    .navigationTitle("Opslag")
-                }
-            }
+            .navigationDestination(for: Route.self) { RouteView(route: $0) }
         }
     }
 
@@ -75,12 +59,43 @@ struct MoreView: View {
     }
 }
 
+/// The screen for each `Route`, shared by the Today and More tabs.
+struct RouteView: View {
+    let route: Route
+
+    var body: some View {
+        switch route {
+        case .posts: PostsList()
+        case .gallery: GalleryView()
+        case .importantDates: ImportantDatesView()
+        case .documents: DocumentsView()
+        case .contacts: ContactsView()
+        case .vacations: VacationRequestsView()
+        case .notifications: NotificationsView()
+        case .settings: SettingsView(embedded: true)
+        case .child(let c): ChildPresenceView(child: c)
+        case .document(let d): DocumentDetailView(doc: d)
+        case .empty:
+            // Screenshot of the offline + empty states.
+            VStack(spacing: 0) {
+                StaleBanner(error: AulaError.http(503).localizedDescription, savedAt: Date().addingTimeInterval(-3600))
+                    .padding()
+                ContentUnavailableView("Ingen opslag", systemImage: "newspaper")
+                Spacer()
+            }
+            .themedBackground()
+            .navigationTitle("Opslag")
+        }
+    }
+}
+
 // MARK: - Gallery
 
 struct GalleryView: View {
     @Environment(DataStore.self) private var data
     static func tint(_ id: Int) -> Color { [Color.pink, .orange, .teal, .purple, .indigo, .green][abs(id) % 6] }
-    private let columns = [GridItem(.adaptive(minimum: 160), spacing: 12)]
+    // Top-aligned: a two-line title must not push the neighbouring tile down.
+    private let columns = [GridItem(.adaptive(minimum: 160), spacing: 12, alignment: .top)]
 
     var body: some View {
         ScrollView {

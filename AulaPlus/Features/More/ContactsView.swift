@@ -134,7 +134,7 @@ struct DocumentsView: View {
             if tab == 0 {
                 if let d = docs { StaleBanner(error: d.error, savedAt: d.savedAt).listRowSeparator(.hidden) }
                 ForEach(docs?.value ?? []) { doc in
-                    NavigationLink { DocumentDetailView(doc: doc) } label: {
+                    NavigationLink(value: Route.document(doc)) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(doc.title).font(.subheadline.weight(.semibold))
                             HStack(spacing: 6) {
