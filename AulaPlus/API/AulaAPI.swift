@@ -92,8 +92,14 @@ actor AulaAPI {
             .filter { ($0.aggregatedDisplayMode ?? "Shown") == "Shown" }
         let widgets = Set(shown.compactMap { $0.widget?.widgetId?.value })
         var widgetNames: [String: String] = [:]
+        var widgetLinks: [WidgetLink] = []
         for w in shown {
-            if let id = w.widget?.widgetId?.value, let name = w.widget?.name?.nilIfEmpty { widgetNames[id] = name }
+            guard let id = w.widget?.widgetId?.value, let name = w.widget?.name?.nilIfEmpty else { continue }
+            widgetNames[id] = name
+            if let raw = w.widget?.url?.nilIfEmpty, let url = URL(string: raw), url.scheme?.hasPrefix("http") == true,
+               !widgetLinks.contains(where: { $0.id == id }) {
+                widgetLinks.append(WidgetLink(id: id, name: name, url: url))
+            }
         }
         let instIds = (profile.institutionProfiles?.items.map(\.id.value) ?? []) + children.map(\.id)
         return Session(displayName: profile.displayName ?? "",
@@ -102,7 +108,8 @@ actor AulaAPI {
                        guardianUserId: ctx.userId?.value,
                        widgetIds: widgets,
                        guardianProfileIds: profile.institutionProfiles?.items.map(\.id.value) ?? [],
-                       widgetNames: widgetNames)
+                       widgetNames: widgetNames,
+                       widgetLinks: widgetLinks)
     }
 
     // MARK: Endpoints

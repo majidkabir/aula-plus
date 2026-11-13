@@ -42,6 +42,23 @@ struct MoreView: View {
                         }
                     }
                 }
+                if let tools = app.session.value?.widgetLinks, !tools.isEmpty {
+                    Section("Værktøjer i Aula") {
+                        ForEach(tools) { t in
+                            Link(destination: t.url) {
+                                HStack {
+                                    HStack(spacing: 12) {
+                                        IconTile(systemImage: "square.grid.2x2.fill", color: .indigo)
+                                        Text(verbatim: t.name)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "arrow.up.right.square").foregroundStyle(.secondary)
+                                }
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                    }
+                }
                 Section {
                     NavigationLink(value: Route.notifications) { row("Notifikationer", "bell.fill", .red) }
                     NavigationLink(value: Route.settings) { row("Profil og indstillinger", "gearshape.fill", .gray) }
@@ -97,6 +114,20 @@ struct RouteView: View {
 }
 
 // MARK: - Gallery
+
+/// The gallery as its own tab (shown instead of the week plan when Aula has none).
+struct PhotosTab: View {
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        @Bindable var app = app
+        NavigationStack(path: $app.photosPath) {
+            GalleryView()
+                .navigationDestination(for: Album.self) { AlbumView(album: $0) }
+                .navigationDestination(for: Route.self) { RouteView(route: $0) }
+        }
+    }
+}
 
 /// Red "3 nye" capsule for new photos.
 struct NewBadge: View {
