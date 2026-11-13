@@ -133,10 +133,13 @@ private struct MediaDTO: Decodable {
 
 private struct MediaListDTO: Decodable {
     let results: Lossy<MediaDTO>?
+    let total: Int?
     init(from decoder: Decoder) throws {
-        if let list = try? Lossy<MediaDTO>(from: decoder) { results = list; return }
-        struct Wrapped: Decodable { let results: Lossy<MediaDTO>? }
-        results = try Wrapped(from: decoder).results
+        if let list = try? Lossy<MediaDTO>(from: decoder) { results = list; total = nil; return }
+        struct Wrapped: Decodable { let results: Lossy<MediaDTO>?; let mediaCount: Int?; let totalSize: Int? }
+        let w = try Wrapped(from: decoder)
+        results = w.results
+        total = w.mediaCount ?? w.totalSize
     }
 }
 
@@ -210,62 +213,81 @@ extension AulaAPI {
         }
     }
 
-    func media(albumId: Int, institutionProfileIds: [Int]) async throws -> [Media] {
-        var q: [URLQueryItem] = [
-            .init(name: "albumId", value: String(albumId)),
-            .init(name: "index", value: "0"),
-            .init(name: "limit", value: "500"),
-            .init(name: "sortOn", value: "uploadedAt"),
-            .init(name: "orderDirection", value: "desc"),
-            .init(name: "filterBy", value: "all"),
-        ]
-        q += institutionProfileIds.map { .init(name: "filterInstProfileIds[]", value: String($0)) }
-        let dto: MediaListDTO = try await call("gallery.getMedia", query: q)
-        return Self.uniqueMedia(dto.results?.items ?? [])
+    typealias MediaProgress = @MainActor ([Media], Int?) -> Void
+
+    /// All photos in an album, newest first. A small first page comes back fast; `progress`
+    /// gets the list so far after every page so the screen can show it straight away.
+    func media(albumId: Int, institutionProfileIds: [Int], progress: MediaProgress? = nil) async throws -> [Media] {
+        try await pages(progress: progress) { index, limit in
+            var q: [URLQueryItem] = [
+                .init(name: "albumId", value: String(albumId)),
+                .init(name: "index", value: String(index)),
+                .init(name: "limit", value: String(limit)),
+                .init(name: "sortOn", value: "uploadedAt"),
+                .init(name: "orderDirection", value: "desc"),
+                .init(name: "filterBy", value: "all"),
+            ]
+            q += institutionProfileIds.map { .init(name: "filterInstProfileIds[]", value: String($0)) }
+            return q
+        }
+    }
+
+    /// Fetches `gallery.getMedia` page by page: 48 first, then 150 at a time.
+    /// `totalSize` is unreliable, so it stops on a short or repeated page.
+    private func pages(progress: MediaProgress?, query: (_ index: Int, _ limit: Int) -> [URLQueryItem]) async throws -> [Media] {
+        var all: [Media] = []
+        var seen = Set<Int>()
+        var index = 0
+        for page in 0..<60 {
+            try Task.checkCancellation()
+            let limit = page == 0 ? 48 : 150
+            let dto: MediaListDTO = try await call("gallery.getMedia", query: query(index, limit))
+            let raw = dto.results?.items ?? []
+            let fresh = Self.uniqueMedia(raw).filter { seen.insert($0.id).inserted }
+            all += fresh
+            if raw.count < limit || fresh.isEmpty { break }
+            index += raw.count
+            if let progress { await progress(all, dto.total) }
+        }
+        return all
     }
 
     /// Every photo `childId` is tagged in, across all albums. Asks Aula for the child's own album
     /// (`userSpecificAlbum`); if that fails or comes back empty, looks through the albums instead.
-    func taggedMedia(childId: Int, institutionProfileIds: [Int]) async throws -> [Media] {
+    func taggedMedia(childId: Int, institutionProfileIds: [Int], progress: MediaProgress? = nil) async throws -> [Media] {
         var firstError: Error?
         do {
-            let list = try await userSpecificMedia(childId: childId)
+            let list = try await userSpecificMedia(childId: childId, progress: progress)
             if !list.isEmpty { return list }
         } catch {
             firstError = error
         }
-        let scanned = try await scanAlbums(for: childId, institutionProfileIds: institutionProfileIds)
+        let scanned = try await scanAlbums(for: childId, institutionProfileIds: institutionProfileIds, progress: progress)
         if scanned.isEmpty, let firstError { throw firstError }
         return scanned
     }
 
-    private func userSpecificMedia(childId: Int) async throws -> [Media] {
-        let pageSize = 60
-        var all: [Media] = []
-        var seen = Set<Int>()
-        var index = 0
-        for _ in 0..<50 {
-            let dto: MediaListDTO = try await call("gallery.getMedia", query: [
-                .init(name: "userSpecificAlbum", value: "true"),
-                .init(name: "filterInstProfileIds[]", value: String(childId)),
-                .init(name: "index", value: String(index)),
-                .init(name: "limit", value: String(pageSize)),
-                .init(name: "filterBy", value: "all"),
-            ])
-            let raw = dto.results?.items ?? []
-            let page = Self.uniqueMedia(raw).filter { seen.insert($0.id).inserted }
-            all += page
-            // `totalSize` is unreliable: stop on a short or repeated page.
-            if raw.count < pageSize || page.isEmpty { break }
-            index += raw.count
-        }
-        return all.filter { $0.isTagged(childId) || $0.tagList.isEmpty }
+    private func userSpecificMedia(childId: Int, progress: MediaProgress?) async throws -> [Media] {
+        let keep: ([Media]) -> [Media] = { $0.filter { $0.isTagged(childId) || $0.tagList.isEmpty } }
+        let wrapped: MediaProgress? = progress.map { p in { @MainActor list, total in p(keep(list), total) } }
+        let all = try await pages(progress: wrapped) { index, limit in [
+            .init(name: "userSpecificAlbum", value: "true"),
+            .init(name: "filterInstProfileIds[]", value: String(childId)),
+            .init(name: "index", value: String(index)),
+            .init(name: "limit", value: String(limit)),
+            .init(name: "filterBy", value: "all"),
+        ] }
+        return keep(all)
     }
 
     /// Photos tagged with `childId` in the newest albums, newest album first.
-    private func scanAlbums(for childId: Int, institutionProfileIds: [Int]) async throws -> [Media] {
+    private func scanAlbums(for childId: Int, institutionProfileIds: [Int], progress: MediaProgress?) async throws -> [Media] {
         let list = try await albums(institutionProfileIds: institutionProfileIds)
-        let found = await withTaskGroup(of: (Int, [Media]).self) { group in
+        func merged(_ found: [(Int, [Media])]) -> [Media] {
+            var seen = Set<Int>()
+            return found.sorted { $0.0 < $1.0 }.flatMap(\.1).filter { seen.insert($0.id).inserted }
+        }
+        return await withTaskGroup(of: (Int, [Media]).self) { group in
             for (i, album) in list.enumerated() {
                 group.addTask {
                     let media = (try? await self.media(albumId: album.id, institutionProfileIds: institutionProfileIds)) ?? []
@@ -273,11 +295,12 @@ extension AulaAPI {
                 }
             }
             var out: [(Int, [Media])] = []
-            for await r in group { out.append(r) }
-            return out
+            for await r in group {
+                out.append(r)
+                if let progress { await progress(merged(out), nil) }
+            }
+            return merged(out)
         }
-        var seen = Set<Int>()
-        return found.sorted { $0.0 < $1.0 }.flatMap(\.1).filter { seen.insert($0.id).inserted }
     }
 
     private static func uniqueMedia(_ items: [MediaDTO]) -> [Media] {

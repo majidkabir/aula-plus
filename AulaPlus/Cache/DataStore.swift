@@ -24,16 +24,18 @@ final class DataStore {
         if let l = albumMedia[album.id] { return l }
         let l: Loadable<[Media]>
         if let childId = album.childId {
-            l = Loadable(key: "tagged-\(childId)") {
+            l = Loadable(key: "tagged-\(childId)", streaming: { emit in
                 let s = try await AulaAPI.shared.bootstrap()
-                return try await AulaAPI.shared.taggedMedia(childId: childId, institutionProfileIds: s.institutionProfileIds)
-            }
+                return try await AulaAPI.shared.taggedMedia(childId: childId, institutionProfileIds: s.institutionProfileIds,
+                                                            progress: emit)
+            })
         } else {
             let albumId = album.id
-            l = Loadable(key: "album-\(albumId)") {
+            l = Loadable(key: "album-\(albumId)", streaming: { emit in
                 let s = try await AulaAPI.shared.bootstrap()
-                return try await AulaAPI.shared.media(albumId: albumId, institutionProfileIds: s.institutionProfileIds)
-            }
+                return try await AulaAPI.shared.media(albumId: albumId, institutionProfileIds: s.institutionProfileIds,
+                                                      progress: emit)
+            })
         }
         albumMedia[album.id] = l
         return l
