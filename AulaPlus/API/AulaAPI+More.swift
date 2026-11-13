@@ -224,20 +224,32 @@ extension AulaAPI {
         return Self.uniqueMedia(dto.results?.items ?? [])
     }
 
-    /// Every photo `childId` is tagged in, across all albums (Aula's "user specific album").
-    func taggedMedia(childId: Int) async throws -> [Media] {
-        let pageSize = 100
+    /// Every photo `childId` is tagged in, across all albums. Asks Aula for the child's own album
+    /// (`userSpecificAlbum`); if that fails or comes back empty, looks through the albums instead.
+    func taggedMedia(childId: Int, institutionProfileIds: [Int]) async throws -> [Media] {
+        var firstError: Error?
+        do {
+            let list = try await userSpecificMedia(childId: childId)
+            if !list.isEmpty { return list }
+        } catch {
+            firstError = error
+        }
+        let scanned = try await scanAlbums(for: childId, institutionProfileIds: institutionProfileIds)
+        if scanned.isEmpty, let firstError { throw firstError }
+        return scanned
+    }
+
+    private func userSpecificMedia(childId: Int) async throws -> [Media] {
+        let pageSize = 60
         var all: [Media] = []
         var seen = Set<Int>()
         var index = 0
-        for _ in 0..<30 {
+        for _ in 0..<50 {
             let dto: MediaListDTO = try await call("gallery.getMedia", query: [
                 .init(name: "userSpecificAlbum", value: "true"),
                 .init(name: "filterInstProfileIds[]", value: String(childId)),
                 .init(name: "index", value: String(index)),
                 .init(name: "limit", value: String(pageSize)),
-                .init(name: "sortOn", value: "uploadedAt"),
-                .init(name: "orderDirection", value: "desc"),
                 .init(name: "filterBy", value: "all"),
             ])
             let raw = dto.results?.items ?? []
@@ -247,7 +259,25 @@ extension AulaAPI {
             if raw.count < pageSize || page.isEmpty { break }
             index += raw.count
         }
-        return all
+        return all.filter { $0.isTagged(childId) || $0.tagList.isEmpty }
+    }
+
+    /// Photos tagged with `childId` in the newest albums, newest album first.
+    private func scanAlbums(for childId: Int, institutionProfileIds: [Int]) async throws -> [Media] {
+        let list = try await albums(institutionProfileIds: institutionProfileIds)
+        let found = await withTaskGroup(of: (Int, [Media]).self) { group in
+            for (i, album) in list.enumerated() {
+                group.addTask {
+                    let media = (try? await self.media(albumId: album.id, institutionProfileIds: institutionProfileIds)) ?? []
+                    return (i, media.filter { $0.isTagged(childId) })
+                }
+            }
+            var out: [(Int, [Media])] = []
+            for await r in group { out.append(r) }
+            return out
+        }
+        var seen = Set<Int>()
+        return found.sorted { $0.0 < $1.0 }.flatMap(\.1).filter { seen.insert($0.id).inserted }
     }
 
     private static func uniqueMedia(_ items: [MediaDTO]) -> [Media] {

@@ -189,7 +189,9 @@ private struct ChildAlbumTile: View {
             AlbumTile(title: album.title, coverURL: media.value?.first?.thumbURL,
                       tint: Palette.color(for: child.id, in: app.children), newCount: data.newCount(in: album),
                       placeholder: { ChildAvatar(child: child, size: 64) }) {
-                if let n = media.value?.count { Text("\(n) billeder") } else { Text("Tagget af personalet") }
+                if let n = media.value?.count { Text("\(n) billeder") }
+                else if media.error != nil { Text("Kunne ikke hente") }
+                else { Text("Henter …") }
             }
         }
         .buttonStyle(.plain)
@@ -271,6 +273,7 @@ struct AlbumView: View {
 
     var body: some View {
         ScrollView {
+            StaleBanner(error: media.error, savedAt: media.savedAt).padding(.horizontal)
             filterBar
             LazyVGrid(columns: columns, spacing: 3) {
                 ForEach(shown) { m in
@@ -285,7 +288,9 @@ struct AlbumView: View {
         }
         .overlay {
             if media.value == nil && media.isLoading { ProgressView() }
-            else if media.value?.isEmpty == true {
+            else if media.value == nil, let error = media.error {
+                ContentUnavailableView("Kunne ikke hente", systemImage: "wifi.exclamationmark", description: Text(error))
+            } else if media.value?.isEmpty == true {
                 ContentUnavailableView("Ingen billeder", systemImage: "photo")
             }
         }
