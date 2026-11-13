@@ -68,30 +68,6 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
         SKIP_INSTALL: YES
-  AulaPlusWidget:
-    type: app-extension
-    platform: iOS
-    sources:
-      - AulaPlusWidget
-      - Shared
-    entitlements:
-      path: AulaPlusWidget/AulaPlusWidget.entitlements
-      properties:
-        com.apple.security.application-groups: [group.com.majidkabir.aulaplus]
-    info:
-      path: AulaPlusWidget/Info.plist
-      properties:
-        CFBundleDisplayName: Aula+
-        CFBundleShortVersionString: $(MARKETING_VERSION)
-        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        NSExtension:
-          NSExtensionPointIdentifier: com.apple.widgetkit-extension
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.majidkabir.aulaplus.widget
-        TARGETED_DEVICE_FAMILY: "1"
-        CODE_SIGN_STYLE: Automatic
-        SKIP_INSTALL: YES
   AulaPlusTests:
     type: bundle.unit-test
     platform: iOS
