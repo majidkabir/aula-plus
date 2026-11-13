@@ -88,16 +88,21 @@ actor AulaAPI {
                 children.append(c.toChild(fallbackInstitution: inst.name))
             }
         }
-        let widgets = Set((ctx.pageConfiguration?.widgetConfigurations?.items ?? [])
+        let shown = (ctx.pageConfiguration?.widgetConfigurations?.items ?? [])
             .filter { ($0.aggregatedDisplayMode ?? "Shown") == "Shown" }
-            .compactMap { $0.widget?.widgetId?.value })
+        let widgets = Set(shown.compactMap { $0.widget?.widgetId?.value })
+        var widgetNames: [String: String] = [:]
+        for w in shown {
+            if let id = w.widget?.widgetId?.value, let name = w.widget?.name?.nilIfEmpty { widgetNames[id] = name }
+        }
         let instIds = (profile.institutionProfiles?.items.map(\.id.value) ?? []) + children.map(\.id)
         return Session(displayName: profile.displayName ?? "",
                        children: children,
                        institutionProfileIds: Array(Set(instIds)),
                        guardianUserId: ctx.userId?.value,
                        widgetIds: widgets,
-                       guardianProfileIds: profile.institutionProfiles?.items.map(\.id.value) ?? [])
+                       guardianProfileIds: profile.institutionProfiles?.items.map(\.id.value) ?? [],
+                       widgetNames: widgetNames)
     }
 
     // MARK: Endpoints

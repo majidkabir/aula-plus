@@ -20,6 +20,7 @@ struct Session: Codable {
     let guardianUserId: String?        // profileContext.data.userId (widget sessionUUID)
     let widgetIds: Set<String>
     var guardianProfileIds: [Int]? = nil  // the guardian's own institution profiles
+    var widgetNames: [String: String]? = nil  // widget id → name, as Aula shows it
 }
 
 enum PresenceStatus: Int, Codable {

@@ -27,6 +27,35 @@ struct WeekPlanView: View {
         return plans.filter { $0.childName.isEmpty || $0.childName.localizedCaseInsensitiveContains(child.firstName) }
     }
 
+    /// Widgets that look like a week plan (by Aula's own name for them).
+    private var planWidgets: [String] {
+        let names = app.session.value?.widgetNames ?? [:]
+        let hint = #/(?i)uge|plan|lektie|opgave|easyiq|meebook|docendo|huskeliste|forløb|skoleportal/#
+        return names.values.filter { $0.contains(hint) }.sorted()
+    }
+
+    @ViewBuilder private var unsupportedView: some View {
+        let all = (app.session.value?.widgetNames ?? [:]).values.sorted()
+        if planWidgets.isEmpty {
+            ContentUnavailableView {
+                Label("Ingen ugeplan i Aula", systemImage: "doc.text")
+            } description: {
+                Text("Dine børns institution deler ingen ugeplan i Aula. Det er normalt for vuggestuer og børnehaver.")
+            }
+        } else {
+            ContentUnavailableView {
+                Label("Ugeplanen kan ikke vises endnu", systemImage: "puzzlepiece.extension")
+            } description: {
+                Text("Skolen lægger ugeplanen i \(planWidgets.joined(separator: ", ")). Aula+ kan indtil videre kun vise Meebook og Min Uddannelse.")
+            }
+        }
+        if !all.isEmpty {
+            Text("Aula viser disse værktøjer: \(all.joined(separator: ", "))")
+                .font(.footnote).foregroundStyle(.secondary).textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .center).multilineTextAlignment(.center)
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -48,9 +77,7 @@ struct WeekPlanView: View {
                     }
 
                     if !supported && app.session.value != nil && visibleTasks.isEmpty {
-                        ContentUnavailableView("Ugeplan ikke understøttet endnu",
-                                               systemImage: "puzzlepiece.extension",
-                                               description: Text("Din skole bruger en ugeplan-udbyder, som Aula+ ikke kender endnu (understøtter Meebook og Min Uddannelse)."))
+                        unsupportedView
                     } else if visiblePlans.allSatisfy({ $0.sections.isEmpty }) {
                         if plan.isLoading { ProgressView().frame(maxWidth: .infinity).padding(.top, 40) }
                         else { ContentUnavailableView("Ingen ugeplan for denne uge", systemImage: "doc.text") }
