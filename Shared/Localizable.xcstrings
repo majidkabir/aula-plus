@@ -2290,6 +2290,186 @@
           }
         }
       }
+    },
+    "Med det samme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Immediately"
+          }
+        }
+      }
+    },
+    "Efter 1 minut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After 1 minute"
+          }
+        }
+      }
+    },
+    "Efter 5 minutter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After 5 minutes"
+          }
+        }
+      }
+    },
+    "Efter 15 minutter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After 15 minutes"
+          }
+        }
+      }
+    },
+    "kode": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "passcode"
+          }
+        }
+      }
+    },
+    "Brug kode": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use passcode"
+          }
+        }
+      }
+    },
+    "Slå lås til for Aula+": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on the lock for Aula+"
+          }
+        }
+      }
+    },
+    "Lås op for at se beskeder, kalender og fravær.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock to see messages, calendar and attendance."
+          }
+        }
+      }
+    },
+    "Lås op med %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock with %@"
+          }
+        }
+      }
+    },
+    "Du skal logge ind med MitID igen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll need to log in with MitID again."
+          }
+        }
+      }
+    },
+    "Lås Aula+ med %@?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock Aula+ with %@?"
+          }
+        }
+      }
+    },
+    "Slå til": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on"
+          }
+        }
+      }
+    },
+    "Ikke nu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        }
+      }
+    },
+    "Så kan andre, der låner din telefon, ikke læse beskeder om dine børn.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Then nobody who borrows your phone can read messages about your children."
+          }
+        }
+      }
+    },
+    "Lås med %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock with %@"
+          }
+        }
+      }
+    },
+    "Lås igen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock again"
+          }
+        }
+      }
+    },
+    "Beskeder og kalender skjules, når du skifter app, og kræver %@ for at åbne igen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messages and calendar are hidden when you switch apps, and %@ is needed to open them again."
+          }
+        }
+      }
+    },
+    "Slå en kode til på telefonen for at kunne låse Aula+.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a passcode on your phone to be able to lock Aula+."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
