@@ -35,6 +35,7 @@ struct LoginView: View {
             Spacer()
             Button {
                 pkce = PKCE.make()
+                LoginAttempts.add(pkce)
                 error = nil
                 showWeb = true
             } label: {
@@ -99,14 +100,28 @@ struct LoginView: View {
         let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         let code = items.first { $0.name == "code" }?.value
         let state = items.first { $0.name == "state" }?.value
-        do {
-            guard state == pkce.state else { throw AuthError.stateMismatch }
-            guard let code else { throw AuthError.missingCode }
-            try await TokenStore.shared.exchange(code: code, verifier: pkce.verifier)
-            await app.didLogin()
-        } catch {
-            self.error = error.localizedDescription
+        if let message = items.first(where: { $0.name == "error_description" })?.value
+            ?? items.first(where: { $0.name == "error" })?.value {
+            self.error = message
+            return
         }
+        guard let code else { self.error = AuthError.missingCode.localizedDescription; return }
+        // Try the attempt this code belongs to (by state), then earlier attempts. PKCE makes
+        // sure only the right verifier works, so a mismatched or missing state is not fatal.
+        var verifiers = LoginAttempts.verifiers(for: state)
+        if !verifiers.contains(pkce.verifier) { verifiers.insert(pkce.verifier, at: state == pkce.state ? 0 : verifiers.count) }
+        var lastError: Error = AuthError.stateMismatch
+        for verifier in verifiers {
+            do {
+                try await TokenStore.shared.exchange(code: code, verifier: verifier)
+                LoginAttempts.clear()
+                await app.didLogin()
+                return
+            } catch {
+                lastError = error
+            }
+        }
+        self.error = lastError.localizedDescription
     }
 }
 

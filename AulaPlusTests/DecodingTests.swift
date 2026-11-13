@@ -101,6 +101,17 @@ final class DecodingTests: XCTestCase {
 }
 
 final class MessagingTests: XCTestCase {
+    func testLoginAttemptsPreferMatchingState() {
+        LoginAttempts.clear()
+        let first = PKCE.make(), second = PKCE.make()
+        LoginAttempts.add(first)
+        LoginAttempts.add(second)
+        XCTAssertEqual(LoginAttempts.verifiers(for: first.state), [first.verifier, second.verifier])
+        XCTAssertEqual(LoginAttempts.verifiers(for: nil), [second.verifier, first.verifier])
+        LoginAttempts.clear()
+        XCTAssertEqual(LoginAttempts.verifiers(for: nil), [])
+    }
+
     func testEntities() {
         XCTAssertEqual(HTML.plainText("don&#8217;t &#x2013; ok"), "don’t – ok")
         XCTAssertEqual(HTML.decodeEntities("&amp;lt;b&amp;gt; &amp; &aelig;"), "&lt;b&gt; & æ")
