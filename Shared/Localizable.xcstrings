@@ -2770,6 +2770,66 @@
           }
         }
       }
+    },
+    "Henter billeder …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading photos …"
+          }
+        }
+      }
+    },
+    "Henter billeder … %lld af %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading photos … %lld of %lld"
+          }
+        }
+      }
+    },
+    "Opdaterer …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating …"
+          }
+        }
+      }
+    },
+    "Opdaterer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating"
+          }
+        }
+      }
+    },
+    "Henter albums …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading albums …"
+          }
+        }
+      }
+    },
+    "%lld billeder …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld photos …"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

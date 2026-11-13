@@ -157,12 +157,17 @@ struct GalleryView: View {
         }
         .overlay {
             if (data.albums.value ?? []).isEmpty && app.children.isEmpty {
-                if data.albums.isLoading { ProgressView() }
+                if data.albums.isLoading { ProgressView("Henter albums …") }
                 else { ContentUnavailableView("Ingen albums", systemImage: "photo.on.rectangle") }
             }
         }
         .themedBackground()
         .navigationTitle("Galleri")
+        .toolbar {
+            if data.albums.isLoading && data.albums.value != nil {
+                ToolbarItem(placement: .primaryAction) { ProgressView().accessibilityLabel(Text("Opdaterer")) }
+            }
+        }
         .refreshable {
             async let a: Void = data.albums.refresh()
             async let n: Void = data.notifications.refresh()
@@ -189,7 +194,9 @@ private struct ChildAlbumTile: View {
             AlbumTile(title: album.title, coverURL: media.value?.first?.thumbURL,
                       tint: Palette.color(for: child.id, in: app.children), newCount: data.newCount(in: album),
                       placeholder: { ChildAvatar(child: child, size: 64) }) {
-                if let n = media.value?.count { Text("\(n) billeder") }
+                if let n = media.value?.count {
+                    if media.isPartial { Text("\(n) billeder …") } else { Text("\(n) billeder") }
+                }
                 else if media.error != nil { Text("Kunne ikke hente") }
                 else { Text("Henter …") }
             }
@@ -248,6 +255,29 @@ struct AlbumPlaceholderIcon: View {
     }
 }
 
+/// "Henter billeder … 48 af 429" with a bar; without a known total just a spinner and "Opdaterer …".
+struct LoadProgress: View {
+    let loaded: Int
+    let expected: Int?
+
+    var body: some View {
+        if let expected, expected > 0 {
+            VStack(alignment: .leading, spacing: 4) {
+                ProgressView(value: Double(min(loaded, expected)), total: Double(expected))
+                Text("Henter billeder … \(loaded) af \(expected)")
+                    .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+            }
+            .accessibilityElement(children: .combine)
+        } else {
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("Opdaterer …").font(.caption).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
 struct AlbumView: View {
     let album: Album
     @Environment(DataStore.self) private var data
@@ -274,6 +304,10 @@ struct AlbumView: View {
     var body: some View {
         ScrollView {
             StaleBanner(error: media.error, savedAt: media.savedAt).padding(.horizontal)
+            if media.isLoading && media.value != nil {
+                LoadProgress(loaded: all.count, expected: media.isPartial ? (media.expected ?? album.count) : nil)
+                    .padding(.horizontal).padding(.top, 6)
+            }
             filterBar
             LazyVGrid(columns: columns, spacing: 3) {
                 ForEach(shown) { m in
@@ -287,7 +321,7 @@ struct AlbumView: View {
             }
         }
         .overlay {
-            if media.value == nil && media.isLoading { ProgressView() }
+            if media.value == nil && media.isLoading { ProgressView("Henter billeder …") }
             else if media.value == nil, let error = media.error {
                 ContentUnavailableView("Kunne ikke hente", systemImage: "wifi.exclamationmark", description: Text(error))
             } else if media.value?.isEmpty == true {
