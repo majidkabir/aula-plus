@@ -39,6 +39,29 @@ final class DataStore {
         return l
     }
 
+    /// Tags or untags `child` in a photo, on Aula and in every cached album. Returns the updated photo.
+    func setTagged(_ child: Child, _ tagged: Bool, in media: Media) async throws -> Media {
+        var tags = media.tagList.filter { $0.id != child.id }
+        if tagged { tags.append(MediaTag(id: child.id, name: child.name)) }
+        if !Demo.isOn { try await AulaAPI.shared.setTags(media, tagIds: tags.map(\.id)) }
+        var updated = media
+        updated.tags = tags
+        for (key, list) in albumMedia {
+            if key == -child.id {
+                // The child's own album: add or drop the photo.
+                list.mutate { items in
+                    items.removeAll { $0.id == media.id }
+                    if tagged { items.insert(updated, at: 0) }
+                }
+            } else {
+                list.mutate { items in
+                    if let i = items.firstIndex(where: { $0.id == media.id }) { items[i] = updated }
+                }
+            }
+        }
+        return updated
+    }
+
     // MARK: Gallery "new" markers (from Aula's gallery notifications)
 
     private var galleryNotifications: [AulaNotification] { (notifications.value ?? []).filter(\.isGallery) }

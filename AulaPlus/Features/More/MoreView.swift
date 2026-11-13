@@ -399,20 +399,22 @@ struct AlbumView: View {
 }
 
 struct MediaViewer: View {
-    let items: [Media]
+    @State private var items: [Media]
     let start: Media
     var children: [Child] = []
     var newIds: Set<Int> = []
     @State private var current: Int
     @State private var showTags = true
+    @State private var tagging = false
+    @State private var tagError: String?
 
     init(items: [Media], start: Media, children: [Child] = [], newIds: Set<Int> = []) {
-        self.items = items
+        _items = State(initialValue: items)
         self.start = start
         self.children = children
         self.newIds = newIds
         // Set before the first render; changing the page in onAppear is sometimes ignored by TabView.
-        _current = State(initialValue: items.firstIndex(of: start) ?? 0)
+        _current = State(initialValue: items.firstIndex(where: { $0.id == start.id }) ?? 0)
     }
     @State private var sharing: URL?
     @State private var busy = false
@@ -452,6 +454,7 @@ struct MediaViewer: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Luk") { dismiss() } }
+                ToolbarItem(placement: .primaryAction) { tagMenu }
                 ToolbarItem(placement: .primaryAction) {
                     if let url = sharing {
                         ShareLink(item: url)
@@ -465,6 +468,43 @@ struct MediaViewer: View {
                 }
             }
             .onChange(of: current) { _, _ in sharing = nil }
+            .alert("Kunne ikke ændre tag", isPresented: Binding(get: { tagError != nil }, set: { if !$0 { tagError = nil } })) {
+                Button("OK", role: .cancel) {}
+            } message: { Text(tagError ?? "") }
+        }
+    }
+
+    /// Tag or untag my children in the current photo. Only where Aula allows it (`currentUserCanEditTags`).
+    @ViewBuilder private var tagMenu: some View {
+        if items.indices.contains(current), items[current].canEditTags == true, !children.isEmpty {
+            let m = items[current]
+            Menu {
+                ForEach(children) { c in
+                    let on = m.isTagged(c.id)
+                    Button {
+                        Task { await toggle(c, !on, m) }
+                    } label: {
+                        Label(on ? String(localized: "Fjern tag af \(c.firstName)") : String(localized: "Tag \(c.firstName)"),
+                              systemImage: on ? "person.crop.circle.badge.minus" : "person.crop.circle.badge.plus")
+                    }
+                }
+            } label: {
+                if tagging { ProgressView() } else { Image(systemName: "person.crop.circle.badge.plus") }
+            }
+            .disabled(tagging)
+            .accessibilityLabel(Text("Tag barn"))
+        }
+    }
+
+    private func toggle(_ child: Child, _ on: Bool, _ m: Media) async {
+        tagging = true
+        defer { tagging = false }
+        do {
+            let updated = try await DataStore.shared.setTagged(child, on, in: m)
+            if let i = items.firstIndex(where: { $0.id == m.id }) { items[i] = updated }
+            showTags = true
+        } catch {
+            tagError = error.localizedDescription
         }
     }
 
