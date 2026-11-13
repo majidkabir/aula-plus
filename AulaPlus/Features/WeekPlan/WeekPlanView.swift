@@ -27,12 +27,7 @@ struct WeekPlanView: View {
         return plans.filter { $0.childName.isEmpty || $0.childName.localizedCaseInsensitiveContains(child.firstName) }
     }
 
-    /// Widgets that look like a week plan (by Aula's own name for them).
-    private var planWidgets: [String] {
-        let names = app.session.value?.widgetNames ?? [:]
-        let hint = #/(?i)uge|plan|lektie|opgave|easyiq|meebook|docendo|huskeliste|forløb|skoleportal/#
-        return names.values.filter { $0.contains(hint) }.sorted()
-    }
+    private var planWidgets: [String] { app.session.value?.weekPlanWidgetNames ?? [] }
 
     @ViewBuilder private var unsupportedView: some View {
         let all = (app.session.value?.widgetNames ?? [:]).values.sorted()

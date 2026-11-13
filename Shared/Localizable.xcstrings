@@ -2880,6 +2880,26 @@
           }
         }
       }
+    },
+    "Billeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos"
+          }
+        }
+      }
+    },
+    "Værktøjer i Aula": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools in Aula"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

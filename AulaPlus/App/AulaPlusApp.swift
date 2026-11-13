@@ -89,9 +89,16 @@ struct MainTabs: View {
             CalendarView()
                 .tabItem { Label("Kalender", systemImage: "calendar") }
                 .tag(AppModel.Tab.calendar)
-            WeekPlanView()
-                .tabItem { Label("Ugeplan", systemImage: "list.bullet.rectangle") }
-                .tag(AppModel.Tab.weekPlan)
+            if app.showsWeekPlan {
+                WeekPlanView()
+                    .tabItem { Label("Ugeplan", systemImage: "list.bullet.rectangle") }
+                    .tag(AppModel.Tab.weekPlan)
+            } else {
+                PhotosTab()
+                    .tabItem { Label("Billeder", systemImage: "photo.on.rectangle.angled") }
+                    .badge(data.newGalleryCount)
+                    .tag(AppModel.Tab.photos)
+            }
             MoreView()
                 .tabItem { Label("Mere", systemImage: "ellipsis.circle") }
                 .tag(AppModel.Tab.more)

@@ -21,6 +21,26 @@ struct Session: Codable {
     let widgetIds: Set<String>
     var guardianProfileIds: [Int]? = nil  // the guardian's own institution profiles
     var widgetNames: [String: String]? = nil  // widget id → name, as Aula shows it
+    var widgetLinks: [WidgetLink]? = nil       // widgets with a web address (opened in the browser)
+
+    /// Widgets that look like a week plan, by Aula's own name for them.
+    var weekPlanWidgetNames: [String] {
+        let hint = #/(?i)uge|plan|lektie|opgave|easyiq|meebook|docendo|huskeliste|forløb|skoleportal/#
+        return (widgetNames ?? [:]).values.filter { $0.contains(hint) }.sorted()
+    }
+
+    /// False when Aula offers no week plan at all (typical for nurseries and kindergartens).
+    var hasWeekPlan: Bool {
+        !widgetIds.isDisjoint(with: [AulaConfig.Widget.meebook, AulaConfig.Widget.muUgeplan, AulaConfig.Widget.muSSO])
+            || !weekPlanWidgetNames.isEmpty
+    }
+}
+
+/// A tool Aula shows on the parent's front page, with a link to open it.
+struct WidgetLink: Codable, Hashable, Identifiable {
+    let id: String
+    let name: String
+    let url: URL
 }
 
 enum PresenceStatus: Int, Codable {
@@ -198,7 +218,7 @@ struct ProfileContextDTO: Decodable {
 }
 
 struct WidgetConfigDTO: Decodable {
-    struct Widget: Decodable { let widgetId: FlexString?; let name: String? }
+    struct Widget: Decodable { let widgetId: FlexString?; let name: String?; let url: String?; let widgetType: String? }
     let widget: Widget?
     let aggregatedDisplayMode: String?
 }

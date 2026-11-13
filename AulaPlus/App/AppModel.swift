@@ -22,11 +22,15 @@ final class AppModel {
     /// nil = all children.
     var selectedChildId: Int?
 
-    enum Tab: Hashable { case today, messages, calendar, weekPlan, more }
+    enum Tab: Hashable { case today, messages, calendar, weekPlan, photos, more }
     var selectedTab: Tab = .today
     var messagesPath: [ThreadSummary] = []
     var morePath = NavigationPath()
     var todayPath = NavigationPath()
+    var photosPath = NavigationPath()
+
+    /// No week plan in Aula (nurseries, kindergartens): the fourth tab shows photos instead.
+    var showsWeekPlan: Bool { session.value?.hasWeekPlan ?? true }
 
     // MARK: Deep links (notification taps)
 
