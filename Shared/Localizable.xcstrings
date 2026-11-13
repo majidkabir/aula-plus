@@ -2521,16 +2521,6 @@
         }
       }
     },
-    "Tagget af personalet": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tagged by staff"
-          }
-        }
-      }
-    },
     "Albums": {
       "localizations": {
         "en": {
@@ -2707,6 +2697,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't change tag"
+          }
+        }
+      }
+    },
+    "Kunne ikke hente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load"
+          }
+        }
+      }
+    },
+    "Henter …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading …"
           }
         }
       }
