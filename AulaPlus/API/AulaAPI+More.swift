@@ -269,7 +269,7 @@ extension AulaAPI {
 
     private func userSpecificMedia(childId: Int, progress: MediaProgress?) async throws -> [Media] {
         let keep: ([Media]) -> [Media] = { $0.filter { $0.isTagged(childId) || $0.tagList.isEmpty } }
-        let wrapped: MediaProgress? = progress.map { p in { list, total in p(keep(list), total) } }
+        let wrapped: MediaProgress? = progress.map { p in { @MainActor list, total in p(keep(list), total) } }
         let all = try await pages(progress: wrapped) { index, limit in [
             .init(name: "userSpecificAlbum", value: "true"),
             .init(name: "filterInstProfileIds[]", value: String(childId)),
