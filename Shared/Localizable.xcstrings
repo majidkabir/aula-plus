@@ -2480,6 +2480,196 @@
           }
         }
       }
+    },
+    "%lld nye": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld new"
+          }
+        }
+      }
+    },
+    "%lld nye billeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld new photos"
+          }
+        }
+      }
+    },
+    "Billeder af dine børn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos of your children"
+          }
+        }
+      }
+    },
+    "Billeder af %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos of %@"
+          }
+        }
+      }
+    },
+    "Tagget af personalet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tagged by staff"
+          }
+        }
+      }
+    },
+    "Albums": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Albums"
+          }
+        }
+      }
+    },
+    "Alle (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All (%lld)"
+          }
+        }
+      }
+    },
+    "Nye (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New (%lld)"
+          }
+        }
+      }
+    },
+    "Ingen billeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No photos"
+          }
+        }
+      }
+    },
+    "Ingen billeder passer til filteret.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No photos match the filter."
+          }
+        }
+      }
+    },
+    "Video": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video"
+          }
+        }
+      }
+    },
+    "Billede": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photo"
+          }
+        }
+      }
+    },
+    "Ny": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New"
+          }
+        }
+      }
+    },
+    "NY": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NEW"
+          }
+        }
+      }
+    },
+    "Tagget: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tagged: %@"
+          }
+        }
+      }
+    },
+    "Nye billeder i galleriet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New photos in the gallery"
+          }
+        }
+      }
+    },
+    "Dit barn er tagget på et billede": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your child is tagged in a photo"
+          }
+        }
+      }
+    },
+    "Nyt album delt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New album shared"
+          }
+        }
+      }
+    },
+    "%lld billeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld photos"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -20,14 +20,59 @@ final class DataStore {
     @ObservationIgnored private var weekPlans: [String: Loadable<[WeekPlan]>] = [:]
     @ObservationIgnored private var albumMedia: [Int: Loadable<[Media]>] = [:]
 
-    func media(albumId: Int) -> Loadable<[Media]> {
-        if let l = albumMedia[albumId] { return l }
-        let l = Loadable<[Media]>(key: "album-\(albumId)") {
-            let s = try await AulaAPI.shared.bootstrap()
-            return try await AulaAPI.shared.media(albumId: albumId, institutionProfileIds: s.institutionProfileIds)
+    func media(album: Album) -> Loadable<[Media]> {
+        if let l = albumMedia[album.id] { return l }
+        let l: Loadable<[Media]>
+        if let childId = album.childId {
+            l = Loadable(key: "tagged-\(childId)") {
+                _ = try await AulaAPI.shared.bootstrap()
+                return try await AulaAPI.shared.taggedMedia(childId: childId)
+            }
+        } else {
+            let albumId = album.id
+            l = Loadable(key: "album-\(albumId)") {
+                let s = try await AulaAPI.shared.bootstrap()
+                return try await AulaAPI.shared.media(albumId: albumId, institutionProfileIds: s.institutionProfileIds)
+            }
         }
-        albumMedia[albumId] = l
+        albumMedia[album.id] = l
         return l
+    }
+
+    // MARK: Gallery "new" markers (from Aula's gallery notifications)
+
+    private var galleryNotifications: [AulaNotification] { (notifications.value ?? []).filter(\.isGallery) }
+
+    /// Notifications that make photos in `album` "new".
+    func newNotifications(in album: Album) -> [AulaNotification] {
+        if let childId = album.childId {
+            return galleryNotifications.filter { $0.isTaggedInMedia && $0.relatedChildId == childId }
+        }
+        return galleryNotifications.filter { !$0.isTaggedInMedia && $0.albumId == album.id }
+    }
+
+    /// Number of new photos in `album` (one per photo, however many notifications it has).
+    func newCount(in album: Album) -> Int { Self.photoCount(newNotifications(in: album)) }
+
+    private static func photoCount(_ list: [AulaNotification]) -> Int {
+        Set(list.compactMap(\.mediaId)).count + list.filter { $0.mediaId == nil }.count
+    }
+
+    /// Ids of every photo Aula still marks as new.
+    var newMediaIds: Set<Int> { Set(galleryNotifications.compactMap(\.mediaId)) }
+
+    /// Total new photos in the gallery (badge on the Gallery row).
+    var newGalleryCount: Int { Self.photoCount(galleryNotifications.filter { $0.isNewMedia || $0.isTaggedInMedia }) }
+
+    /// Clears the new markers for `album` (and for the photos shown in it), on Aula too.
+    func markSeen(_ album: Album, media: [Media]) async {
+        let shown = Set(media.map(\.id))
+        let seen = newNotifications(in: album) + galleryNotifications.filter { $0.mediaId.map(shown.contains) ?? false }
+        var ids = Set<String>()
+        let unique = seen.filter { ids.insert($0.id).inserted }
+        guard !unique.isEmpty else { return }
+        notifications.mutate { $0.removeAll { ids.contains($0.id) } }
+        if !Demo.isOn { try? await AulaAPI.shared.deleteNotifications(unique) }
     }
 
     private init() {
@@ -43,8 +88,9 @@ final class DataStore {
             return try await AulaAPI.shared.posts(institutionProfileIds: s.institutionProfileIds)
         }
         notifications = Loadable(key: "notifications") {
-            _ = try await AulaAPI.shared.bootstrap()
-            return try await AulaAPI.shared.notifications()
+            let s = try await AulaAPI.shared.bootstrap()
+            let codes = Array(Set(s.children.compactMap(\.institutionCode))).sorted()
+            return try await AulaAPI.shared.notifications(childIds: s.children.map(\.id), institutionCodes: codes)
         }
         importantDates = Loadable(key: "important-dates") {
             _ = try await AulaAPI.shared.bootstrap()

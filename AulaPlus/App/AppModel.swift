@@ -69,6 +69,7 @@ final class AppModel {
             case "post": selectedTab = .more; morePath.append(Demo.posts[0])
             case "child": todayPath.append(Demo.noah)
             case "gallery": selectedTab = .more; morePath.append(Route.gallery)
+            case "album": selectedTab = .more; morePath.append(Route.gallery); morePath.append(Demo.albums[2])
             case "notifications": selectedTab = .more; morePath.append(Route.notifications)
             case "settings": selectedTab = .more; morePath.append(Route.settings)
             case "empty": selectedTab = .more; morePath.append(Route.empty)

@@ -103,7 +103,29 @@ enum Demo {
                          date: ago(90), postId: 1, threadId: nil, albumId: nil),
         AulaNotification(id: "n3", title: "Nye billeder i albummet Efterårsferie", module: "gallery", childName: "Noah",
                          date: ago(60 * 30), postId: nil, threadId: nil, albumId: 1),
+    ] + galleryNotices}
+
+    /// Gallery notices: 2 new photos in "Juletræet pyntes", Emma tagged in 1.
+    private static var galleryNotices: [AulaNotification] {[
+        AulaNotification(id: "g1", title: "Nye billeder i galleriet", module: "gallery", childName: nil, date: ago(40),
+                         postId: nil, threadId: nil, albumId: 3, eventType: "NewMedia", mediaId: 1),
+        AulaNotification(id: "g2", title: "Nye billeder i galleriet", module: "gallery", childName: nil, date: ago(40),
+                         postId: nil, threadId: nil, albumId: 3, eventType: "NewMedia", mediaId: 2),
+        AulaNotification(id: "g3", title: "Emma er tagget på et billede", module: "gallery", childName: "Emma", date: ago(45),
+                         postId: nil, threadId: nil, albumId: nil, eventType: "TaggedInMedia", mediaId: 2, relatedChildId: 101),
     ]}
+
+    static var media: [Media] {
+        (1...12).map { i in
+            let tags: [MediaTag] = switch i % 4 {
+            case 0: [MediaTag(id: 101, name: "Emma Ghafouri")]
+            case 1: [MediaTag(id: 102, name: "Noah Ghafouri"), MediaTag(id: 900, name: "Ida Holm")]
+            case 2: [MediaTag(id: 101, name: "Emma Ghafouri"), MediaTag(id: 102, name: "Noah Ghafouri")]
+            default: []
+            }
+            return Media(id: i, thumbURL: nil, fullURL: nil, isVideo: i == 7, title: nil, tags: tags)
+        }
+    }
 
     static var albums: [Album] {[
         Album(id: 1, title: "Efterårsferie", date: ago(60 * 24 * 10), coverURL: nil, count: 24),
@@ -154,7 +176,7 @@ enum Demo {
             if key.hasPrefix("weekplan-") { return weekPlans }
             if key.hasPrefix("tasks-") { return tasks }
             if key.hasPrefix("plans-") { return dayPlans }
-            if key.hasPrefix("album-") { return [Media]() }
+            if key.hasPrefix("album-") || key.hasPrefix("tagged-") { return media }
             return nil
         }
     }
