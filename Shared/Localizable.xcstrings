@@ -2470,6 +2470,16 @@
           }
         }
       }
+    },
+    "MitID-appen er ikke på denne telefon. Godkend i MitID-appen på din anden enhed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The MitID app isn't on this phone. Approve in the MitID app on your other device."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

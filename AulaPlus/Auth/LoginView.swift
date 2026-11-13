@@ -4,6 +4,7 @@ import WebKit
 struct LoginView: View {
     @Environment(AppModel.self) private var app
     @State private var pkce = PKCE.make()
+    @State private var mitIDAppMissing = false
     @State private var showWeb = false
     @State private var working = false
     @State private var error: String?
@@ -61,11 +62,15 @@ struct LoginView: View {
         )
         .sheet(isPresented: $showWeb) {
             NavigationStack {
-                MitIDWebView(url: pkce.authorizeURL) { callback in
+                MitIDWebView(url: pkce.authorizeURL, onMitIDAppMissing: { mitIDAppMissing = true }) { callback in
                     showWeb = false
                     Task { await finish(callback) }
                 }
                 .ignoresSafeArea(edges: .bottom)
+                .alert("MitID-appen er ikke på denne telefon. Godkend i MitID-appen på din anden enhed.",
+                       isPresented: $mitIDAppMissing) {
+                    Button("OK", role: .cancel) {}
+                }
                 .navigationTitle("MitID")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -109,9 +114,10 @@ struct LoginView: View {
 /// `https://app-private.aula.dk?code=…` redirect instead of loading it.
 struct MitIDWebView: UIViewRepresentable {
     let url: URL
+    var onMitIDAppMissing: () -> Void = {}
     let onCallback: (URL) -> Void
 
-    func makeCoordinator() -> Coordinator { Coordinator(onCallback: onCallback) }
+    func makeCoordinator() -> Coordinator { Coordinator(onCallback: onCallback, onMitIDAppMissing: onMitIDAppMissing) }
 
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -127,9 +133,13 @@ struct MitIDWebView: UIViewRepresentable {
 
     final class Coordinator: NSObject, WKNavigationDelegate {
         let onCallback: (URL) -> Void
+        let onMitIDAppMissing: () -> Void
         private var done = false
 
-        init(onCallback: @escaping (URL) -> Void) { self.onCallback = onCallback }
+        init(onCallback: @escaping (URL) -> Void, onMitIDAppMissing: @escaping () -> Void) {
+            self.onCallback = onCallback
+            self.onMitIDAppMissing = onMitIDAppMissing
+        }
 
         private func isCallback(_ url: URL?) -> Bool {
             url?.host == AulaConfig.redirectHost
@@ -141,6 +151,8 @@ struct MitIDWebView: UIViewRepresentable {
             onCallback(url)
         }
 
+        static let mitIDAppSwitchHosts: Set<String> = ["appswitch.mitid.dk", "appswitch.mitid.nets.eu", "appswitch-test.mitid.nets.eu"]
+
         func webView(_ webView: WKWebView,
                      decidePolicyFor action: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -150,7 +162,16 @@ struct MitIDWebView: UIViewRepresentable {
                 complete(url)
                 return
             }
-            // MitID app hand-off and other custom schemes go to the system.
+            // "Open MitID app" is a normal https link (appswitch.mitid.dk). WKWebView would just load it,
+            // so open it as a universal link in the MitID app. After approving, switch back and the login continues here.
+            if let host = url.host?.lowercased(), Self.mitIDAppSwitchHosts.contains(host) {
+                UIApplication.shared.open(url, options: [.universalLinksOnly: true]) { opened in
+                    if !opened { self.onMitIDAppMissing() }
+                }
+                decisionHandler(.cancel)
+                return
+            }
+            // Other custom schemes (e.g. mitid-app://) go to the system.
             if let scheme = url.scheme?.lowercased(), !["http", "https", "about", "blob", "data"].contains(scheme) {
                 UIApplication.shared.open(url)
                 decisionHandler(.cancel)
