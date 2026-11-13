@@ -17,8 +17,6 @@ struct AulaPlusApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
-                .environment(app)
-                .environment(data)
                 .task {
                     await app.start()
                     BackgroundRefresh.schedule()
@@ -30,6 +28,9 @@ struct AulaPlusApp: App {
                         PrivacyCover()
                     }
                 }
+                // Last, so the lock screen overlay sees the app state too.
+                .environment(app)
+                .environment(data)
         }
         .backgroundTask(.appRefresh(BackgroundRefresh.taskId)) {
             await BackgroundRefresh.run()
