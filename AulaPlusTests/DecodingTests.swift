@@ -170,4 +170,19 @@ final class ActionsTests: XCTestCase {
         let t = try JSONDecoder().decode(ThreadDTO.self, from: Data(#"{"id":1,"subject":"x","read":true,"marked":true}"#.utf8)).model
         XCTAssertEqual(t.isMarked, true)
     }
+
+    func testTaggedNotificationMediaId() {
+        XCTAssertEqual(AulaNotification.mediaId(fromNotificationId: "gallery:991-123456"), 123456)
+        XCTAssertNil(AulaNotification.mediaId(fromNotificationId: "gallery:991"))
+        XCTAssertNil(AulaNotification.mediaId(fromNotificationId: nil))
+    }
+
+    func testCachedMediaWithoutTagsStillDecodes() throws {
+        let old = #"[{"id":1,"isVideo":false}]"#
+        let media = try JSONDecoder().decode([Media].self, from: Data(old.utf8))
+        XCTAssertEqual(media.first?.tagList, [])
+        XCTAssertFalse(media[0].isTagged(5))
+        let album = try JSONDecoder().decode(Album.self, from: Data(#"{"id":3,"title":"A"}"#.utf8))
+        XCTAssertNil(album.childId)
+    }
 }

@@ -6,6 +6,20 @@ struct Album: Codable, Identifiable, Hashable {
     let date: Date?
     let coverURL: URL?
     let count: Int?
+    /// Set for a child's own album ("Billeder af …"): every photo the child is tagged in.
+    var childId: Int? = nil
+
+    /// The album with every photo `child` is tagged in. Negative id: never clashes with a real album.
+    static func tagged(_ child: Child) -> Album {
+        Album(id: -child.id, title: String(localized: "Billeder af \(child.firstName)"), date: nil,
+              coverURL: nil, count: nil, childId: child.id)
+    }
+}
+
+/// A person tagged in a photo (`id` is their institution profile id).
+struct MediaTag: Codable, Hashable {
+    let id: Int
+    let name: String
 }
 
 struct Media: Codable, Identifiable, Hashable {
@@ -14,6 +28,10 @@ struct Media: Codable, Identifiable, Hashable {
     let fullURL: URL?
     let isVideo: Bool
     let title: String?
+    var tags: [MediaTag]? = nil
+
+    var tagList: [MediaTag] { tags ?? [] }
+    func isTagged(_ childId: Int) -> Bool { tagList.contains { $0.id == childId } }
 }
 
 struct AulaNotification: Codable, Identifiable, Hashable {
@@ -25,6 +43,29 @@ struct AulaNotification: Codable, Identifiable, Hashable {
     let postId: Int?
     let threadId: String?
     let albumId: Int?
+    var eventType: String? = nil
+    /// Raw `notificationId` + owner profile: what `deleteNotifications` needs.
+    var notificationId: String? = nil
+    var institutionProfileId: Int? = nil
+    var mediaId: Int? = nil
+    var relatedChildId: Int? = nil
+
+    var isGallery: Bool {
+        (module ?? "").lowercased() == "gallery"
+            || ["NewMedia", "MediaAddedToAlbum", "TaggedInMedia", "AlbumShared"].contains(eventType ?? "")
+    }
+    var isTaggedInMedia: Bool { eventType == "TaggedInMedia" }
+    /// A new photo in an album (not a tag).
+    var isNewMedia: Bool { eventType == "NewMedia" || eventType == "MediaAddedToAlbum" }
+
+    /// `TaggedInMedia` carries no mediaId; Aula's web app reads it from the notificationId
+    /// (`<area>:<x>-<mediaId>…`). Same rule here.
+    static func mediaId(fromNotificationId id: String?) -> Int? {
+        guard let id, let part = id.split(separator: ":").dropFirst().first else { return nil }
+        let pieces = part.split(separator: "-")
+        guard pieces.count > 1 else { return nil }
+        return Int(pieces[1])
+    }
 }
 
 struct Comment: Codable, Identifiable, Hashable {
@@ -66,7 +107,16 @@ private struct AlbumsDTO: Decodable {
 
 private struct MediaDTO: Decodable {
     struct File: Decodable { let url: String? }
+    struct Tag: Decodable {
+        struct Profile: Decodable { let name: String?; let fullName: String? }
+        let id: FlexInt?
+        let institutionProfileId: FlexInt?
+        let name: String?
+        let fullName: String?
+        let profile: Profile?
+    }
     let id: FlexInt
+    let tags: Lossy<Tag>?
     let title: String?
     let mediaType: String?
     let file: File?
@@ -102,6 +152,9 @@ private struct NotificationDTO: Decodable {
     let postId: FlexInt?
     let threadId: FlexString?
     let albumId: FlexInt?
+    let mediaId: FlexInt?
+    let institutionProfileId: FlexInt?
+    let relatedChildInstitutionProfileId: FlexInt?
 }
 
 private struct CommentDTO: Decodable {
@@ -163,40 +216,109 @@ extension AulaAPI {
         ]
         q += institutionProfileIds.map { .init(name: "filterInstProfileIds[]", value: String($0)) }
         let dto: MediaListDTO = try await call("gallery.getMedia", query: q)
+        return Self.uniqueMedia(dto.results?.items ?? [])
+    }
+
+    /// Every photo `childId` is tagged in, across all albums (Aula's "user specific album").
+    func taggedMedia(childId: Int) async throws -> [Media] {
+        let pageSize = 100
+        var all: [Media] = []
+        var seen = Set<Int>()
+        var index = 0
+        for _ in 0..<30 {
+            let dto: MediaListDTO = try await call("gallery.getMedia", query: [
+                .init(name: "userSpecificAlbum", value: "true"),
+                .init(name: "filterInstProfileIds[]", value: String(childId)),
+                .init(name: "index", value: String(index)),
+                .init(name: "limit", value: String(pageSize)),
+                .init(name: "sortOn", value: "uploadedAt"),
+                .init(name: "orderDirection", value: "desc"),
+                .init(name: "filterBy", value: "all"),
+            ])
+            let raw = dto.results?.items ?? []
+            let page = Self.uniqueMedia(raw).filter { seen.insert($0.id).inserted }
+            all += page
+            // `totalSize` is unreliable: stop on a short or repeated page.
+            if raw.count < pageSize || page.isEmpty { break }
+            index += raw.count
+        }
+        return all
+    }
+
+    private static func uniqueMedia(_ items: [MediaDTO]) -> [Media] {
         // Aula lists a photo once per child it's shared with; show each photo once.
         var seen = Set<Int>()
-        let unique = (dto.results?.items ?? []).filter { seen.insert($0.id.value).inserted }
-        return unique.map { m in
+        return items.filter { seen.insert($0.id.value).inserted }.map { m in
             let thumbs: [String?] = [m.mediumThumbnailUrl, m.thumbnailUrl, m.smallThumbnailUrl, m.largeThumbnailUrl, m.file?.url]
             let fulls: [String?] = [m.file?.url, m.largeThumbnailUrl, m.mediumThumbnailUrl]
             let thumb: String? = thumbs.compactMap { $0 }.first
             let full: String? = fulls.compactMap { $0 }.first
+            var tagIds = Set<Int>()
+            let tags: [MediaTag] = (m.tags?.items ?? []).compactMap { t in
+                guard let id = (t.id ?? t.institutionProfileId)?.value, tagIds.insert(id).inserted else { return nil }
+                let names: [String?] = [t.name, t.fullName, t.profile?.name, t.profile?.fullName]
+                guard let name = names.compactMap({ $0?.nilIfEmpty }).first else { return nil }
+                return MediaTag(id: id, name: name)
+            }
             return Media(id: m.id.value,
                          thumbURL: thumb.flatMap { URL(string: $0) },
                          fullURL: full.flatMap { URL(string: $0) },
                          isVideo: (m.mediaType ?? "").lowercased().contains("video"),
-                         title: m.title?.nilIfEmpty)
+                         title: m.title?.nilIfEmpty,
+                         tags: tags)
         }
     }
 
-    func notifications(limit: Int = 50) async throws -> [AulaNotification] {
-        let list: Lossy<NotificationDTO> = try await call("notifications.getNotificationsForActiveProfile", query: [
+    /// `childIds`/`institutionCodes` matter: without them Aula leaves out tag and child notifications.
+    func notifications(childIds: [Int] = [], institutionCodes: [String] = [], limit: Int = 50) async throws -> [AulaNotification] {
+        var q: [URLQueryItem] = [
             .init(name: "offset", value: "0"),
             .init(name: "limit", value: String(limit)),
-        ])
+        ]
+        q += childIds.map { .init(name: "activeChildrenIds[]", value: String($0)) }
+        q += institutionCodes.map { .init(name: "activeInstitutionCodes[]", value: $0) }
+        let list: Lossy<NotificationDTO> = try await call("notifications.getNotificationsForActiveProfile", query: q)
         return list.items.map { n in
             let titles: [String?] = [n.title, n.heading, n.postTitle, n.threadSubject,
-                                     n.messageText.map { HTML.plainText($0) }, n.notificationEventType]
+                                     n.messageText.map { HTML.plainText($0) }, Self.galleryTitle(n.notificationEventType),
+                                     n.notificationEventType]
             let title: String = titles.compactMap { $0?.nilIfEmpty }.first ?? String(localized: "Notifikation")
             let id: String = (n.id ?? n.notificationId)?.value ?? UUID().uuidString
+            let rawId = n.notificationId?.value.nilIfEmpty
+            let mediaId = n.mediaId?.value
+                ?? (n.notificationEventType == "TaggedInMedia" ? AulaNotification.mediaId(fromNotificationId: rawId) : nil)
             return AulaNotification(id: id, title: title,
                                     module: n.module ?? n.notificationArea,
                                     childName: n.relatedChildName?.nilIfEmpty,
                                     date: AulaDate.parse(n.createdAt ?? n.triggered),
                                     postId: n.postId?.value,
                                     threadId: n.threadId?.value.nilIfEmpty,
-                                    albumId: n.albumId?.value)
+                                    albumId: n.albumId?.value,
+                                    eventType: n.notificationEventType,
+                                    notificationId: rawId,
+                                    institutionProfileId: n.institutionProfileId?.value,
+                                    mediaId: mediaId,
+                                    relatedChildId: n.relatedChildInstitutionProfileId?.value)
         }
+    }
+
+    private static func galleryTitle(_ type: String?) -> String? {
+        switch type {
+        case "NewMedia", "MediaAddedToAlbum": return String(localized: "Nye billeder i galleriet")
+        case "TaggedInMedia": return String(localized: "Dit barn er tagget på et billede")
+        case "AlbumShared": return String(localized: "Nyt album delt")
+        default: return nil
+        }
+    }
+
+    /// Marks notifications as seen (Aula deletes them, like the web app does).
+    func deleteNotifications(_ list: [AulaNotification]) async throws {
+        let items: [[String: Any]] = list.compactMap { n in
+            guard let id = n.notificationId, let owner = n.institutionProfileId else { return nil }
+            return ["notificationId": id, "institutionProfileId": owner]
+        }
+        guard !items.isEmpty else { return }
+        let _: Ignored = try await call("Notifications.deleteNotifications", body: ["notifications": items])
     }
 
     func comments(postId: Int) async throws -> [Comment] {
