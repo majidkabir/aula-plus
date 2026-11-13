@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @State private var lock = AppLock.shared
     var embedded = false
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
@@ -50,14 +51,35 @@ struct SettingsView: View {
                             else { BackgroundRefresh.disable() }
                         }
                     }
-                    Toggle(isOn: Binding(get: { app.lockEnabled }, set: { app.lockEnabled = $0 })) {
+                } footer: {
+                    Text("Aula+ tjekker for nyt i baggrunden, når iOS tillader det (typisk hvert 15.–60. minut).")
+                }
+                Section {
+                    Toggle(isOn: Binding(get: { lock.isEnabled }, set: { on in
+                        if on { Task { await lock.enable() } } else { lock.disable() }
+                    })) {
                         HStack(spacing: 12) {
-                            IconTile(systemImage: "faceid", color: .green)
-                            Text("Lås med Face ID")
+                            IconTile(systemImage: lock.symbol, color: .green)
+                            Text("Lås med \(lock.methodName)")
+                        }
+                    }
+                    .disabled(!lock.isAvailable && !lock.isEnabled)
+                    if lock.isEnabled {
+                        Picker(selection: $lock.delay) {
+                            ForEach(AppLock.Delay.allCases) { Text($0.label).tag($0) }
+                        } label: {
+                            HStack(spacing: 12) {
+                                IconTile(systemImage: "timer", color: .orange)
+                                Text("Lås igen")
+                            }
                         }
                     }
                 } footer: {
-                    Text("Aula+ tjekker for nyt i baggrunden, når iOS tillader det (typisk hvert 15.–60. minut).")
+                    if lock.isAvailable {
+                        Text("Beskeder og kalender skjules, når du skifter app, og kræver \(lock.methodName) for at åbne igen.")
+                    } else {
+                        Text("Slå en kode til på telefonen for at kunne låse Aula+.")
+                    }
                 }
                 Section {
                     Picker(selection: $language) {

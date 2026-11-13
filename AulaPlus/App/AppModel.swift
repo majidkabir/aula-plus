@@ -1,5 +1,4 @@
 import Foundation
-import LocalAuthentication
 import Observation
 import SwiftUI
 
@@ -28,30 +27,6 @@ final class AppModel {
     var messagesPath: [ThreadSummary] = []
     var morePath = NavigationPath()
     var todayPath = NavigationPath()
-
-    // MARK: App lock (Face ID / passcode)
-
-    static let lockKey = "lock.enabled"
-    var lockEnabled: Bool = UserDefaults.standard.bool(forKey: AppModel.lockKey) {
-        didSet { UserDefaults.standard.set(lockEnabled, forKey: Self.lockKey) }
-    }
-    private(set) var isLocked: Bool = UserDefaults.standard.bool(forKey: AppModel.lockKey)
-
-    func lockIfNeeded() {
-        if lockEnabled && phase == .loggedIn { isLocked = true }
-    }
-
-    func unlock() async {
-        let ctx = LAContext()
-        var err: NSError?
-        guard ctx.canEvaluatePolicy(.deviceOwnerAuthentication, error: &err) else {
-            isLocked = false   // no passcode set on device: nothing to unlock with
-            return
-        }
-        if (try? await ctx.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: String(localized: "Lås Aula+ op"))) == true {
-            isLocked = false
-        }
-    }
 
     // MARK: Deep links (notification taps)
 
@@ -99,10 +74,13 @@ final class AppModel {
             case "empty": selectedTab = .more; morePath.append(DemoRoute.empty)
             default: break
             }
+            AppLock.shared.sync(loggedIn: false)
+            if Demo.screen == "lock" { AppLock.shared.showLockedForDemo() }
             return
         }
         let hasTokens = await TokenStore.shared.hasTokens
         phase = hasTokens ? .loggedIn : .loggedOut
+        AppLock.shared.sync(loggedIn: hasTokens)
         if hasTokens { await session.load() }
     }
 
@@ -110,6 +88,8 @@ final class AppModel {
         loginNotice = nil
         await AulaAPI.shared.reset()
         phase = .loggedIn
+        AppLock.shared.sync(loggedIn: true)
+        AppLock.shared.offerAfterLogin()
         await session.refresh()
     }
 
@@ -117,6 +97,7 @@ final class AppModel {
         guard phase == .loggedIn else { return }
         loginNotice = String(localized: "Din Aula-session er udløbet. Log ind med MitID igen.")
         phase = .loggedOut
+        AppLock.shared.sync(loggedIn: false)
     }
 
     func logout() async {
@@ -130,5 +111,6 @@ final class AppModel {
         BackgroundRefresh.updateBadge(0, force: true)
         selectedChildId = nil
         phase = .loggedOut
+        AppLock.shared.sync(loggedIn: false)
     }
 }

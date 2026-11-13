@@ -7,6 +7,7 @@ import UserNotifications
 struct AulaPlusApp: App {
     @State private var app = AppModel.shared
     @State private var data = DataStore.shared
+    @State private var lock = AppLock.shared
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -23,35 +24,27 @@ struct AulaPlusApp: App {
                     BackgroundRefresh.schedule()
                 }
                 .overlay {
-                    if app.isLocked { LockView() }
+                    if lock.isLocked {
+                        LockView()
+                    } else if scenePhase != .active && lock.isEnabled && app.phase == .loggedIn {
+                        PrivacyCover()
+                    }
                 }
         }
         .backgroundTask(.appRefresh(BackgroundRefresh.taskId)) {
             await BackgroundRefresh.run()
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .background {
-                app.lockIfNeeded()
+            switch phase {
+            case .background:
+                lock.didEnterBackground(loggedIn: app.phase == .loggedIn)
                 BackgroundRefresh.schedule()
+            case .active:
+                lock.didBecomeActive(loggedIn: app.phase == .loggedIn)
+            default:
+                break
             }
         }
-    }
-}
-
-struct LockView: View {
-    @Environment(AppModel.self) private var app
-
-    var body: some View {
-        ZStack {
-            Rectangle().fill(.ultraThickMaterial).ignoresSafeArea()
-            VStack(spacing: 16) {
-                Image(systemName: "lock.fill").font(.system(size: 44)).foregroundStyle(.secondary)
-                Text("Aula+ er låst").font(.headline)
-                Button("Lås op") { Task { await app.unlock() } }
-                    .buttonStyle(.borderedProminent)
-            }
-        }
-        .task { await app.unlock() }
     }
 }
 
@@ -99,6 +92,13 @@ struct MainTabs: View {
             MoreView()
                 .tabItem { Label("Mere", systemImage: "ellipsis.circle") }
                 .tag(AppModel.Tab.more)
+        }
+        .alert(String(localized: "Lås Aula+ med \(AppLock.shared.methodName)?"),
+               isPresented: Binding(get: { AppLock.shared.showOffer }, set: { AppLock.shared.showOffer = $0 })) {
+            Button("Slå til") { Task { await AppLock.shared.enable() } }
+            Button("Ikke nu", role: .cancel) {}
+        } message: {
+            Text("Så kan andre, der låner din telefon, ikke læse beskeder om dine børn.")
         }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }

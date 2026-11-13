@@ -11,13 +11,7 @@ struct LoginView: View {
     var body: some View {
         VStack(spacing: 24) {
             Spacer(minLength: 12)
-            ZStack {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(LinearGradient(colors: [Color.brand, Color.brand.opacity(0.6)],
-                                         startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 96, height: 96)
-                Text("A+").font(.system(size: 40, weight: .bold, design: .rounded)).foregroundStyle(.white)
-            }
+            AppMark()
             VStack(spacing: 8) {
                 Text("Aula+").font(.largeTitle.bold())
                 Text("Beskeder, kalender og ugeplan —\nhurtigt og overskueligt.")
