@@ -29,6 +29,9 @@ struct Media: Codable, Identifiable, Hashable {
     let isVideo: Bool
     let title: String?
     var tags: [MediaTag]? = nil
+    var description: String? = nil
+    /// Aula's `currentUserCanEditTags`: whether this user may tag people in the photo.
+    var canEditTags: Bool? = nil
 
     var tagList: [MediaTag] { tags ?? [] }
     func isTagged(_ childId: Int) -> Bool { tagList.contains { $0.id == childId } }
@@ -117,6 +120,8 @@ private struct MediaDTO: Decodable {
     }
     let id: FlexInt
     let tags: Lossy<Tag>?
+    let description: String?
+    let currentUserCanEditTags: Bool?
     let title: String?
     let mediaType: String?
     let file: File?
@@ -265,7 +270,9 @@ extension AulaAPI {
                          fullURL: full.flatMap { URL(string: $0) },
                          isVideo: (m.mediaType ?? "").lowercased().contains("video"),
                          title: m.title?.nilIfEmpty,
-                         tags: tags)
+                         tags: tags,
+                         description: m.description,
+                         canEditTags: m.currentUserCanEditTags)
         }
     }
 
@@ -309,6 +316,14 @@ extension AulaAPI {
         case "AlbumShared": return String(localized: "Nyt album delt")
         default: return nil
         }
+    }
+
+    /// Replaces the people tagged in a photo, like Aula's web app (`gallery.updateMedia` with the full tag list).
+    func setTags(_ media: Media, tagIds: [Int]) async throws {
+        var item: [String: Any] = ["id": media.id, "tags": tagIds]
+        item["title"] = media.title ?? NSNull()
+        item["description"] = media.description ?? NSNull()
+        let _: Ignored = try await call("gallery.updateMedia", body: ["media": [item]])
     }
 
     /// Marks notifications as seen (Aula deletes them, like the web app does).

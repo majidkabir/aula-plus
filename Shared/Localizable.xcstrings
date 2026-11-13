@@ -2670,6 +2670,46 @@
           }
         }
       }
+    },
+    "Fjern tag af %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove tag of %@"
+          }
+        }
+      }
+    },
+    "Tag %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tag %@"
+          }
+        }
+      }
+    },
+    "Tag barn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tag child"
+          }
+        }
+      }
+    },
+    "Kunne ikke ændre tag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't change tag"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
