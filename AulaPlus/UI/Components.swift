@@ -4,12 +4,19 @@ import SwiftUI
 /// Stable colour per child, used across calendar, cards and avatars.
 enum Palette {
     /// Child colours never include the brand blue, so a child is never confused with a selected control.
-    static let all: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown]
+    static let all: [Color] = [.orange, .teal, .pink, .purple, .green, .indigo, .mint, .brown,
+                               Color(light: 0x2BA38E, dark: 0x4CC9B0), Color(light: 0x7A5AF0, dark: 0xA08BFF)]
     /// Child colours minus the ones that clash with the current theme.
     @MainActor static var colors: [Color] {
         let clash = ThemeStore.shared.theme.clashingChildColors
         return all.filter { !clash.contains($0) }
     }
+    /// Same colour for the same name on every launch (for people without a child colour).
+    static func stable(for name: String) -> Color {
+        let sum = name.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & 0x7FFF_FFFF }
+        return all[sum % all.count]
+    }
+
     @MainActor static func color(for childId: Int, in children: [Child]) -> Color {
         let i = children.firstIndex { $0.id == childId } ?? abs(childId)
         return colors[i % colors.count]
@@ -70,10 +77,10 @@ struct ChildFilterBar: View {
     private func chip(title: String, color: Color, onColor: Color = .white, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.subheadline.weight(.semibold))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 7)
-                .background(selected ? color : Color(.secondarySystemFill), in: Capsule())
+                .font(.subheadline.weight(.bold))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 9)
+                .background(selected ? color : Color.cardSoft, in: Capsule())
                 .foregroundStyle(selected ? onColor : Color.primary)
         }
         .buttonStyle(.plain)
@@ -135,7 +142,7 @@ struct AttachmentList: View {
                             if loading == a { ProgressView().controlSize(.small) }
                         }
                         .padding(.horizontal, 10).padding(.vertical, 8)
-                        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 10))
+                        .background(Color.cardSoft, in: RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
                     .disabled(a.url == nil || loading != nil)

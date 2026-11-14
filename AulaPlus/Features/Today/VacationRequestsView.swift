@@ -5,7 +5,7 @@ struct VacationRequestsView: View {
     @State private var answering: VacationRequest?
 
     var body: some View {
-        List {
+        ThemedList(rowBackground: .clear) {
             StaleBanner(error: data.vacationRequests.error, savedAt: data.vacationRequests.savedAt)
                 .listRowSeparator(.hidden)
             ForEach(data.vacationRequests.value ?? []) { r in
@@ -62,7 +62,7 @@ struct VacationAnswerForm: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            ThemedForm {
                 if let note = request.note {
                     Section { Text(note).font(.subheadline) }
                 }

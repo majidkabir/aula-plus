@@ -12,6 +12,18 @@ struct AulaPlusApp: App {
 
     init() {
         UNUserNotificationCenter.current().delegate = NotificationRouter.shared
+        Self.roundedNavigationTitles()
+    }
+
+    /// Navigation titles in the same rounded, heavy type as the rest of the app.
+    private static func roundedNavigationTitles() {
+        func rounded(_ size: CGFloat, _ weight: UIFont.Weight) -> UIFont {
+            let base = UIFont.systemFont(ofSize: size, weight: weight)
+            return base.fontDescriptor.withDesign(.rounded).map { UIFont(descriptor: $0, size: size) } ?? base
+        }
+        let bar = UINavigationBar.appearance()
+        bar.largeTitleTextAttributes = [.font: rounded(34, .heavy)]
+        bar.titleTextAttributes = [.font: rounded(17, .bold)]
     }
 
     var body: some Scene {

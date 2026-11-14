@@ -15,7 +15,7 @@ struct EventDetailView: View {
     }
 
     var body: some View {
-        List {
+        ThemedList {
             Section {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(detail?.title ?? event.title).font(.title3.bold())

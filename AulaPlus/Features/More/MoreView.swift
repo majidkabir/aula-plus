@@ -7,7 +7,7 @@ struct MoreView: View {
     var body: some View {
         @Bindable var app = app
         NavigationStack(path: $app.morePath) {
-            List {
+            ThemedList {
                 Section("Skole") {
                     NavigationLink(value: Route.posts) { row("Opslag", "newspaper.fill", .purple) }
                     NavigationLink(value: Route.gallery) {
@@ -261,9 +261,9 @@ struct AlbumTile<Subtitle: View, Placeholder: View>: View {
                             .overlay(placeholder())
                     }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 .overlay(alignment: .topTrailing) { NewBadge(count: newCount).padding(6) }
-            Text(title).font(.subheadline.weight(.semibold)).lineLimit(2)
+            Text(title).font(.headline.weight(.heavy)).lineLimit(2)
             HStack(spacing: 4) { subtitle() }
                 .font(.caption).foregroundStyle(.secondary)
         }
@@ -411,7 +411,7 @@ struct AlbumView: View {
             }
             .font(.subheadline.weight(.semibold))
             .padding(.horizontal, 14).padding(.vertical, 7)
-            .background(selected ? color : Color(.secondarySystemFill), in: Capsule())
+            .background(selected ? color : Color.cardSoft, in: Capsule())
             .foregroundStyle(selected ? onColor : Color.primary)
         }
         .buttonStyle(.plain)
@@ -419,7 +419,7 @@ struct AlbumView: View {
     }
 
     private func tile(_ m: Media) -> some View {
-        Color(.tertiarySystemFill)
+        Color.cardSoft
             .frame(maxWidth: .infinity)
             .frame(height: 115)
             .overlay {
@@ -670,7 +670,7 @@ struct NotificationsView: View {
     @State private var openingPost: Post?
 
     var body: some View {
-        List {
+        ThemedList(rowBackground: .clear) {
             StaleBanner(error: data.notifications.error, savedAt: data.notifications.savedAt)
                 .listRowSeparator(.hidden)
             ForEach(data.notifications.value ?? []) { n in
@@ -757,7 +757,7 @@ struct ImportantDatesView: View {
     @Environment(DataStore.self) private var data
 
     var body: some View {
-        List {
+        ThemedList(rowBackground: .clear) {
             StaleBanner(error: data.importantDates.error, savedAt: data.importantDates.savedAt)
                 .listRowSeparator(.hidden)
             ForEach(data.importantDates.value ?? []) { d in

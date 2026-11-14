@@ -22,7 +22,7 @@ struct ComposeView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            ThemedForm {
                 Section("Til") {
                     if !recipients.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {

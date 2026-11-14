@@ -32,7 +32,7 @@ struct MessagesView: View {
     var body: some View {
         @Bindable var app = app
         NavigationStack(path: $app.messagesPath) {
-            List {
+            ThemedList(rowBackground: .clear) {
                 Section {
                     ChildFilterBar().listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
                     StaleBanner(error: data.threads.error, savedAt: data.threads.savedAt)
@@ -42,6 +42,15 @@ struct MessagesView: View {
 
                 ForEach(threads) { t in
                     NavigationLink(value: t) { ThreadRow(thread: t) }
+                        // Each thread on its own rounded card.
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 12, leading: 26, bottom: 12, trailing: 24))
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .fill(t.isRead ? Color.card : Color.brand.opacity(0.10))
+                                .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.card))
+                                .padding(.horizontal, 12).padding(.vertical, 4)
+                        )
                         .swipeActions(edge: .leading) {
                             Button { Task { await toggleMarked(t) } } label: {
                                 Label(t.isMarked == true ? String(localized: "Fjern markering") : String(localized: "Markér"),
@@ -169,15 +178,20 @@ struct ThreadRow: View {
     @Environment(AppModel.self) private var app
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Circle()
-                .fill(thread.isRead ? Color.clear : Color.brand)
-                .frame(width: 9, height: 9)
-                .padding(.top, 6)
+        HStack(alignment: .top, spacing: 12) {
+            InitialsAvatar(name: thread.sender.isEmpty ? "Aula" : thread.sender,
+                           color: Palette.stable(for: thread.sender), size: 40)
+                .overlay(alignment: .topTrailing) {
+                    if !thread.isRead {
+                        Circle().fill(Color.brand).frame(width: 12, height: 12)
+                            .overlay(Circle().strokeBorder(Color.card, lineWidth: 2))
+                            .offset(x: 2, y: -2)
+                    }
+                }
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(thread.sender.isEmpty ? "Aula" : thread.sender)
-                        .font(.subheadline.weight(thread.isRead ? .regular : .bold))
+                        .font(.subheadline.weight(thread.isRead ? .semibold : .heavy))
                         .lineLimit(1)
                     Spacer()
                     Text(Fmt.listDate(thread.date))

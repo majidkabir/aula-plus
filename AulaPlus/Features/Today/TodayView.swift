@@ -17,6 +17,7 @@ struct TodayView: View {
                     ChildFilterBar().padding(.horizontal, -Theme.pad)
                     StaleBanner(error: data.presence.error ?? app.session.error, savedAt: data.presence.savedAt)
                     vacationBanner
+                    newPhotosCard
 
                     if app.children.isEmpty && app.session.isLoading {
                         // Skeleton while the first load runs.
@@ -52,6 +53,7 @@ struct TodayView: View {
             .navigationDestination(for: Child.self) { ChildPresenceView(child: $0) }
             .navigationDestination(for: Route.self) { RouteView(route: $0) }
             .navigationTitle("I dag")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: {
@@ -69,7 +71,8 @@ struct TodayView: View {
                 async let d: () = data.posts.load(maxAge: 300)
                 async let e: () = data.importantDates.load(maxAge: 1800)
                 async let f: () = data.vacationRequests.load(maxAge: 1800)
-                _ = await (a, b, c, d, e, f)
+                async let g: () = data.notifications.load(maxAge: 300)
+                _ = await (a, b, c, d, e, f, g)
             }
         }
     }
@@ -126,6 +129,31 @@ struct TodayView: View {
                 }
             }
             .cardStyle(padding: 12)
+        }
+    }
+
+    /// "12 nye billeder" — opens the gallery (its own tab when there's no week plan).
+    @ViewBuilder private var newPhotosCard: some View {
+        let count = data.newGalleryCount
+        if count > 0 {
+            Button {
+                if app.showsWeekPlan { app.todayPath.append(Route.gallery) } else { app.selectedTab = .photos }
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "photo.stack.fill")
+                        .font(.title3.weight(.bold)).foregroundStyle(.purple)
+                        .frame(width: 46, height: 46)
+                        .background(Color.purple.opacity(0.16), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(count) nye billeder").font(.headline.weight(.heavy))
+                        Text("Se dem i galleriet").font(.subheadline).foregroundStyle(Color.inkSoft)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.footnote.weight(.bold)).foregroundStyle(Color.inkSoft)
+                }
+                .cardStyle(padding: 14)
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -206,10 +234,10 @@ struct ChildDayCard: View {
         let color = Palette.color(for: child.id, in: app.children)
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
-                ChildAvatar(child: child, size: 46)
+                ChildAvatar(child: child, size: 54)
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text(child.firstName).font(.title3.weight(.semibold))
+                        Text(child.firstName).font(.title2.weight(.heavy))
                         Spacer(minLength: 4)
                         Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
                             .accessibilityHidden(true)
@@ -219,7 +247,7 @@ struct ChildDayCard: View {
                         Label(status.label, systemImage: status.symbol)
                             .font(.subheadline.weight(.semibold))
                             .padding(.horizontal, 10).padding(.vertical, 4)
-                            .background(color.opacity(0.16), in: Capsule())
+                            .background(Color.card, in: Capsule())
                             .foregroundStyle(color)
                             .padding(.top, 2)
                     }
@@ -235,7 +263,9 @@ struct ChildDayCard: View {
                               alignment: .leading, spacing: 10) {
                         ForEach(facts, id: \.label) { f in
                             HStack(spacing: 8) {
-                                Image(systemName: f.icon).foregroundStyle(color).font(.body)
+                                Image(systemName: f.icon).foregroundStyle(color).font(.body.weight(.bold))
+                                    .frame(width: 30, height: 30)
+                                    .background(Color.card, in: Circle())
                                     .accessibilityHidden(true)
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(f.label).font(.caption).foregroundStyle(.secondary)
@@ -251,7 +281,7 @@ struct ChildDayCard: View {
                         .font(.subheadline).foregroundStyle(.secondary)
                         .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: Theme.rowRadius, style: .continuous))
+                        .background(Color.card, in: RoundedRectangle(cornerRadius: Theme.rowRadius, style: .continuous))
                 }
             }
 
@@ -299,12 +329,7 @@ struct ChildDayCard: View {
                 }
             }
         }
-        .cardStyle()
-        .overlay(alignment: .leading) {
-            UnevenRoundedRectangle(topLeadingRadius: Theme.cardRadius, bottomLeadingRadius: Theme.cardRadius, style: .continuous)
-                .fill(color).frame(width: 5)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
+        .pastelCard(color, padding: 18)
     }
 
     static func moreText(more: Int, done: Int) -> String {
@@ -315,7 +340,7 @@ struct ChildDayCard: View {
     }
 }
 
-/// Brand-gradient header: greeting, date and three key numbers for the day.
+/// Header: date, a big friendly greeting, and three pastel tiles with the day's key numbers.
 struct TodayHero: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     let greeting: String
@@ -327,50 +352,39 @@ struct TodayHero: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(greeting).font(.title2.weight(.bold))
                 Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized)
-                    .font(.subheadline.weight(.medium)).opacity(0.85)
+                    .font(.subheadline.weight(.bold)).foregroundStyle(Color.inkSoft)
+                Text(greeting).font(.largeTitle.weight(.heavy))
+                    .lineLimit(2).minimumScaleFactor(0.7)
+                    .accessibilityAddTraits(.isHeader)
             }
             let layout = typeSize.isAccessibilitySize
-                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
-                : AnyLayout(HStackLayout(alignment: .top, spacing: 0))
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
+                : AnyLayout(HStackLayout(alignment: .top, spacing: 10))
             layout {
                 Button(action: openMessages) {
-                    stat(value: "\(unread)", label: String(localized: "Ulæste"), icon: "bubble.left.fill")
+                    tile(value: "\(unread)", label: String(localized: "Ulæste"), icon: "bubble.left.fill", color: .purple)
                 }
                 .buttonStyle(.plain)
-                if !typeSize.isAccessibilitySize { divider }
-                stat(value: pickup ?? "–", label: String(localized: "Afhentning"), icon: "figure.and.child.holdinghands")
-                if !typeSize.isAccessibilitySize { divider }
-                stat(value: next?.time ?? "–", label: next?.title ?? String(localized: "Intet planlagt"), icon: "calendar")
+                tile(value: pickup ?? "–", label: String(localized: "Afhentning"), icon: "figure.and.child.holdinghands", color: .teal)
+                tile(value: next?.time ?? "–", label: next?.title ?? String(localized: "Intet planlagt"), icon: "calendar", color: .orange)
             }
         }
-        .foregroundStyle(.white)
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            ZStack {
-                ThemeStore.shared.theme.gradient
-                Circle().fill(.white.opacity(0.10)).frame(width: 180).offset(x: 130, y: -60)
-                Circle().fill(.white.opacity(0.07)).frame(width: 120).offset(x: 160, y: 50)
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: ThemeStore.shared.theme.gradientStart.opacity(0.30), radius: 16, x: 0, y: 8)
+        .padding(.top, 4)
     }
 
-    private var divider: some View {
-        Rectangle().fill(.white.opacity(0.3)).frame(width: 1, height: 40).padding(.horizontal, 10)
-    }
-
-    private func stat(value: String, label: String, icon: String) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Image(systemName: icon).font(.caption.weight(.semibold)).opacity(0.85)
-            Text(value).font(.title3.weight(.bold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
-            Text(label).font(.caption.weight(.medium)).opacity(0.9)
+    private func tile(value: String, label: String, icon: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Image(systemName: icon).font(.subheadline.weight(.bold)).foregroundStyle(color)
+                .frame(width: 30, height: 30)
+                .background(Color.card, in: Circle())
+            Text(value).font(.title2.weight(.heavy)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.6)
+            Text(label).font(.caption.weight(.semibold)).foregroundStyle(Color.inkSoft)
                 .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(color.opacity(0.16), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }
