@@ -27,13 +27,26 @@ actor FaceEngine {
         return model
     }
 
-    /// Faces at least ~36 px wide, biggest first.
+    /// Clear, roughly frontal faces at least ~56 px wide with both eyes found, biggest first.
+    /// Blurry, small or side-on faces give unreliable faceprints, so they're skipped.
     func faces(in image: CGImage) -> [Face] {
-        let request = VNDetectFaceLandmarksRequest()
-        try? VNImageRequestHandler(cgImage: image, orientation: .up).perform([request])
+        let handler = VNImageRequestHandler(cgImage: image, orientation: .up)
+        let landmarks = VNDetectFaceLandmarksRequest()
+        try? handler.perform([landmarks])
         let width = CGFloat(image.width)
-        return (request.results ?? [])
-            .filter { $0.boundingBox.width * width >= 36 }
+        let candidates = (landmarks.results ?? []).filter { obs in
+            obs.boundingBox.width * width >= 56
+                && obs.landmarks?.leftPupil != nil && obs.landmarks?.rightPupil != nil
+                && abs(obs.yaw?.doubleValue ?? 0) <= 0.6
+        }
+        guard !candidates.isEmpty else { return [] }
+        let quality = VNDetectFaceCaptureQualityRequest()
+        quality.inputFaceObservations = candidates
+        try? handler.perform([quality])
+        let rated = quality.results ?? candidates
+        return rated
+            .filter { ($0.faceCaptureQuality ?? 1) >= 0.3 }
+            .compactMap { q in candidates.first { $0.boundingBox == q.boundingBox } ?? q }
             .sorted { $0.boundingBox.width > $1.boundingBox.width }
             .prefix(12)
             .compactMap { obs in
@@ -98,7 +111,12 @@ final class FaceIndex {
     static let shared = FaceIndex()
 
     /// Similarity (average of the best 3 matches against the child's reference faces) that counts as a match.
-    static let threshold: Float = 0.50
+    /// Young children look alike to the model, so this is strict.
+    static let threshold: Float = 0.62
+    /// A face must be this much closer to one of my children than to the others.
+    static let margin: Float = 0.06
+    /// Bump to throw away results from an older, less careful version.
+    private static let schema = 2
 
     var isEnabled: Bool {
         didSet { UserDefaults.standard.set(isEnabled, forKey: "faceFinder") }
@@ -115,6 +133,7 @@ final class FaceIndex {
         var scoredWith: [Int: Int] = [:]          // photo id → version it was scored with
         var rejected: [Int: Set<Int>] = [:]       // child id → photos the user said aren't them
         var found: [Int: [Media]] = [:]           // child id → matching photos (for the child's album)
+        var schema: Int? = nil
     }
 
     private var store = Store()
@@ -127,7 +146,11 @@ final class FaceIndex {
 
     private init() {
         isEnabled = UserDefaults.standard.object(forKey: "faceFinder") as? Bool ?? true
-        if let data = try? Data(contentsOf: file), let s = try? JSONDecoder().decode(Store.self, from: data) { store = s }
+        if let data = try? Data(contentsOf: file), let s = try? JSONDecoder().decode(Store.self, from: data),
+           s.schema == Self.schema {
+            store = s
+        }
+        store.schema = Self.schema
     }
 
     // MARK: Questions the UI asks
@@ -202,6 +225,8 @@ final class FaceIndex {
         guard !kids.isEmpty, scanning == nil else { return }
         let todo = media.filter { !$0.isVideo && store.scoredWith[$0.id] != store.version }
         guard !todo.isEmpty else { return }
+        // References that don't look like the rest (e.g. a teacher in a tagged photo) are left out.
+        let refs = Dictionary(uniqueKeysWithValues: kids.map { ($0.id, Self.cleaned(store.refs[$0.id] ?? [])) })
         scanning = (0, todo.count)
         defer { scanning = nil; save() }
         for (i, m) in todo.enumerated() {
@@ -209,7 +234,15 @@ final class FaceIndex {
             if let image = await Self.image(m) {
                 let faces = await FaceEngine.shared.faces(in: image)
                 var row: [Int: Float] = [:]
-                for kid in kids { row[kid.id] = Self.similarity(faces, store.refs[kid.id] ?? []) }
+                for face in faces {
+                    let sims = kids.map { ($0.id, Self.similarity(face, refs[$0.id] ?? [])) }
+                    for (id, sim) in sims {
+                        // Closer to this child than to my other children by a clear margin.
+                        let others = sims.filter { $0.0 != id }.map(\.1).max() ?? 0
+                        let score = sim - others >= Self.margin || sims.count == 1 ? sim : 0
+                        row[id] = max(row[id] ?? 0, score)
+                    }
+                }
                 store.scores[m.id] = row
                 store.scoredWith[m.id] = store.version
                 for kid in kids where (row[kid.id] ?? 0) >= Self.threshold && !m.isTagged(kid.id) {
@@ -232,16 +265,28 @@ final class FaceIndex {
 
     // MARK: Helpers
 
-    /// Best face in the photo against the child: mean of its 3 highest cosine similarities.
-    private static func similarity(_ faces: [FaceEngine.Face], _ refs: [[Float]]) -> Float {
+    /// A face against the child: mean of its 3 highest cosine similarities to the reference faces.
+    private static func similarity(_ face: FaceEngine.Face, _ refs: [[Float]]) -> Float {
         guard !refs.isEmpty else { return 0 }
-        var best: Float = 0
-        for f in faces {
-            let sims = refs.map { r in zip(f.embedding, r).reduce(Float(0)) { $0 + $1.0 * $1.1 } }.sorted(by: >)
-            let top = sims.prefix(3)
-            best = max(best, top.reduce(0, +) / Float(top.count))
+        let top = refs.map { dot(face.embedding, $0) }.sorted(by: >).prefix(3)
+        return top.reduce(0, +) / Float(top.count)
+    }
+
+    private static func dot(_ a: [Float], _ b: [Float]) -> Float {
+        zip(a, b).reduce(Float(0)) { $0 + $1.0 * $1.1 }
+    }
+
+    /// Drops reference faces that don't resemble the others (most references are right, a few
+    /// come from a tagged photo where someone else's face was the one found).
+    static func cleaned(_ refs: [[Float]]) -> [[Float]] {
+        guard refs.count >= 3 else { return refs }
+        let typical = refs.indices.map { i -> Float in
+            let sims = refs.indices.filter { $0 != i }.map { dot(refs[i], refs[$0]) }.sorted()
+            return sims[sims.count / 2]
         }
-        return best
+        let median = typical.sorted()[typical.count / 2]
+        let keep = refs.indices.filter { typical[$0] >= max(0.35, median - 0.12) }
+        return keep.count >= 2 ? keep.map { refs[$0] } : refs
     }
 
     private static func image(_ m: Media) async -> CGImage? {
