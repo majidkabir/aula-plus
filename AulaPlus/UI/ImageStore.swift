@@ -92,13 +92,17 @@ struct CachedImage<Placeholder: View>: View {
     var maxPixel: CGFloat? = 400
     var contentMode: ContentMode = .fill
     var onFailure: (() -> Void)? = nil
+    /// Tried in order when `url` fails (Aula's small thumbnails are missing for some albums).
+    var fallbacks: [URL] = []
     /// A region to outline on the photo (fractions, origin top-left), e.g. a recognised face.
     var highlight: CGRect? = nil
     @ViewBuilder var placeholder: () -> Placeholder
     @State private var image: UIImage?
 
     init(key: String, url: URL?, maxPixel: CGFloat? = 400, contentMode: ContentMode = .fill,
-         onFailure: (() -> Void)? = nil, highlight: CGRect? = nil, @ViewBuilder placeholder: @escaping () -> Placeholder) {
+         onFailure: (() -> Void)? = nil, fallbacks: [URL] = [], highlight: CGRect? = nil,
+         @ViewBuilder placeholder: @escaping () -> Placeholder) {
+        self.fallbacks = fallbacks
         self.highlight = highlight
         self.key = key
         self.url = url
@@ -137,11 +141,15 @@ struct CachedImage<Placeholder: View>: View {
         .task(id: "\(key)|\(url?.absoluteString ?? "")") {
             if image == nil { image = ImageStore.shared.memoryImage(key) }
             guard image == nil else { return }
-            if let img = await ImageStore.shared.image(key: key, url: url, maxPixel: maxPixel) {
-                image = img
-            } else if !Task.isCancelled {
-                onFailure?()
+            var tried = Set<URL>()
+            for candidate in ([url].compactMap { $0 } + fallbacks) where tried.insert(candidate).inserted {
+                if let img = await ImageStore.shared.image(key: key, url: candidate, maxPixel: maxPixel) {
+                    image = img
+                    return
+                }
+                if Task.isCancelled { return }
             }
+            onFailure?()
         }
     }
 }

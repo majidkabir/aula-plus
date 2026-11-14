@@ -38,6 +38,8 @@ struct Media: Codable, Identifiable, Hashable {
     var date: Date? = nil
 
     var tagList: [MediaTag] { tags ?? [] }
+    /// Bigger versions to fall back on when the thumbnail doesn't load.
+    var thumbFallbacks: [URL] { [scanURL, fullURL].compactMap { $0 } }
     func isTagged(_ childId: Int) -> Bool { tagList.contains { $0.id == childId } }
 }
 

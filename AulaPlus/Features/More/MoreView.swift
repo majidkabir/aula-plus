@@ -477,7 +477,8 @@ struct AlbumView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 115)
             .overlay {
-                CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, onFailure: urlsExpired) {
+                CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, onFailure: urlsExpired,
+                            fallbacks: m.thumbFallbacks) {
                     Color.clear
                 }
             }
@@ -557,7 +558,7 @@ struct MediaViewer: View {
                 ForEach(Array(items.enumerated()), id: \.element.id) { i, m in
                     Group {
                         if m.isVideo {
-                            CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, contentMode: .fit) {
+                            CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, contentMode: .fit, fallbacks: m.thumbFallbacks) {
                                 ProgressView().tint(.white)
                             }
                         } else {
@@ -565,7 +566,7 @@ struct MediaViewer: View {
                             // A face found by face recognition is outlined while the info is shown.
                             let box = showTags ? children.lazy.compactMap { FaceIndex.shared.faceBox(m, $0.id) }.first : nil
                             CachedImage(key: "f\(m.id)", url: m.fullURL ?? m.thumbURL, maxPixel: nil, contentMode: .fit, highlight: box) {
-                                CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, contentMode: .fit, highlight: box) {
+                                CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, contentMode: .fit, fallbacks: m.thumbFallbacks, highlight: box) {
                                     ProgressView().tint(.white)
                                 }
                                 .overlay { ProgressView().tint(.white) }
