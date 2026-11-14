@@ -162,6 +162,7 @@ struct NewBadge: View {
 struct GalleryView: View {
     @Environment(DataStore.self) private var data
     @Environment(AppModel.self) private var app
+    @State private var creatingAlbum = false
     static func tint(_ id: Int) -> Color { [Color.pink, .orange, .teal, .purple, .indigo, .green][abs(id) % 6] }
     // Top-aligned: a two-line title must not push the neighbouring tile down.
     private let columns = [GridItem(.adaptive(minimum: 160), spacing: 12, alignment: .top)]
@@ -209,7 +210,17 @@ struct GalleryView: View {
         }
         .themedBackground()
         .navigationTitle("Galleri")
+        .sheet(isPresented: $creatingAlbum) {
+            CreateAlbumView { made in
+                creatingAlbum = false
+                if made { Task { await data.albums.refresh() } }
+            }
+        }
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { creatingAlbum = true } label: { Image(systemName: "plus") }
+                    .accessibilityLabel(Text("Nyt album"))
+            }
             if data.albums.isLoading && data.albums.value != nil {
                 ToolbarItem(placement: .primaryAction) { ProgressView().accessibilityLabel(Text("Opdaterer")) }
             }
@@ -333,6 +344,7 @@ struct AlbumView: View {
     @State private var newIds: Set<Int> = []
     @State private var refreshedForExpiredURLs = false
     @State private var refreshedForDates = false
+    @State private var addingPhotos = false
     private let columns = [GridItem(.adaptive(minimum: 105), spacing: 3)]
 
     enum Filter: Hashable { case all, new, child(Int) }
@@ -392,6 +404,20 @@ struct AlbumView: View {
         }
         .navigationTitle(album.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if album.childId == nil {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { addingPhotos = true } label: { Image(systemName: "photo.badge.plus") }
+                        .accessibilityLabel(Text("Tilføj billeder"))
+                }
+            }
+        }
+        .sheet(isPresented: $addingPhotos) {
+            AddPhotosView(album: album) { made in
+                addingPhotos = false
+                if made { Task { await media.refresh() } }
+            }
+        }
         .refreshable { await media.refresh() }
         .task {
             // Photos first; the "new" markers load alongside instead of before them.

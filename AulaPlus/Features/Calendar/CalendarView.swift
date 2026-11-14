@@ -5,6 +5,7 @@ struct CalendarView: View {
     @Environment(DataStore.self) private var data
     @State private var selectedDay = Calendar.week.startOfDay(for: .now)
     @State private var addingEvent: Event?
+    @State private var creating = false
 
     private var weekStart: Date { Week.start(of: selectedDay) }
     private var week: Loadable<[Event]> { data.events(weekOf: selectedDay) }
@@ -74,6 +75,10 @@ struct CalendarView: View {
             .navigationTitle("Kalender")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button { creating = true } label: { Image(systemName: "plus") }
+                        .accessibilityLabel(Text("Ny begivenhed"))
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     if !Calendar.week.isDateInToday(selectedDay) {
                         Button("I dag") { selectedDay = Calendar.week.startOfDay(for: .now) }
                     }
@@ -82,6 +87,12 @@ struct CalendarView: View {
             .refreshable { await week.refresh() }
             .task(id: weekStart) { await week.load(maxAge: 600) }
             .task { await data.birthdays.load(maxAge: 6 * 3600) }
+            .sheet(isPresented: $creating) {
+                CreateEventView(day: selectedDay) { made in
+                    creating = false
+                    if made { Task { await week.refresh() } }
+                }
+            }
             .sheet(item: $addingEvent) { e in
                 AddToCalendarSheet(event: e, childNames: e.childIds.compactMap { app.child($0)?.firstName })
                     .ignoresSafeArea()

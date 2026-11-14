@@ -38,7 +38,11 @@ struct EventDetailView: View {
                 Section("Beskrivelse") { HTMLText(html: html) }
             }
 
-            if let d = detail, d.responseRequired, !mine.isEmpty {
+            if let d = detail, !d.slots.isEmpty {
+                MeetingSlotsSection(detail: d, people: slotPeople(d)) { await load() }
+            }
+
+            if let d = detail, d.responseRequired, !mine.isEmpty, d.slots.isEmpty {
                 Section {
                     ForEach(mine, id: \.self) { invitee in
                         VStack(alignment: .leading, spacing: 8) {
@@ -103,6 +107,18 @@ struct EventDetailView: View {
         }
         .task { await load() }
         .refreshable { await load() }
+    }
+
+    /// Who I can book a meeting time for: a parent meeting is mine, a school-home talk is about a child.
+    private func slotPeople(_ d: EventDetail) -> [(id: Int, name: String)] {
+        let guardians = app.session.value?.guardianProfileIds ?? []
+        let invited = Set(d.invitees.compactMap(\.institutionProfileId))
+        if d.type != "parental_meeting" {
+            let kids = app.children.filter { invited.contains($0.id) || event.childIds.contains($0.id) }
+            if !kids.isEmpty { return kids.map { ($0.id, $0.firstName) } }
+        }
+        let me = guardians.first { invited.contains($0) } ?? guardians.first
+        return me.map { [($0, String(localized: "Mig"))] } ?? app.children.map { ($0.id, $0.firstName) }
     }
 
     static func look(_ r: RSVP) -> (String, Color) {

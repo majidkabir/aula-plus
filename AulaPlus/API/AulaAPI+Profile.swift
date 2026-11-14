@@ -99,49 +99,8 @@ extension AulaAPI {
 
     /// Uploads a new profile picture: Aula hands out an upload form for its storage, then links the photo.
     func uploadProfilePicture(_ jpeg: Data, for profile: MyProfile, allProfiles: Bool) async throws {
-        let uploadId = UUID().uuidString.lowercased()
-        let created: CreatedAttachmentsDTO = try await call("files.createAttachments", body: [
-            "media": [[
-                "file": [String: Any](),
-                "name": "profilbillede.jpg",
-                "mediaType": "image",
-                "rotationDegree": 0,
-                "title": NSNull(),
-                "description": NSNull(),
-                "tags": [profile.id],
-                "albumId": NSNull(),
-                "sensitivityLevel": NSNull(),
-                "allowsComments": true,
-                "uploadId": uploadId,
-            ] as [String: Any]],
-            "files": [Any](),
-            "links": [Any](),
-            "existingMedia": [Any](),
-            "attachedSecureDocumentIds": NSNull(),
-            "ownerInstitutionProfileId": profile.id,
-            "institutionCode": profile.institutionCode.map { $0 as Any } ?? NSNull(),
-        ])
-        guard let media = created.media?.items.first(where: { $0.uploadId == uploadId }) ?? created.media?.items.first,
-              let mediaId = media.id?.value, let form = media.fileUploadInformation,
-              let action = form["action"], let url = URL(string: action) else {
-            throw AulaError.decoding("files.createAttachments")
-        }
-        // A plain form upload to Aula's storage, like the browser does.
-        let boundary = "AulaPlus-\(UUID().uuidString)"
-        var body = Data()
-        func field(_ name: String, _ value: String) {
-            body.append("--\(boundary)\r\nContent-Disposition: form-data; name=\"\(name)\"\r\n\r\n\(value)\r\n".data(using: .utf8)!)
-        }
-        for (k, v) in form where k != "action" { field(k.replacingOccurrences(of: "_", with: "-"), v) }
-        body.append("--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"profilbillede.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
-        body.append(jpeg)
-        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        let (_, resp) = try await URLSession.shared.upload(for: req, from: body)
-        let status = (resp as? HTTPURLResponse)?.statusCode ?? 0
-        guard (200..<300).contains(status) else { throw AulaError.http(status) }
+        let mediaId = try await uploadPhoto(jpeg, name: "profilbillede.jpg", owner: profile.id,
+                                            institutionCode: profile.institutionCode, tags: [profile.id])
         let _: Ignored = try await call("profiles.updateProfilePicture", body: [
             "institutionProfileId": profile.id,
             "mediaId": mediaId,
@@ -273,26 +232,6 @@ private struct MasterDataDTO: Decodable {
     let institutionProfiles: Lossy<Profile>?
 }
 
-private struct CreatedAttachmentsDTO: Decodable {
-    struct Media: Decodable {
-        let id: FlexInt?
-        let uploadId: String?
-        let fileUploadInformation: [String: String]?
-        enum CodingKeys: String, CodingKey { case id, uploadId, fileUploadInformation }
-        init(from decoder: Decoder) throws {
-            let c = try decoder.container(keyedBy: CodingKeys.self)
-            id = try? c.decodeIfPresent(FlexInt.self, forKey: .id)
-            uploadId = try? c.decodeIfPresent(String.self, forKey: .uploadId)
-            // Values can be numbers too; keep everything as text for the form.
-            if let raw = try? c.decodeIfPresent([String: FlexString].self, forKey: .fileUploadInformation) {
-                fileUploadInformation = raw.mapValues(\.value)
-            } else {
-                fileUploadInformation = nil
-            }
-        }
-    }
-    let media: Lossy<Media>?
-}
 
 private struct PickupFullDTO: Decodable {
     struct Person: Decodable { let name: String?; let relation: String?; let institutionProfileId: FlexInt? }
