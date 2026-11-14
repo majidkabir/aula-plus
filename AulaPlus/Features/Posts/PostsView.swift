@@ -4,9 +4,14 @@ import SwiftUI
 struct PostsList: View {
     @Environment(DataStore.self) private var data
     @State private var search = ""
+    @State private var filter: PostFilter = .all
+    /// Posts for a filter other than "Alle", fetched from Aula like aula.dk does.
+    @State private var filtered: Loadable<[Post]>?
+
+    private var source: Loadable<[Post]> { filter == .all ? data.posts : (filtered ?? data.posts) }
 
     private var posts: [Post] {
-        let all = data.posts.value ?? []
+        let all = source.value ?? []
         guard !search.isEmpty else { return all }
         return all.filter { p in
             [p.title, p.author, HTML.plainText(p.html)].contains { $0.localizedCaseInsensitiveContains(search) }
@@ -16,7 +21,8 @@ struct PostsList: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 12) {
-                StaleBanner(error: data.posts.error, savedAt: data.posts.savedAt)
+                filterBar.padding(.horizontal, -16)
+                StaleBanner(error: source.error, savedAt: source.savedAt)
                 ForEach(posts) { post in
                     NavigationLink(value: post) { PostCard(post: post, compact: true) }
                         .buttonStyle(.plain)
@@ -27,14 +33,46 @@ struct PostsList: View {
         .themedBackground()
         .overlay {
             if posts.isEmpty {
-                if data.posts.isLoading { ProgressView() }
-                else { ContentUnavailableView("Ingen opslag", systemImage: "newspaper") }
+                if source.isLoading { ProgressView() }
+                else {
+                    ContentUnavailableView(filter == .saved ? "Ingen gemte opslag" : "Ingen opslag",
+                                           systemImage: filter == .saved ? "bookmark" : "newspaper")
+                }
             }
         }
         .searchable(text: $search, prompt: String(localized: "Søg i opslag"))
         .navigationTitle("Opslag")
-        .refreshable { await data.posts.refresh() }
+        .refreshable { await source.refresh() }
         .task { await data.posts.load(maxAge: 300) }
+        .task(id: filter) {
+            guard filter != .all else { filtered = nil; return }
+            let f = filter
+            let l = Loadable<[Post]>(key: "posts-\(f.rawValue)") {
+                let s = try await AulaAPI.shared.bootstrap()
+                return try await AulaAPI.shared.posts(institutionProfileIds: s.institutionProfileIds, filter: f)
+            }
+            filtered = l
+            await l.load(maxAge: 120)
+        }
+    }
+
+    private var filterBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(PostFilter.allCases) { f in
+                    Button { filter = f } label: {
+                        Text(f.label)
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 14).padding(.vertical, 8)
+                            .background(filter == f ? Color.accentColor : Color.card, in: Capsule())
+                            .foregroundStyle(filter == f ? Color.white : Color.primary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(filter == f ? .isSelected : [])
+                }
+            }
+            .padding(.horizontal, 16)
+        }
     }
 }
 
@@ -51,6 +89,10 @@ struct PostCard: View {
                     Text(Fmt.listDate(post.date)).font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
+                if post.isBookmarked == true {
+                    Image(systemName: "bookmark.fill").font(.caption).foregroundStyle(.secondary)
+                        .accessibilityLabel(Text("Gemt"))
+                }
                 if post.isImportant {
                     Label("Vigtigt", systemImage: "exclamationmark.circle.fill")
                         .font(.caption.weight(.bold))
@@ -83,6 +125,9 @@ struct PostCard: View {
 
 struct PostDetailView: View {
     let post: Post
+    @State private var saved: Bool?
+    @State private var saveError: String?
+    @Environment(DataStore.self) private var data
     @State private var comments: [Comment] = []
     @State private var newComment = ""
     @State private var posting = false
@@ -147,7 +192,29 @@ struct PostDetailView: View {
         }
         .themedBackground()
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                let on = saved ?? post.isBookmarked ?? false
+                Button { Task { await toggleSaved(!on) } } label: {
+                    Image(systemName: on ? "bookmark.fill" : "bookmark")
+                }
+                .accessibilityLabel(on ? Text("Fjern fra gemte") : Text("Gem opslag"))
+            }
+        }
+        .alert("Kunne ikke gemme", isPresented: Binding(get: { saveError != nil }, set: { if !$0 { saveError = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: { Text(saveError ?? "") }
         .task { comments = (try? await AulaAPI.shared.comments(postId: post.id)) ?? [] }
+    }
+
+    private func toggleSaved(_ on: Bool) async {
+        let before = saved
+        saved = on
+        do { try await data.setBookmarked(post, on) }
+        catch {
+            saved = before
+            saveError = error.localizedDescription
+        }
     }
 
     private func postComment() async {

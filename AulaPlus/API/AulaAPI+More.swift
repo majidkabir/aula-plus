@@ -369,6 +369,44 @@ extension AulaAPI {
         let _: Ignored = try await call("files.updateAttachments", body: ["media": [item]])
     }
 
+    /// Saves ("Gem") or unsaves a post, like aula.dk.
+    func setBookmarked(postId: Int, _ on: Bool) async throws {
+        let _: Ignored = try await call(on ? "posts.bookmark" : "posts.unbookmark", body: ["postId": postId])
+    }
+
+    /// Birthdays of children at the given institutions in the next `days` days.
+    func birthdays(institutionCodes: [String], days: Int = 14) async throws -> [Birthday] {
+        guard !institutionCodes.isEmpty else { return [] }
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: .now)
+        let end = cal.date(byAdding: .day, value: days, to: start)!
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        var q: [URLQueryItem] = [
+            .init(name: "start", value: f.string(from: start) + "T00:00:00.0000Z"),
+            .init(name: "end", value: f.string(from: end) + "T23:59:59.0000Z"),
+        ]
+        q += institutionCodes.map { .init(name: "instCodes[]", value: $0) }
+        let list: Lossy<BirthdayDTO> = try await call("calendar.getBirthdayEventsForInstitutions", query: q)
+        var seen = Set<Int>()
+        return list.items.compactMap { b -> Birthday? in
+            guard let id = b.institutionProfileId?.value, seen.insert(id).inserted,
+                  let born = b.birthday.flatMap(AulaDate.parse) else { return nil }
+            // Aula returns the birth date (midnight UTC); show the coming birthday.
+            var utc = Calendar(identifier: .gregorian)
+            utc.timeZone = TimeZone(identifier: "UTC")!
+            var parts = utc.dateComponents([.month, .day], from: born)
+            parts.year = cal.component(.year, from: start)
+            guard var next = cal.date(from: parts) else { return nil }
+            if next < start { next = cal.date(byAdding: .year, value: 1, to: next) ?? next }
+            guard next <= end else { return nil }
+            return Birthday(id: id, name: b.name ?? "", date: next, group: b.mainGroupName?.nilIfEmpty,
+                            institutionCode: b.institutionCode)
+        }
+        .sorted { $0.date < $1.date }
+    }
+
     /// Marks notifications as seen on Aula (it deletes them, like the web app does).
     /// A notification without an owner profile is sent once per guardian profile.
     func deleteNotifications(_ list: [AulaNotification], fallbackOwners: [Int] = []) async throws {
@@ -440,4 +478,12 @@ extension MediaDTO {
                      scanURL: ([m.largeThumbnailUrl, m.mediumThumbnailUrl, m.file?.url] as [String?])
                          .compactMap { $0 }.first.flatMap { URL(string: $0) })
     }
+}
+
+struct BirthdayDTO: Decodable {
+    let institutionProfileId: FlexInt?
+    let birthday: String?
+    let name: String?
+    let mainGroupName: String?
+    let institutionCode: String?
 }

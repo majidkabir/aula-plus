@@ -12,6 +12,7 @@ final class DataStore {
     let posts: Loadable<[Post]>
     let notifications: Loadable<[AulaNotification]>
     let importantDates: Loadable<[ImportantDate]>
+    let birthdays: Loadable<[Birthday]>
     let albums: Loadable<[Album]>
     let vacationRequests: Loadable<[VacationRequest]>
 
@@ -39,6 +40,14 @@ final class DataStore {
         }
         albumMedia[album.id] = l
         return l
+    }
+
+    /// Saves or unsaves a post on Aula and in the cached overview.
+    func setBookmarked(_ post: Post, _ on: Bool) async throws {
+        if !Demo.isOn { try await AulaAPI.shared.setBookmarked(postId: post.id, on) }
+        posts.mutate { list in
+            if let i = list.firstIndex(where: { $0.id == post.id }) { list[i].isBookmarked = on }
+        }
     }
 
     /// Tags or untags `child` in a photo, on Aula and in every cached album. Returns the updated photo.
@@ -150,6 +159,11 @@ final class DataStore {
             let codes = Array(Set(s.children.compactMap(\.institutionCode))).sorted()
             return try await AulaAPI.shared.notifications(childIds: s.children.map(\.id), institutionCodes: codes)
         }
+        birthdays = Loadable(key: "birthdays") {
+            let s = try await AulaAPI.shared.bootstrap()
+            let codes = Array(Set(s.children.compactMap(\.institutionCode))).sorted()
+            return try await AulaAPI.shared.birthdays(institutionCodes: codes)
+        }
         importantDates = Loadable(key: "important-dates") {
             _ = try await AulaAPI.shared.bootstrap()
             return try await AulaAPI.shared.importantDates()
@@ -250,6 +264,7 @@ final class DataStore {
         posts.forget()
         notifications.forget()
         importantDates.forget()
+        birthdays.forget()
         albums.forget()
         vacationRequests.forget()
         albumMedia = [:]
