@@ -96,42 +96,42 @@ struct MessagesView: View {
     }
 
     private var list: some View {
-    ThemedList(rowBackground: .clear) {
-        listContent
-    }
-    .listStyle(.plain)
-    .overlay {
-        if showDrafts && data.drafts.isEmpty {
-            ContentUnavailableView("Ingen kladder", systemImage: "doc.text")
-        } else if !showDrafts && threads.isEmpty {
-            if source.isLoading || searching { ProgressView() }
-            else { ContentUnavailableView(onlyUnread ? String(localized: "Ingen ulæste beskeder") : String(localized: "Ingen beskeder"),
-                                          systemImage: "tray") }
+        ThemedList(rowBackground: .clear) {
+            listContent
         }
-    }
-    .searchable(text: $search, prompt: String(localized: "Søg i alle beskeder"))
-    .task(id: search) { await searchAula() }
-    .navigationTitle(folderTitle)
-    .toolbarTitleMenu {
-        folderMenu
-    }
-    .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
-    .toolbar {
-        ToolbarItem(placement: .topBarLeading) {
-            Menu {
-                Toggle("Kun ulæste", isOn: $onlyUnread)
-                Toggle("Kun markerede", isOn: $onlyMarked)
-            } label: {
-                Image(systemName: onlyUnread || onlyMarked
-                      ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+        .listStyle(.plain)
+        .overlay {
+            if showDrafts && data.drafts.isEmpty {
+                ContentUnavailableView("Ingen kladder", systemImage: "doc.text")
+            } else if !showDrafts && threads.isEmpty {
+                if source.isLoading || searching { ProgressView() }
+                else { ContentUnavailableView(onlyUnread ? String(localized: "Ingen ulæste beskeder") : String(localized: "Ingen beskeder"),
+                                              systemImage: "tray") }
             }
-            .accessibilityLabel(Text("Filtrér"))
         }
-        ToolbarItem(placement: .topBarTrailing) {
-            Button { composing = true } label: { Image(systemName: "square.and.pencil") }
-                .accessibilityLabel(Text("Ny besked"))
+        .searchable(text: $search, prompt: String(localized: "Søg i alle beskeder"))
+        .task(id: search) { await searchAula() }
+        .navigationTitle(folderTitle)
+        .toolbarTitleMenu {
+            folderMenu
         }
-    }
+        .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Menu {
+                    Toggle("Kun ulæste", isOn: $onlyUnread)
+                    Toggle("Kun markerede", isOn: $onlyMarked)
+                } label: {
+                    Image(systemName: onlyUnread || onlyMarked
+                          ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                }
+                .accessibilityLabel(Text("Filtrér"))
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { composing = true } label: { Image(systemName: "square.and.pencil") }
+                    .accessibilityLabel(Text("Ny besked"))
+            }
+        }
     }
 
     @ViewBuilder private var listContent: some View {
