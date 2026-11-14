@@ -43,14 +43,21 @@ struct ContactsView: View {
         .overlay {
             if shown.isEmpty {
                 if !groupsLoaded || (!groups.isEmpty && (contacts == nil || contacts?.isLoading == true)) { ProgressView() }
-                else { ContentUnavailableView("Ingen kontakter", systemImage: "person.2") }
+                else {
+                    ContentUnavailableView {
+                        Label(LocalizedStringKey(search.isEmpty ? "Ingen kontakter" : "Ingen match"), systemImage: "person.2")
+                    } description: {
+                        Text(LocalizedStringKey(search.isEmpty ? "Institutionen deler ikke nogen i denne gruppe. Prøv en anden fane." : "Prøv et andet navn."))
+                    }
+                }
             }
         }
         .searchable(text: $search, prompt: String(localized: "Søg navn"))
         .navigationTitle("Kontakter")
         .task {
             if groups.isEmpty {
-                groups = (try? await AulaAPI.shared.groups(childIds: app.children.map(\.id))) ?? []
+                groups = Demo.isOn ? [AulaGroup(id: 1, name: "Solsikken")]
+                    : (try? await AulaAPI.shared.groups(childIds: app.children.map(\.id))) ?? []
                 groupId = groupId ?? groups.first?.id
             }
             groupsLoaded = true
@@ -125,16 +132,17 @@ struct DocumentsView: View {
     @State private var files: Loadable<[CommonFile]>?
 
     var body: some View {
-        ThemedList(rowBackground: .clear) {
+        ThemedList {
             Picker("Vis", selection: $tab) {
                 Text("Sikre dokumenter").tag(0)
                 Text("Fælles filer").tag(1)
             }
             .pickerStyle(.segmented)
-            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets())
 
             if tab == 0 {
-                if let d = docs { StaleBanner(error: d.error, savedAt: d.savedAt).listRowSeparator(.hidden) }
+                if let d = docs { StaleBanner(error: d.error, savedAt: d.savedAt).listRowBackground(Color.clear).listRowInsets(EdgeInsets()) }
                 ForEach(docs?.value ?? []) { doc in
                     NavigationLink(value: Route.document(doc)) {
                         VStack(alignment: .leading, spacing: 2) {
@@ -148,7 +156,7 @@ struct DocumentsView: View {
                     }
                 }
             } else {
-                if let f = files { StaleBanner(error: f.error, savedAt: f.savedAt).listRowSeparator(.hidden) }
+                if let f = files { StaleBanner(error: f.error, savedAt: f.savedAt).listRowBackground(Color.clear).listRowInsets(EdgeInsets()) }
                 ForEach(files?.value ?? []) { f in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(f.title).font(.subheadline.weight(.semibold))
@@ -158,7 +166,16 @@ struct DocumentsView: View {
                 }
             }
         }
-        .listStyle(.plain)
+        .overlay {
+            let l: Loadable<[SecureDocument]>? = tab == 0 ? docs : nil
+            let empty = tab == 0 ? (docs?.value ?? []).isEmpty : (files?.value ?? []).isEmpty
+            let loading = tab == 0 ? (docs?.isLoading ?? true) : (files?.isLoading ?? true)
+            if empty && !loading && l?.error == nil {
+                ContentUnavailableView(LocalizedStringKey(tab == 0 ? "Ingen sikre dokumenter" : "Ingen fælles filer"),
+                                       systemImage: tab == 0 ? "lock.doc" : "folder",
+                                       description: Text(LocalizedStringKey(tab == 0 ? "Dokumenter, som institutionen deler med dig, vises her." : "Filer, som institutionen deler med alle forældre, vises her.")))
+            }
+        }
         .navigationTitle("Dokumenter")
         .task {
             let guardianIds = app.session.value?.guardianProfileIds ?? []

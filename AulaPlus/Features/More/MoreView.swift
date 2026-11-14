@@ -859,14 +859,14 @@ struct NotificationsView: View {
     @State private var openingPost: Post?
 
     var body: some View {
-        ThemedList(rowBackground: .clear) {
+        ThemedList {
             StaleBanner(error: data.notifications.error, savedAt: data.notifications.savedAt)
-                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
             ForEach(data.notifications.value ?? []) { n in
                 row(n)
             }
         }
-        .listStyle(.plain)
         .overlay {
             if (data.notifications.value ?? []).isEmpty {
                 if data.notifications.isLoading { ProgressView() }
@@ -946,14 +946,14 @@ struct ImportantDatesView: View {
     @Environment(DataStore.self) private var data
 
     var body: some View {
-        ThemedList(rowBackground: .clear) {
+        ThemedList {
             StaleBanner(error: data.importantDates.error, savedAt: data.importantDates.savedAt)
-                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
             ForEach(data.importantDates.value ?? []) { d in
                 ImportantDateRow(date: d)
             }
         }
-        .listStyle(.plain)
         .overlay {
             if (data.importantDates.value ?? []).isEmpty, !data.importantDates.isLoading {
                 ContentUnavailableView("Ingen vigtige datoer", systemImage: "star")

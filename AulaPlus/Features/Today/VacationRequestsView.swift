@@ -5,9 +5,10 @@ struct VacationRequestsView: View {
     @State private var answering: VacationRequest?
 
     var body: some View {
-        ThemedList(rowBackground: .clear) {
+        ThemedList {
             StaleBanner(error: data.vacationRequests.error, savedAt: data.vacationRequests.savedAt)
-                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
             ForEach(data.vacationRequests.value ?? []) { r in
                 Button { answering = r } label: {
                     VStack(alignment: .leading, spacing: 4) {
@@ -20,6 +21,10 @@ struct VacationRequestsView: View {
                                     .background(.red, in: Capsule()).foregroundStyle(.white)
                             } else {
                                 Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                                    .accessibilityLabel(Text("Besvaret"))
+                            }
+                            if r.isEditable {
+                                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
                             }
                         }
                         Text("\(r.childName) · \(r.start.formatted(.dateTime.day().month(.abbreviated))) – \(r.end.formatted(.dateTime.day().month(.abbreviated)))")
@@ -34,7 +39,6 @@ struct VacationRequestsView: View {
                 .disabled(!r.isEditable)
             }
         }
-        .listStyle(.plain)
         .overlay {
             if (data.vacationRequests.value ?? []).isEmpty, !data.vacationRequests.isLoading {
                 ContentUnavailableView("Ingen ferieanmodninger", systemImage: "sun.max")

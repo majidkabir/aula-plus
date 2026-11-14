@@ -185,6 +185,7 @@ struct LockView: View {
                         .font(.headline).frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Color.brand)
                 .controlSize(.large)
                 Button("Log ud", role: .destructive) { confirmLogout = true }
                     .font(.subheadline)

@@ -102,6 +102,13 @@ enum Demo {
                            attachments: [], type: "school_home_meeting", slots: slots)
     }
 
+    static var contacts: [Contact] {[
+        Contact(id: 201, name: "Anna Holm", detail: "Liva Holm (Solsikken)", phones: ["20 11 22 33"], email: "anna@example.dk", pictureURL: nil, role: "guardian"),
+        Contact(id: 202, name: "Jonas Holm", detail: "Liva Holm (Solsikken)", phones: ["30 44 55 66"], email: nil, pictureURL: nil, role: "guardian"),
+        Contact(id: 203, name: "Maria Berg", detail: "Oscar Berg (Solsikken)", phones: [], email: "maria@example.dk", pictureURL: nil, role: "guardian"),
+        Contact(id: 204, name: "Sara Nielsen", detail: "Ida Nielsen (Solsikken)", phones: ["40 77 88 99"], email: nil, pictureURL: nil, role: "guardian"),
+    ]}
+
     static var posts: [Post] {[
         Post(id: 1, title: "Julefrokost i SFO'en", html: "<p>Vi holder julefrokost torsdag d. 18. Alle forældre er velkomne fra kl. 15.</p>",
              date: ago(90), author: "SFO Solstrålen", isImportant: true, attachments: [], canComment: true),
@@ -210,6 +217,7 @@ enum Demo {
         case "posts-parents", "posts-own", "posts-saved": return [Post]()
         default:
             if key.hasPrefix("events-") { return events }
+            if key.hasPrefix("contacts-") { return contacts }
             if key.hasPrefix("threads-folder-") { return [ThreadSummary]() }
             if key.hasPrefix("thread-") { return threadPage }
             if key.hasPrefix("weekplan-") { return weekPlans }

@@ -77,8 +77,9 @@ final class AppModel {
             case "notifications": selectedTab = .more; morePath.append(Route.notifications)
             case "settings": selectedTab = .more; morePath.append(Route.settings)
             case "empty": selectedTab = .more; morePath.append(Route.empty)
-            case "tasks": todayPath.append(Route.tasks)
-            case "presence": todayPath.append(Route.presence)
+            case "tasks", "presence":
+                let r: Route = Demo.screen == "tasks" ? .tasks : .presence
+                Task { try? await Task.sleep(for: .milliseconds(700)); todayPath.append(r) }
             case "event": selectedTab = .calendar
             case "createEvent": selectedTab = .calendar
             case "compose": selectedTab = .messages

@@ -176,10 +176,10 @@ struct MyProfileView: View {
                 ForEach(binding) { $p in
                     Section {
                         Group {
-                            TextField("Mobil", text: $p.mobilePhone).keyboardType(.phonePad).textContentType(.telephoneNumber)
-                            TextField("Hjemme", text: $p.homePhone).keyboardType(.phonePad)
-                            if !p.isChild { TextField("Arbejde", text: $p.workPhone).keyboardType(.phonePad) }
-                            TextField("E-mail", text: $p.email).keyboardType(.emailAddress).textContentType(.emailAddress)
+                            LabeledField("Mobil", text: $p.mobilePhone, placeholder: "Tilføj nummer").keyboardType(.phonePad).textContentType(.telephoneNumber)
+                            LabeledField("Hjemme", text: $p.homePhone, placeholder: "Tilføj nummer").keyboardType(.phonePad)
+                            if !p.isChild { LabeledField("Arbejde", text: $p.workPhone, placeholder: "Tilføj nummer").keyboardType(.phonePad) }
+                            LabeledField("E-mail", text: $p.email, placeholder: "Tilføj e-mail").keyboardType(.emailAddress).textContentType(.emailAddress)
                                 .textInputAutocapitalization(.never).autocorrectionDisabled()
                         }
                         .disabled(!p.canEditContact)
@@ -270,6 +270,27 @@ struct MyProfileView: View {
         } catch {
             newPicture = nil
             self.error = String(localized: "Billedet blev ikke skiftet: \(error.localizedDescription)")
+        }
+    }
+}
+
+/// A form row with its label always visible (placeholders vanish once a field is filled in).
+struct LabeledField: View {
+    let label: LocalizedStringKey
+    @Binding var text: String
+    var placeholder: LocalizedStringKey = ""
+
+    init(_ label: LocalizedStringKey, text: Binding<String>, placeholder: LocalizedStringKey = "") {
+        self.label = label
+        self._text = text
+        self.placeholder = placeholder
+    }
+
+    var body: some View {
+        LabeledContent {
+            TextField(placeholder, text: $text).multilineTextAlignment(.trailing)
+        } label: {
+            Text(label)
         }
     }
 }
