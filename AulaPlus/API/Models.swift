@@ -118,6 +118,36 @@ struct ThreadSummary: Codable, Identifiable, Hashable {
     let isSensitive: Bool
     let regarding: [String]
     var isMarked: Bool? = nil
+    var isMuted: Bool? = nil
+    /// Aula's per-user subscription to the thread (needed to mute it).
+    var subscriptionId: Int? = nil
+    var folderId: Int? = nil
+}
+
+/// A message folder on Aula ("Slettet post" or one the user made). The inbox has no folder.
+struct MailFolder: Codable, Identifiable, Hashable {
+    let id: Int
+    var name: String
+    let type: String?
+    var isDeleted: Bool { type?.lowercased() == "deleted" }
+}
+
+/// Aula's out-of-office reply for messages.
+struct AutoReply: Codable, Hashable {
+    let id: Int?
+    let text: String
+    let start: Date?
+    let end: Date?
+}
+
+/// A message written in the app but not sent yet (kept on this phone only, like aula.dk's drafts).
+struct MessageDraft: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var recipients: [Recipient]
+    var subject: String
+    var text: String
+    var sensitive: Bool
+    var savedAt: Date
 }
 
 struct Message: Codable, Identifiable, Hashable {
@@ -370,6 +400,9 @@ struct ThreadDTO: Decodable {
     let sensitive: Bool?
     let isSensitive: Bool?
     let marked: Bool?
+    let muted: Bool?
+    let subscriptionId: FlexInt?
+    let folderId: FlexInt?
     let lastMessageDate: String?
     let lastUpdatedDate: String?
     let latestMessage: Latest?
@@ -390,7 +423,10 @@ struct ThreadDTO: Decodable {
             isRead: read ?? true,
             isSensitive: sensitiveFlag,
             regarding: regardingNames,
-            isMarked: marked ?? false)
+            isMarked: marked ?? false,
+            isMuted: muted ?? false,
+            subscriptionId: subscriptionId?.value,
+            folderId: folderId?.value)
     }
 }
 

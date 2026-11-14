@@ -181,11 +181,14 @@ enum Demo {
         case "albums": return albums
         case "vacation-requests": return vacationRequests
         case "birthdays": return birthdays
+        case "mail-folders": return [MailFolder(id: 1, name: "Slettet post", type: "deleted"),
+                                     MailFolder(id: 2, name: "Fodbold", type: "normal")]
         case "posts-important": return posts.filter(\.isImportant)
         case "posts-staff", "posts-unread": return posts
         case "posts-parents", "posts-own", "posts-saved": return [Post]()
         default:
             if key.hasPrefix("events-") { return events }
+            if key.hasPrefix("threads-folder-") { return [ThreadSummary]() }
             if key.hasPrefix("thread-") { return threadPage }
             if key.hasPrefix("weekplan-") { return weekPlans }
             if key.hasPrefix("tasks-") { return tasks }

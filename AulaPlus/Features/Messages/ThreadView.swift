@@ -12,6 +12,10 @@ struct ThreadView: View {
     @State private var draft = ""
     @State private var sending = false
     @State private var sendError: String?
+    @State private var muted: Bool?
+    @State private var confirmLeave = false
+    @State private var actionError: String?
+    @Environment(\.dismiss) private var dismiss
     @FocusState private var composerFocused: Bool
 
     private var page: Loadable<ThreadPage> { data.thread(thread.id) }
@@ -79,6 +83,48 @@ struct ThreadView: View {
             .safeAreaInset(edge: .bottom) { composer }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    if thread.subscriptionId != nil {
+                        let isMuted = muted ?? thread.isMuted ?? false
+                        Button {
+                            Task {
+                                do { try await data.setMuted(thread, !isMuted); muted = !isMuted }
+                                catch { actionError = error.localizedDescription }
+                            }
+                        } label: {
+                            Label(isMuted ? String(localized: "Slå lyd til") : String(localized: "Slå lyd fra"),
+                                  systemImage: isMuted ? "bell" : "bell.slash")
+                        }
+                    }
+                    Menu {
+                        MoveToFolderItems(thread: thread, currentFolderId: thread.folderId) { target in
+                            Task {
+                                do { try await data.move(thread, to: target); dismiss() }
+                                catch { actionError = error.localizedDescription }
+                            }
+                        }
+                    } label: { Label("Flyt til", systemImage: "folder") }
+                    Button(role: .destructive) { confirmLeave = true } label: {
+                        Label("Forlad samtalen", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                } label: { Image(systemName: "ellipsis.circle") }
+                .accessibilityLabel(Text("Flere handlinger"))
+            }
+        }
+        .confirmationDialog("Forlad samtalen?", isPresented: $confirmLeave, titleVisibility: .visible) {
+            Button("Forlad", role: .destructive) {
+                Task {
+                    do { try await data.leave(thread); dismiss() }
+                    catch { actionError = error.localizedDescription }
+                }
+            }
+        } message: { Text("Du får ikke flere beskeder i denne tråd.") }
+        .alert(actionError ?? "", isPresented: Binding(get: { actionError != nil }, set: { if !$0 { actionError = nil } })) {
+            Button("OK", role: .cancel) {}
+        }
+        .task { await data.folders.load(maxAge: 600) }
         .refreshable { await page.refresh() }
         .task {
             await page.load(maxAge: thread.isRead ? 300 : 0)

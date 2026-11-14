@@ -55,6 +55,20 @@ struct SettingsView: View {
                     Text("Aula+ tjekker for nyt i baggrunden, når iOS tillader det (typisk hvert 15.–60. minut).")
                 }
                 Section {
+                    NavigationLink { AulaNotificationSettingsView() } label: {
+                        HStack(spacing: 12) {
+                            IconTile(systemImage: "app.badge.fill", color: .orange)
+                            Text("Aula-notifikationer")
+                        }
+                    }
+                    NavigationLink { CalendarFeedView() } label: {
+                        HStack(spacing: 12) {
+                            IconTile(systemImage: "calendar.badge.plus", color: .blue)
+                            Text("Kalender på telefonen")
+                        }
+                    }
+                } header: { Text("Aula") }
+                Section {
                     Toggle(isOn: Binding(get: { FaceIndex.shared.isEnabled }, set: { FaceIndex.shared.isEnabled = $0 })) {
                         HStack(spacing: 12) {
                             IconTile(systemImage: "face.smiling", color: .purple)
