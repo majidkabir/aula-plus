@@ -22,6 +22,7 @@ struct Session: Codable {
     var guardianProfileIds: [Int]? = nil  // the guardian's own institution profiles
     var widgetNames: [String: String]? = nil  // widget id → name, as Aula shows it
     var widgetLinks: [WidgetLink]? = nil       // widgets with a web address (opened in the browser)
+    var pictureURL: URL? = nil                 // my own profile picture
 
     /// Widgets that look like a week plan, by Aula's own name for them.
     var weekPlanWidgetNames: [String] {
@@ -271,7 +272,7 @@ struct ProfileDTO: Decodable {
     let institutionProfiles: Lossy<IdDTO>?
 }
 
-struct IdDTO: Decodable { let id: FlexInt }
+struct IdDTO: Decodable { let id: FlexInt; var profilePicture: PictureDTO? = nil }
 
 struct ChildDTO: Decodable {
     struct Inst: Decodable { let institutionName: String?; let institutionCode: FlexString? }

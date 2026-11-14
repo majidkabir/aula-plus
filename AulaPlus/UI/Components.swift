@@ -23,6 +23,26 @@ enum Palette {
     }
 }
 
+/// My own picture from Aula, or my initials.
+struct MeAvatar: View {
+    var size: CGFloat = 32
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        let name = app.session.value?.displayName ?? ""
+        let initials = InitialsAvatar(name: name, color: ThemeStore.shared.theme.gradientStart, size: size)
+        if let url = app.session.value?.pictureURL {
+            AsyncImage(url: url) { phase in
+                if let image = phase.image { image.resizable().scaledToFill() } else { initials }
+            }
+            .frame(width: size, height: size)
+            .clipShape(Circle())
+        } else {
+            initials
+        }
+    }
+}
+
 struct ChildAvatar: View {
     let child: Child
     var size: CGFloat = 40

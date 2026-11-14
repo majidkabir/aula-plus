@@ -68,8 +68,14 @@ extension AulaAPI {
                              address: p.address?.text, isChild: child,
                              canEditContact: p.currentUserCanEditContactInformation ?? true)
         }
-        let mine = dto.institutionProfiles?.items ?? []
-        var out = mine.compactMap { make($0, child: false) }
+        // Aula also sends the other parent's profile, and my own twice (once read-only): keep mine, editable copy first.
+        let wanted = Set(institutionProfileIds)
+        let all = (dto.institutionProfiles?.items ?? []).filter { p in
+            (p.id?.value ?? p.institutionProfileId?.value).map(wanted.contains) ?? false
+        }
+        let mine = all.sorted { ($0.currentUserCanEditProfilePicture ?? false) && !($1.currentUserCanEditProfilePicture ?? false) }
+        var out: [MyProfile] = []
+        for p in mine { if let m = make(p, child: false), !out.contains(where: { $0.id == m.id }) { out.append(m) } }
         // My children's contact details (the same page on aula.dk).
         for p in mine { for r in p.relations?.items ?? [] where r.role == "child" {
             if let c = make(r, child: true), !out.contains(where: { $0.id == c.id }) { out.append(c) }
