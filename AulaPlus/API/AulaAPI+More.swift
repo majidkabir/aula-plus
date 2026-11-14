@@ -110,7 +110,7 @@ private struct AlbumsDTO: Decodable {
     }
 }
 
-private struct MediaDTO: Decodable {
+struct MediaDTO: Decodable {
     struct File: Decodable { let url: String? }
     struct Tag: Decodable {
         struct Profile: Decodable { let name: String?; let fullName: String? }
@@ -315,30 +315,7 @@ extension AulaAPI {
     private static func uniqueMedia(_ items: [MediaDTO]) -> [Media] {
         // Aula lists a photo once per child it's shared with; show each photo once.
         var seen = Set<Int>()
-        return items.filter { seen.insert($0.id.value).inserted }.map { m in
-            // Small first: grids show hundreds of these, the viewer uses `fullURL`.
-            let thumbs: [String?] = [m.smallThumbnailUrl, m.thumbnailUrl, m.mediumThumbnailUrl, m.largeThumbnailUrl, m.file?.url]
-            let fulls: [String?] = [m.file?.url, m.largeThumbnailUrl, m.mediumThumbnailUrl]
-            let thumb: String? = thumbs.compactMap { $0 }.first
-            let full: String? = fulls.compactMap { $0 }.first
-            var tagIds = Set<Int>()
-            let tags: [MediaTag] = (m.tags?.items ?? []).compactMap { t in
-                guard let id = (t.id ?? t.institutionProfileId)?.value, tagIds.insert(id).inserted else { return nil }
-                let names: [String?] = [t.name, t.fullName, t.profile?.name, t.profile?.fullName]
-                guard let name = names.compactMap({ $0?.nilIfEmpty }).first else { return nil }
-                return MediaTag(id: id, name: name)
-            }
-            return Media(id: m.id.value,
-                         thumbURL: thumb.flatMap { URL(string: $0) },
-                         fullURL: full.flatMap { URL(string: $0) },
-                         isVideo: (m.mediaType ?? "").lowercased().contains("video"),
-                         title: m.title?.nilIfEmpty,
-                         tags: tags,
-                         description: m.description,
-                         canEditTags: m.currentUserCanEditTags,
-                         scanURL: ([m.largeThumbnailUrl, m.mediumThumbnailUrl, m.file?.url] as [String?])
-                             .compactMap { $0 }.first.flatMap { URL(string: $0) })
-        }
+        return items.filter { seen.insert($0.id.value).inserted }.map(\.model)
     }
 
     /// `childIds`/`institutionCodes` matter: without them Aula leaves out tag and child notifications.
@@ -383,23 +360,13 @@ extension AulaAPI {
         }
     }
 
-    /// Tags or untags one person in a photo. Aula's own app uses `gallery.addTag`/`removeTag`
-    /// (`gallery.updateMedia` needs edit rights a guardian usually lacks); the web call is the fallback.
+    /// Replaces the people tagged in a photo, exactly like Aula's web app:
+    /// `files.updateAttachments` with the photo's full tag list (institution profile ids).
     func setTag(_ profileId: Int, on media: Media, tagged: Bool, allTagIds: [Int]) async throws {
-        let body: [String: Any] = ["mediaId": media.id, "instProfileId": profileId, "tagId": profileId]
-        do {
-            let _: Ignored = try await call(tagged ? "gallery.addTag" : "gallery.removeTag", body: body)
-        } catch let first as AulaError {
-            if case .stepUpRequired = first { throw first }
-            var item: [String: Any] = ["id": media.id, "tags": allTagIds]
-            item["title"] = media.title ?? NSNull()
-            item["description"] = media.description ?? NSNull()
-            do {
-                let _: Ignored = try await call("gallery.updateMedia", body: ["media": [item]])
-            } catch {
-                throw first
-            }
-        }
+        var item: [String: Any] = ["id": media.id, "tags": allTagIds]
+        item["title"] = media.title ?? NSNull()
+        item["description"] = media.description ?? NSNull()
+        let _: Ignored = try await call("files.updateAttachments", body: ["media": [item]])
     }
 
     /// Marks notifications as seen on Aula (it deletes them, like the web app does).
@@ -444,5 +411,33 @@ extension AulaAPI {
     func post(id: Int) async throws -> Post {
         let dto: PostDTO = try await call("posts.getById", query: [.init(name: "id", value: String(id))])
         return dto.model
+    }
+}
+
+extension MediaDTO {
+    var model: Media {
+        let m = self
+        // Small first: grids show hundreds of these, the viewer uses `fullURL`.
+        let thumbs: [String?] = [m.smallThumbnailUrl, m.thumbnailUrl, m.mediumThumbnailUrl, m.largeThumbnailUrl, m.file?.url]
+        let fulls: [String?] = [m.file?.url, m.largeThumbnailUrl, m.mediumThumbnailUrl]
+        let thumb: String? = thumbs.compactMap { $0 }.first
+        let full: String? = fulls.compactMap { $0 }.first
+        var tagIds = Set<Int>()
+        let tags: [MediaTag] = (m.tags?.items ?? []).compactMap { t in
+            guard let id = (t.id ?? t.institutionProfileId)?.value, tagIds.insert(id).inserted else { return nil }
+            let names: [String?] = [t.name, t.fullName, t.profile?.name, t.profile?.fullName]
+            guard let name = names.compactMap({ $0?.nilIfEmpty }).first else { return nil }
+            return MediaTag(id: id, name: name)
+        }
+        return Media(id: m.id.value,
+                     thumbURL: thumb.flatMap { URL(string: $0) },
+                     fullURL: full.flatMap { URL(string: $0) },
+                     isVideo: (m.mediaType ?? "").lowercased().contains("video"),
+                     title: m.title?.nilIfEmpty,
+                     tags: tags,
+                     description: m.description,
+                     canEditTags: m.currentUserCanEditTags,
+                     scanURL: ([m.largeThumbnailUrl, m.mediumThumbnailUrl, m.file?.url] as [String?])
+                         .compactMap { $0 }.first.flatMap { URL(string: $0) })
     }
 }

@@ -65,8 +65,14 @@ struct PostCard: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
-                if !post.attachments.isEmpty {
-                    Label("\(post.attachments.count)", systemImage: "paperclip").font(.caption).foregroundStyle(.secondary)
+                let photos = post.attachments.compactMap(\.media)
+                if !photos.isEmpty {
+                    // A preview only: tapping the card opens the post, where the photos open full screen.
+                    PhotoGrid(photos: photos, maxShown: 3).allowsHitTesting(false)
+                }
+                let files = post.attachments.count - photos.count
+                if files > 0 {
+                    Label("\(files)", systemImage: "paperclip").font(.caption).foregroundStyle(.secondary)
                 }
             }
         }

@@ -129,10 +129,14 @@ struct AttachmentList: View {
     @State private var error: String?
     @Environment(\.openURL) private var openURL
 
+    private var photos: [Media] { attachments.compactMap(\.media) }
+    private var files: [Attachment] { attachments.filter { $0.media == nil } }
+
     var body: some View {
         if !attachments.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                ForEach(attachments, id: \.self) { a in
+                if !photos.isEmpty { PhotoGrid(photos: photos) }
+                ForEach(files, id: \.self) { a in
                     Button { open(a) } label: {
                         HStack(spacing: 8) {
                             Image(systemName: a.isLink == true ? "link" : Self.icon(for: a.name))
@@ -175,6 +179,61 @@ struct AttachmentList: View {
         case "xls", "xlsx", "numbers": return "tablecells"
         default: return "paperclip"
         }
+    }
+}
+
+/// Photos attached to a post or message, shown inline; tap to open them in the photo viewer.
+struct PhotoGrid: View {
+    let photos: [Media]
+    var maxShown = 6
+    @State private var viewing: Media?
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        let shown = Array(photos.prefix(maxShown))
+        let extra = photos.count - shown.count
+        Group {
+            if shown.count == 1, let m = shown.first {
+                tile(m, extra: 0).aspectRatio(4 / 3, contentMode: .fit)
+            } else {
+                let cols = shown.count == 2 || shown.count == 4 ? 2 : 3
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: cols), spacing: 4) {
+                    ForEach(Array(shown.enumerated()), id: \.element.id) { i, m in
+                        tile(m, extra: i == shown.count - 1 ? extra : 0).aspectRatio(1, contentMode: .fit)
+                    }
+                }
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .fullScreenCover(item: $viewing) { start in
+            MediaViewer(items: photos, start: start, children: app.children)
+        }
+    }
+
+    private func tile(_ m: Media, extra: Int) -> some View {
+        Button { viewing = m } label: {
+            Color.cardSoft
+                .overlay {
+                    CachedImage(key: "t\(m.id)", url: m.thumbURL ?? m.fullURL, maxPixel: photos.count == 1 ? 900 : 400) {
+                        Image(systemName: "photo").foregroundStyle(.secondary)
+                    }
+                }
+                .overlay {
+                    if m.isVideo {
+                        Image(systemName: "play.circle.fill").font(.title).foregroundStyle(.white).shadow(radius: 3)
+                    }
+                }
+                .overlay {
+                    if extra > 0 {
+                        Color.black.opacity(0.45)
+                        Text("+\(extra)").font(.title2.weight(.bold)).foregroundStyle(.white)
+                    }
+                }
+                .clipped()
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(m.title ?? String(localized: "Billede"))
     }
 }
 
