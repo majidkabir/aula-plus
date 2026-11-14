@@ -55,6 +55,19 @@ struct SettingsView: View {
                     Text("Aula+ tjekker for nyt i baggrunden, når iOS tillader det (typisk hvert 15.–60. minut).")
                 }
                 Section {
+                    Toggle(isOn: Binding(get: { FaceIndex.shared.isEnabled }, set: { FaceIndex.shared.isEnabled = $0 })) {
+                        HStack(spacing: 12) {
+                            IconTile(systemImage: "face.smiling", color: .purple)
+                            Text("Find mine børn på billeder")
+                        }
+                    }
+                    Button(role: .destructive) { FaceIndex.shared.eraseAll() } label: {
+                        Text("Slet ansigtsdata")
+                    }
+                } footer: {
+                    Text("Aula+ genkender dine børns ansigter på billeder uden tag. Alt sker på telefonen: intet sendes nogen steder, og andre børns ansigter gemmes ikke.")
+                }
+                Section {
                     Toggle(isOn: Binding(get: { lock.isEnabled }, set: { on in
                         if on { Task { await lock.enable() } } else { lock.disable() }
                     })) {

@@ -322,13 +322,20 @@ struct AlbumView: View {
     enum Filter: Hashable { case all, new, child(Int) }
 
     private var media: Loadable<[Media]> { data.media(album: album) }
-    private var all: [Media] { media.value ?? [] }
+    private var faces: FaceIndex { FaceIndex.shared }
+    /// In a child's own album: the tagged photos plus those found by face on the phone.
+    private var all: [Media] {
+        let list = media.value ?? []
+        guard let childId = album.childId else { return list }
+        let ids = Set(list.map(\.id))
+        return list + faces.found(childId).filter { !ids.contains($0.id) }
+    }
 
     private var shown: [Media] {
         switch filter {
         case .all: all
         case .new: all.filter { newIds.contains($0.id) }
-        case .child(let id): all.filter { $0.isTagged(id) }
+        case .child(let id): all.filter { faces.shows($0, id) }
         }
     }
 
@@ -340,6 +347,7 @@ struct AlbumView: View {
                     .padding(.horizontal).padding(.top, 6)
             }
             filterBar
+            faceBar
             LazyVGrid(columns: columns, spacing: 3) {
                 ForEach(shown) { m in
                     Button { viewing = m } label: { tile(m) }
@@ -376,6 +384,11 @@ struct AlbumView: View {
             let ids = Set(all.map(\.id))
             newIds.formUnion(data.newMediaIds.intersection(ids))
             await data.markSeen(album, media: all)
+            // Face finding keeps going in the background when the album is closed.
+            let photos = media.value ?? []
+            let children = app.children
+            let data = data
+            Task { await FaceFinding.learnAndScan(photos, children: children, data: data) }
         }
         .fullScreenCover(item: $viewing) { start in
             MediaViewer(items: shown, start: start, children: app.children, newIds: newIds)
@@ -386,7 +399,7 @@ struct AlbumView: View {
         let newCount = all.filter { newIds.contains($0.id) }.count
         // In a child's own album every photo is that child's: no child chips there.
         let kids: [(Child, Int)] = album.childId != nil ? [] : app.children.compactMap { c in
-            let n = all.filter { $0.isTagged(c.id) }.count
+            let n = all.filter { faces.shows($0, c.id) }.count
             return n > 0 ? (c, n) : nil
         }
         if newCount > 0 || !kids.isEmpty {
@@ -422,6 +435,29 @@ struct AlbumView: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
+    /// Face finding: progress while it checks photos; in a child's album, how to find more.
+    @ViewBuilder private var faceBar: some View {
+        if faces.isEnabled {
+            if let s = faces.scanning {
+                VStack(alignment: .leading, spacing: 4) {
+                    ProgressView(value: Double(s.done), total: Double(max(s.total, 1)))
+                    Text("Leder efter dine børn på billederne … \(s.done) af \(s.total)")
+                        .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                }
+                .padding(.horizontal).padding(.bottom, 6)
+                .accessibilityElement(children: .combine)
+            } else if faces.learning {
+                Label("Lærer ansigter at kende …", systemImage: "face.smiling")
+                    .font(.caption).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal).padding(.bottom, 6)
+            } else if let childId = album.childId, let child = app.child(childId) {
+                FindChildCard(child: child)
+                    .padding(.horizontal).padding(.bottom, 8)
+            }
+        }
+    }
+
     /// A thumbnail couldn't load: the cached list's signed URLs have expired. Fetch fresh ones once.
     private func urlsExpired() {
         guard !refreshedForExpiredURLs, !media.isLoading else { return }
@@ -455,12 +491,19 @@ struct AlbumView: View {
             }
             .overlay(alignment: .bottomLeading) {
                 // Which of my children are in the photo.
-                let mine = app.children.filter { m.isTagged($0.id) }
+                let mine = app.children.filter { faces.shows(m, $0.id) }
                 if !mine.isEmpty && album.childId == nil {
                     HStack(spacing: -6) {
-                        ForEach(mine) { ChildAvatar(child: $0, size: 20) }
+                        ForEach(mine) { c in
+                            ChildAvatar(child: c, size: 20)
+                                .overlay(alignment: .bottomTrailing) {
+                                    if faces.isFaceMatch(m, c.id) { FaceBadge() }
+                                }
+                        }
                     }
                     .padding(4)
+                } else if let childId = album.childId, faces.isFaceMatch(m, childId) {
+                    FaceBadge(size: 18).padding(5)
                 }
             }
             .accessibilityElement(children: .ignore)
@@ -544,6 +587,7 @@ struct MediaViewer: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Luk") { dismiss() } }
+                ToolbarItem(placement: .primaryAction) { faceMenu }
                 ToolbarItem(placement: .primaryAction) { tagMenu }
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
@@ -572,6 +616,37 @@ struct MediaViewer: View {
             .alert("Noget gik galt", isPresented: Binding(get: { tagError != nil }, set: { if !$0 { tagError = nil } })) {
                 Button("OK", role: .cancel) {}
             } message: { Text(tagError ?? "") }
+        }
+    }
+
+    /// "Det er Emma" / "Ikke Emma": teaches face finding (only on this phone, nothing goes to Aula).
+    @ViewBuilder private var faceMenu: some View {
+        if FaceIndex.shared.isEnabled, items.indices.contains(current), !items[current].isVideo, !children.isEmpty {
+            let m = items[current]
+            Menu {
+                Section("Ansigtsgenkendelse på telefonen") {
+                    ForEach(children) { c in
+                        if FaceIndex.shared.isFaceMatch(m, c.id) {
+                            Button { FaceIndex.shared.reject(m, isNot: c.id) } label: {
+                                Label("Det er ikke \(c.firstName)", systemImage: "xmark.circle")
+                            }
+                        } else if !m.isTagged(c.id) {
+                            Button { Task { await learnFace(m, c) } } label: {
+                                Label("Det er \(c.firstName)", systemImage: "face.smiling")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                Image(systemName: "face.smiling")
+            }
+            .accessibilityLabel(Text("Ansigtsgenkendelse"))
+        }
+    }
+
+    private func learnFace(_ m: Media, _ c: Child) async {
+        if await !FaceIndex.shared.confirm(m, is: c) {
+            tagError = String(localized: "Fandt ikke et ansigt på billedet.")
         }
     }
 
@@ -613,8 +688,20 @@ struct MediaViewer: View {
     @ViewBuilder private func info(_ m: Media) -> some View {
         let mine = Set(children.map(\.id))
         let tags = m.tagList.sorted { mine.contains($0.id) && !mine.contains($1.id) }
-        if m.title != nil || !tags.isEmpty || newIds.contains(m.id) {
+        let maybe = children.filter { FaceIndex.shared.isFaceMatch(m, $0.id) }
+        if m.title != nil || !tags.isEmpty || newIds.contains(m.id) || !maybe.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
+                ForEach(maybe) { c in
+                    HStack(spacing: 8) {
+                        FaceBadge(size: 18)
+                        Text("Måske \(c.firstName)").font(.subheadline.weight(.bold))
+                        Spacer()
+                        Button("Ja") { Task { await learnFace(m, c) } }
+                            .buttonStyle(.borderedProminent).tint(.green).controlSize(.small)
+                        Button("Nej") { FaceIndex.shared.reject(m, isNot: c.id) }
+                            .buttonStyle(.bordered).tint(.white).controlSize(.small)
+                    }
+                }
                 HStack(spacing: 6) {
                     if newIds.contains(m.id) {
                         Text("NY").font(.caption2.weight(.heavy))
