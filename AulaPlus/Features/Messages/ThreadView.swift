@@ -214,9 +214,9 @@ struct ThreadView: View {
 
     private func markReadIfNeeded() async {
         guard !thread.isRead, let p = page.value, p.isOwnMailbox,
-              let newest = p.messages.first else { return }
+              let newest = p.readMarkerId ?? p.messages.first?.id else { return }
         do {
-            try await AulaAPI.shared.markRead(threadId: thread.id, messageId: newest.id)
+            try await AulaAPI.shared.markRead(threadId: thread.id, messageId: newest)
             data.markRead(threadId: thread.id)
         } catch {
             // Not fatal: the thread just stays unread in Aula.
@@ -241,7 +241,12 @@ struct MessageBubble: View {
                     Text(message.sender.isEmpty ? String(localized: "Ukendt") : message.sender)
                         .font(.subheadline.weight(.semibold))
                 }
-                HTMLText(html: message.html)
+                if message.deleted == true {
+                    Label("Beskeden er slettet", systemImage: "trash")
+                        .font(.subheadline.italic()).foregroundStyle(.secondary)
+                } else {
+                    HTMLText(html: message.html)
+                }
                 AttachmentList(attachments: message.attachments)
                 if let d = message.date {
                     Text(Fmt.time(d))
