@@ -92,11 +92,14 @@ struct CachedImage<Placeholder: View>: View {
     var maxPixel: CGFloat? = 400
     var contentMode: ContentMode = .fill
     var onFailure: (() -> Void)? = nil
+    /// A region to outline on the photo (fractions, origin top-left), e.g. a recognised face.
+    var highlight: CGRect? = nil
     @ViewBuilder var placeholder: () -> Placeholder
     @State private var image: UIImage?
 
     init(key: String, url: URL?, maxPixel: CGFloat? = 400, contentMode: ContentMode = .fill,
-         onFailure: (() -> Void)? = nil, @ViewBuilder placeholder: @escaping () -> Placeholder) {
+         onFailure: (() -> Void)? = nil, highlight: CGRect? = nil, @ViewBuilder placeholder: @escaping () -> Placeholder) {
+        self.highlight = highlight
         self.key = key
         self.url = url
         self.maxPixel = maxPixel
@@ -110,6 +113,23 @@ struct CachedImage<Placeholder: View>: View {
         Group {
             if let image {
                 Image(uiImage: image).resizable().aspectRatio(contentMode: contentMode)
+                    .overlay {
+                        if let h = highlight {
+                            GeometryReader { geo in
+                                let r = CGRect(x: h.minX * geo.size.width, y: h.minY * geo.size.height,
+                                               width: h.width * geo.size.width, height: h.height * geo.size.height)
+                                    .insetBy(dx: -h.width * geo.size.width * 0.15, dy: -h.height * geo.size.height * 0.15)
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .strokeBorder(Color.purple, lineWidth: 3)
+                                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.white, lineWidth: 5))
+                                    .frame(width: r.width, height: r.height)
+                                    .position(x: r.midX, y: r.midY)
+                                    .shadow(color: .black.opacity(0.4), radius: 4)
+                            }
+                            .allowsHitTesting(false)
+                            .transition(.opacity)
+                        }
+                    }
             } else {
                 placeholder()
             }

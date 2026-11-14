@@ -12,6 +12,8 @@ actor FaceEngine {
         let embedding: [Float]
         /// Share of the photo's width the face takes (bigger = more reliable).
         let size: CGFloat
+        /// Where the face is, as fractions of the photo (origin top-left).
+        let box: CGRect
     }
 
     private var model: VNCoreMLModel?
@@ -51,7 +53,9 @@ actor FaceEngine {
             .prefix(12)
             .compactMap { obs in
                 guard let crop = Self.aligned(image, obs), let e = embed(crop) else { return nil }
-                return Face(embedding: e, size: obs.boundingBox.width)
+                let b = obs.boundingBox
+                return Face(embedding: e, size: b.width,
+                            box: CGRect(x: b.minX, y: 1 - b.maxY, width: b.width, height: b.height))
             }
     }
 
@@ -103,6 +107,10 @@ actor FaceEngine {
     }
 }
 
+private extension CGRect {
+    var area: CGFloat { isNull ? 0 : width * height }
+}
+
 /// Which photos show my children, worked out on the phone. The faceprints of other people
 /// are never kept: only each photo's similarity to my own children is stored.
 @MainActor
@@ -116,7 +124,7 @@ final class FaceIndex {
     /// A face must be this much closer to one of my children than to the others.
     static let margin: Float = 0.06
     /// Bump to throw away results from an older, less careful version.
-    private static let schema = 2
+    private static let schema = 3
 
     var isEnabled: Bool {
         didSet { UserDefaults.standard.set(isEnabled, forKey: "faceFinder") }
@@ -134,6 +142,7 @@ final class FaceIndex {
         var rejected: [Int: Set<Int>] = [:]       // child id → photos the user said aren't them
         var found: [Int: [Media]] = [:]           // child id → matching photos (for the child's album)
         var schema: Int? = nil
+        var boxes: [Int: [Int: [Float]]]? = nil   // photo id → child id → matched face (x, y, w, h; top-left)
     }
 
     private var store = Store()
@@ -146,9 +155,14 @@ final class FaceIndex {
 
     private init() {
         isEnabled = UserDefaults.standard.object(forKey: "faceFinder") as? Bool ?? true
-        if let data = try? Data(contentsOf: file), let s = try? JSONDecoder().decode(Store.self, from: data),
-           s.schema == Self.schema {
-            store = s
+        if let data = try? Data(contentsOf: file), let s = try? JSONDecoder().decode(Store.self, from: data) {
+            if s.schema == Self.schema {
+                store = s
+            } else if s.schema == 2 {
+                // Keep the learned faces; check photos again so each match knows where the face is.
+                store = s
+                store.version += 1
+            }
         }
         store.schema = Self.schema
     }
@@ -237,8 +251,21 @@ final class FaceIndex {
     }
 
     /// "Det er Emma": the biggest face in this photo becomes one of the child's reference faces.
+    /// Where the matched face is in the photo (fractions, origin top-left), for highlighting it.
+    func faceBox(_ m: Media, _ childId: Int) -> CGRect? {
+        guard isFaceMatch(m, childId), let b = store.boxes?[m.id]?[childId], b.count == 4 else { return nil }
+        return CGRect(x: CGFloat(b[0]), y: CGFloat(b[1]), width: CGFloat(b[2]), height: CGFloat(b[3]))
+    }
+
+    /// "Ja, det er Emma": learns the matched face (or the biggest face when nothing was matched).
     func confirm(_ m: Media, is child: Child) async -> Bool {
-        guard let image = await Self.image(m), let face = await FaceEngine.shared.faces(in: image).first else { return false }
+        guard let image = await Self.image(m) else { return false }
+        let faces = await FaceEngine.shared.faces(in: image)
+        let target = faceBox(m, child.id)
+        let face = target.flatMap { t in
+            faces.max { $0.box.intersection(t).area < $1.box.intersection(t).area }
+        } ?? faces.first
+        guard let face else { return false }
         store.refs[child.id, default: []].append(face.embedding)
         store.refsFrom[child.id, default: []].append(m.id)
         store.rejected[child.id]?.remove(m.id)
@@ -271,17 +298,24 @@ final class FaceIndex {
             if let image = await Self.image(m) {
                 let faces = await FaceEngine.shared.faces(in: image)
                 var row: [Int: Float] = [:]
+                var where_: [Int: [Float]] = [:]
                 for face in faces {
                     let sims = kids.map { ($0.id, Self.similarity(face, refs[$0.id] ?? [])) }
                     for (id, sim) in sims {
                         // Closer to this child than to my other children by a clear margin.
                         let others = sims.filter { $0.0 != id }.map(\.1).max() ?? 0
                         let score = sim - others >= Self.margin || sims.count == 1 ? sim : 0
-                        row[id] = max(row[id] ?? 0, score)
+                        if score > (row[id] ?? 0) {
+                            row[id] = score
+                            where_[id] = [face.box.minX, face.box.minY, face.box.width, face.box.height].map { Float($0) }
+                        }
                     }
                 }
                 store.scores[m.id] = row
                 store.scoredWith[m.id] = store.version
+                var boxes = store.boxes ?? [:]
+                boxes[m.id] = where_.filter { (row[$0.key] ?? 0) >= Self.threshold }
+                store.boxes = boxes
                 for kid in kids where (row[kid.id] ?? 0) >= Self.threshold && !m.isTagged(kid.id) {
                     var list = store.found[kid.id] ?? []
                     list.removeAll { $0.id == m.id }
