@@ -104,6 +104,8 @@ struct Attachment: Codable, Hashable {
     let name: String
     let url: URL?
     var isLink: Bool? = nil   // web link rather than a file
+    /// Set when the attachment is a photo or video from Aula's media library: shown inline.
+    var media: Media? = nil
 }
 
 struct ThreadSummary: Codable, Identifiable, Hashable {
@@ -272,15 +274,30 @@ struct PersonDTO: Decodable {
 
 struct AttachmentDTO: Decodable {
     struct FileDTO: Decodable { let name: String?; let url: String? }
-    struct MediaDTO: Decodable { let title: String?; let file: FileDTO? }
+    struct MediaInfo: Decodable { let title: String?; let file: FileDTO?; let mediaType: String? }
     struct LinkDTO: Decodable { let name: String?; let url: String? }
     struct DocDTO: Decodable { let title: String? }
     let name: String?
     let url: String?
     let file: FileDTO?
-    let media: MediaDTO?
+    let media: MediaInfo?
     let link: LinkDTO?
     let document: DocDTO?
+    /// The same `media` object, read as a full library item (thumbnails, tags) when it is one.
+    let libraryMedia: MediaDTO?
+
+    private enum CodingKeys: String, CodingKey { case name, url, file, media, link, document }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try? c.decodeIfPresent(String.self, forKey: .name)
+        url = try? c.decodeIfPresent(String.self, forKey: .url)
+        file = try? c.decodeIfPresent(FileDTO.self, forKey: .file)
+        media = try? c.decodeIfPresent(MediaInfo.self, forKey: .media)
+        link = try? c.decodeIfPresent(LinkDTO.self, forKey: .link)
+        document = try? c.decodeIfPresent(DocDTO.self, forKey: .document)
+        libraryMedia = try? c.decodeIfPresent(MediaDTO.self, forKey: .media)
+    }
 
     var model: Attachment {
         let urls: [String?] = [media?.file?.url, file?.url, url, link?.url]
@@ -288,7 +305,12 @@ struct AttachmentDTO: Decodable {
         let url: String? = urls.compactMap { $0 }.first
         let n: String = names.compactMap { $0?.nilIfEmpty }.first ?? String(localized: "Vedhæftet fil")
         let linkOnly: Bool = link?.url != nil && media?.file?.url == nil && file?.url == nil
-        return Attachment(name: n, url: url.flatMap { URL(string: $0) }, isLink: linkOnly)
+        var shown: Media? = nil
+        if let m = libraryMedia?.model, m.thumbURL != nil || m.fullURL != nil {
+            let type = (media?.mediaType ?? "").lowercased()
+            if type.isEmpty || type.contains("image") || type.contains("video") || type.contains("media") { shown = m }
+        }
+        return Attachment(name: n, url: url.flatMap { URL(string: $0) }, isLink: linkOnly, media: shown)
     }
 }
 
