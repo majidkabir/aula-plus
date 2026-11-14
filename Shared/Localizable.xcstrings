@@ -4730,6 +4730,26 @@
           }
         }
       }
+    },
+    "🎂 %@ har fødselsdag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🎂 %@'s birthday"
+          }
+        }
+      }
+    },
+    "Ingen fødselsdage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No birthdays"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

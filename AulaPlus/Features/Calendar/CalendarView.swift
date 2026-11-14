@@ -9,8 +9,10 @@ struct CalendarView: View {
     private var weekStart: Date { Week.start(of: selectedDay) }
     private var week: Loadable<[Event]> { data.events(weekOf: selectedDay) }
 
+    private var allEvents: [Event] { (week.value ?? []) + data.birthdayEvents(weekOf: selectedDay) }
+
     private var dayEvents: [Event] {
-        (week.value ?? [])
+        allEvents
             .filter { e in e.occurs(on: selectedDay) && matchesChild(e) }
             .sorted { a, b in a.allDay != b.allDay ? a.allDay : a.start < b.start }
     }
@@ -79,6 +81,7 @@ struct CalendarView: View {
             }
             .refreshable { await week.refresh() }
             .task(id: weekStart) { await week.load(maxAge: 600) }
+            .task { await data.birthdays.load(maxAge: 6 * 3600) }
             .sheet(item: $addingEvent) { e in
                 AddToCalendarSheet(event: e, childNames: e.childIds.compactMap { app.child($0)?.firstName })
                     .ignoresSafeArea()
@@ -98,7 +101,7 @@ struct CalendarView: View {
             ForEach(Week.days(of: weekStart), id: \.self) { day in
                 let selected = Calendar.week.isDate(day, inSameDayAs: selectedDay)
                 let isToday = Calendar.week.isDateInToday(day)
-                let count = (week.value ?? []).filter {
+                let count = allEvents.filter {
                     $0.occurs(on: day) && matchesChild($0)
                 }.count
                 Button { selectedDay = day } label: {

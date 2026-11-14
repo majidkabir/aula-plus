@@ -209,9 +209,13 @@ struct TodayView: View {
     }
 
     @ViewBuilder private var birthdaysCard: some View {
-        let soon = (data.birthdays.value ?? []).filter { $0.date.timeIntervalSinceNow < 7 * 86_400 }.prefix(6)
+        let soon = (data.birthdays.value ?? []).filter { $0.date.timeIntervalSinceNow < 30 * 86_400 }.prefix(4)
         if !soon.isEmpty {
-            SectionTitle(title: "Fødselsdage", systemImage: "birthday.cake.fill", tint: .pink)
+            HStack {
+                SectionTitle(title: "Fødselsdage", systemImage: "birthday.cake.fill", tint: .pink)
+                Spacer()
+                NavigationLink(value: Route.birthdays) { Text("Vis alle").font(.subheadline.weight(.semibold)) }
+            }
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(Array(soon)) { b in
                     let mine = app.children.contains { $0.id == b.id }

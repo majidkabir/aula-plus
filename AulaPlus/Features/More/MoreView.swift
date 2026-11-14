@@ -18,6 +18,7 @@ struct MoreView: View {
                         }
                     }
                     NavigationLink(value: Route.importantDates) { row("Vigtige datoer", "star.fill", .yellow) }
+                    NavigationLink(value: Route.birthdays) { row("Fødselsdage", "birthday.cake.fill", .pink) }
                     NavigationLink(value: Route.documents) { row("Dokumenter", "doc.text.fill", .blue) }
                     NavigationLink(value: Route.contacts) { row("Kontakter", "person.2.fill", .green) }
                 }
@@ -101,6 +102,7 @@ struct RouteView: View {
         case .settings: SettingsView(embedded: true)
         case .tasks: ParentTasksView()
         case .profile: MyProfileView()
+        case .birthdays: BirthdaysView()
         case .presence: PresenceHubView()
         case .contact(let c): ContactDetailView(contact: c)
         case .child(let c): ChildPresenceView(child: c)
@@ -998,5 +1000,47 @@ struct PhotoDayHeader: View {
         .padding(.horizontal, 12).padding(.vertical, 8)
         .background(.bar)
         .accessibilityAddTraits(.isHeader)
+    }
+}
+
+/// Every birthday in the coming year, by month.
+struct BirthdaysView: View {
+    @Environment(DataStore.self) private var data
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        let list = data.birthdays.value ?? []
+        let months = Dictionary(grouping: list) { Calendar.week.dateComponents([.year, .month], from: $0.date) }
+            .sorted { ($0.key.year ?? 0, $0.key.month ?? 0) < ($1.key.year ?? 0, $1.key.month ?? 0) }
+        ThemedList {
+            ForEach(months, id: \.key) { key, items in
+                Section(Calendar.week.date(from: key).map { $0.formatted(.dateTime.month(.wide).year()).capitalized } ?? "") {
+                    ForEach(items) { b in
+                        let mine = app.children.contains { $0.id == b.id }
+                        HStack(spacing: 12) {
+                            Text("🎂").font(.title3)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(b.name).font(.subheadline.weight(mine ? .bold : .semibold))
+                                if let g = b.group { Text(g).font(.caption).foregroundStyle(.secondary) }
+                            }
+                            Spacer()
+                            Text(b.date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Calendar.current.isDateInToday(b.date) ? Color.pink : Color.secondary)
+                        }
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+            }
+        }
+        .overlay {
+            if list.isEmpty {
+                if data.birthdays.isLoading { ProgressView() }
+                else { ContentUnavailableView("Ingen fødselsdage", systemImage: "birthday.cake") }
+            }
+        }
+        .navigationTitle("Fødselsdage")
+        .refreshable { await data.birthdays.refresh() }
+        .task { await data.birthdays.load(maxAge: 6 * 3600) }
     }
 }
