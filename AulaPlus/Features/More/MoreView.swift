@@ -22,6 +22,7 @@ struct MoreView: View {
                     NavigationLink(value: Route.contacts) { row("Kontakter", "person.2.fill", .green) }
                 }
                 Section("Komme/gå") {
+                    NavigationLink(value: Route.presence) { row("Tider, hentning og åbningstider", "clock.fill", .teal) }
                     ForEach(app.children) { c in
                         NavigationLink(value: Route.child(c)) {
                             HStack(spacing: 12) {
@@ -61,7 +62,8 @@ struct MoreView: View {
                 }
                 Section {
                     NavigationLink(value: Route.notifications) { row("Notifikationer", "bell.fill", .red) }
-                    NavigationLink(value: Route.settings) { row("Profil og indstillinger", "gearshape.fill", .gray) }
+                    NavigationLink(value: Route.profile) { row("Min profil", "person.crop.circle.fill", .purple) }
+                    NavigationLink(value: Route.settings) { row("Indstillinger", "gearshape.fill", .gray) }
                 }
             }
             .scrollContentBackground(.hidden)
@@ -98,6 +100,9 @@ struct RouteView: View {
         case .notifications: NotificationsView()
         case .settings: SettingsView(embedded: true)
         case .tasks: ParentTasksView()
+        case .profile: MyProfileView()
+        case .presence: PresenceHubView()
+        case .contact(let c): ContactDetailView(contact: c)
         case .child(let c): ChildPresenceView(child: c)
         case .document(let d): DocumentDetailView(doc: d)
         case .empty:

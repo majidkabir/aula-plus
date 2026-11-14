@@ -204,7 +204,8 @@ enum Demo {
 /// navigation path: mixing `NavigationLink { View }` with value links in a path-based
 /// stack makes SwiftUI push the wrong screens (e.g. the gallery again on top of an album).
 enum Route: Hashable {
-    case posts, gallery, importantDates, documents, contacts, vacations, notifications, settings, tasks
+    case posts, gallery, importantDates, documents, contacts, vacations, notifications, settings, tasks, profile, presence
+    case contact(Contact)
     case child(Child)
     case document(SecureDocument)
     case empty          // screenshot runs only

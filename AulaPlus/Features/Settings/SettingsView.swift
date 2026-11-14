@@ -21,6 +21,7 @@ struct SettingsView: View {
                             InitialsAvatar(name: s.displayName, color: ThemeStore.shared.theme.gradientStart, size: 40)
                             Text(s.displayName).font(.headline)
                         }
+                        NavigationLink { MyProfileView() } label: { Label("Rediger profil, billede og telefon", systemImage: "pencil") }
                     }
                     Section("Børn") {
                         ForEach(s.children) { c in

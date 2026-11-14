@@ -35,7 +35,9 @@ struct ContactsView: View {
                 StaleBanner(error: c.error, savedAt: c.savedAt).listRowSeparator(.hidden)
             }
             ForEach(shown) { c in
-                ContactRow(contact: c) { messaging = c }
+                NavigationLink(value: Route.contact(c)) {
+                    ContactRow(contact: c) { messaging = c }
+                }
             }
         }
         .overlay {
