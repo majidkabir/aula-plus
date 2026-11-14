@@ -3230,6 +3230,26 @@
           }
         }
       }
+    },
+    "Er det %@ i rammen?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Is that %@ in the frame?"
+          }
+        }
+      }
+    },
+    "Ja, det er %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes, it's %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

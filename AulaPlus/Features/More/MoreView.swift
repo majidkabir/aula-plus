@@ -555,8 +555,10 @@ struct MediaViewer: View {
                             }
                         } else {
                             // Full size; the cached thumbnail shows at once while it loads.
-                            CachedImage(key: "f\(m.id)", url: m.fullURL ?? m.thumbURL, maxPixel: nil, contentMode: .fit) {
-                                CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, contentMode: .fit) {
+                            // A face found by face recognition is outlined while the info is shown.
+                            let box = showTags ? children.lazy.compactMap { FaceIndex.shared.faceBox(m, $0.id) }.first : nil
+                            CachedImage(key: "f\(m.id)", url: m.fullURL ?? m.thumbURL, maxPixel: nil, contentMode: .fit, highlight: box) {
+                                CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, contentMode: .fit, highlight: box) {
                                     ProgressView().tint(.white)
                                 }
                                 .overlay { ProgressView().tint(.white) }
@@ -692,15 +694,26 @@ struct MediaViewer: View {
         if m.title != nil || !tags.isEmpty || newIds.contains(m.id) || !maybe.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(maybe) { c in
-                    HStack(spacing: 8) {
-                        FaceBadge(size: 18)
-                        Text("Måske \(c.firstName)").font(.subheadline.weight(.bold))
-                        Spacer()
-                        Button("Ja") { Task { await learnFace(m, c) } }
-                            .buttonStyle(.borderedProminent).tint(.green).controlSize(.small)
-                        Button("Nej") { FaceIndex.shared.reject(m, isNot: c.id) }
-                            .buttonStyle(.bordered).tint(.white).controlSize(.small)
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 8) {
+                            FaceBadge(size: 18)
+                            Text("Er det \(c.firstName) i rammen?").font(.subheadline.weight(.bold))
+                        }
+                        // Far apart on purpose, so "no" isn't tapped by mistake.
+                        HStack {
+                            Button { FaceIndex.shared.reject(m, isNot: c.id) } label: {
+                                Label("Nej", systemImage: "xmark").frame(minWidth: 96)
+                            }
+                            .buttonStyle(.bordered).tint(.white)
+                            Spacer(minLength: 40)
+                            Button { Task { await learnFace(m, c) } } label: {
+                                Label("Ja, det er \(c.firstName)", systemImage: "checkmark").frame(minWidth: 96)
+                            }
+                            .buttonStyle(.borderedProminent).tint(.green)
+                        }
+                        .controlSize(.large)
                     }
+                    .padding(.bottom, 4)
                 }
                 HStack(spacing: 6) {
                     if newIds.contains(m.id) {
