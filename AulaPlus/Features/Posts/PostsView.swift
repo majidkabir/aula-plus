@@ -143,6 +143,7 @@ struct PostDetailView: View {
                         .font(.caption.weight(.bold)).foregroundStyle(.red)
                 }
                 Text(post.title).font(.title2.bold()).accessibilityAddTraits(.isHeader)
+                SummaryBox(key: "p\(post.id)", text: HTML.plainText(post.html))
                 SourceTasksBanner(source: .post(post.id))
                 HStack(spacing: 10) {
                     InitialsAvatar(name: post.author, color: .purple, size: 32)

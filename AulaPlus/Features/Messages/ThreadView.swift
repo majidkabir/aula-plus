@@ -42,6 +42,7 @@ struct ThreadView: View {
                         .font(.title2.bold())
                         .accessibilityAddTraits(.isHeader)
                     StaleBanner(error: page.error, savedAt: page.savedAt)
+                    SummaryBox(key: "t\(thread.id)", text: messages.map { HTML.plainText($0.html) }.joined(separator: "\n\n"))
                     SourceTasksBanner(source: .thread(thread.id))
 
                     if canLoadOlder {

@@ -4180,6 +4180,86 @@
           }
         }
       }
+    },
+    "Kort fortalt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In short"
+          }
+        }
+      }
+    },
+    "Læser …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading …"
+          }
+        }
+      }
+    },
+    "Aula+ har ikke adgang til Påmindelser. Slå det til i Indstillinger → Aula+.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ can't access Reminders. Turn it on in Settings → Aula+."
+          }
+        }
+      }
+    },
+    "Fra Aula: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From Aula: %@"
+          }
+        }
+      }
+    },
+    "Lagt i Påmindelser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added to Reminders"
+          }
+        }
+      }
+    },
+    "Tilføj til Påmindelser": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to Reminders"
+          }
+        }
+      }
+    },
+    "Tilføj til Kalender": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to Calendar"
+          }
+        }
+      }
+    },
+    "Tilføj til Påmindelser eller Kalender": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to Reminders or Calendar"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
