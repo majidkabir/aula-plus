@@ -40,6 +40,7 @@ struct TodayView: View {
                         .buttonStyle(.plain)
                     }
 
+                    ParentTasksCard()
                     unreadSection
                     importantPosts
                     upcomingDates
@@ -75,7 +76,10 @@ struct TodayView: View {
                 async let g: () = data.notifications.load(maxAge: 300)
                 async let h: () = data.birthdays.load(maxAge: 6 * 3600)
                 _ = await (a, b, c, d, e, f, g, h)
+                findTasks()
             }
+            .onChange(of: data.threads.value) { _, _ in findTasks() }
+            .onChange(of: data.posts.value) { _, _ in findTasks() }
         }
     }
 
@@ -110,6 +114,12 @@ struct TodayView: View {
             return (d.title, when)
         }
         return nil
+    }
+
+    /// Reads new messages and posts on the phone for things to do.
+    private func findTasks() {
+        ParentTaskFinder.shared.update(threads: data.threads.value ?? [], posts: data.posts.value ?? [],
+                                       myName: app.session.value?.displayName ?? "")
     }
 
     private func refreshAll() async {

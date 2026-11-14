@@ -42,6 +42,7 @@ struct ThreadView: View {
                         .font(.title2.bold())
                         .accessibilityAddTraits(.isHeader)
                     StaleBanner(error: page.error, savedAt: page.savedAt)
+                    SourceTasksBanner(source: .thread(thread.id))
 
                     if canLoadOlder {
                         Button {

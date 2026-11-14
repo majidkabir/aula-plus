@@ -4030,6 +4030,156 @@
           }
         }
       }
+    },
+    "Skal gøres": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To do"
+          }
+        }
+      }
+    },
+    "Vis alle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See all"
+          }
+        }
+      }
+    },
+    "Læser beskeder %lld af %lld …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading messages %lld of %lld …"
+          }
+        }
+      }
+    },
+    "For sent": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overdue"
+          }
+        }
+      }
+    },
+    "Klaret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Intet at gøre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to do"
+          }
+        }
+      }
+    },
+    "Når en besked eller et opslag beder dig om noget, står det her.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When a message or post asks you to do something, it shows up here."
+          }
+        }
+      }
+    },
+    "Fundet af Apple Intelligence på telefonen. Beskederne sendes ingen steder hen. Tjek altid den oprindelige besked.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found by Apple Intelligence on your phone. Messages are not sent anywhere. Always check the original message."
+          }
+        }
+      }
+    },
+    "Fundet ud fra nøgleord som \"husk\", \"medbring\" og \"senest\". Med Apple Intelligence (iPhone 15 Pro eller nyere) bliver det mere præcist. Alt sker på telefonen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found from keywords like \"husk\", \"medbring\" and \"senest\". With Apple Intelligence (iPhone 15 Pro or newer) it's more precise. Everything happens on your phone."
+          }
+        }
+      }
+    },
+    "Markér som klaret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as done"
+          }
+        }
+      }
+    },
+    "Markér som ikke klaret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as not done"
+          }
+        }
+      }
+    },
+    "Find det, jeg skal gøre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find what I need to do"
+          }
+        }
+      }
+    },
+    "Glem fundne opgaver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget found tasks"
+          }
+        }
+      }
+    },
+    "Apple Intelligence læser nye beskeder og opslag på telefonen og samler det, du skal huske. Intet sendes nogen steder hen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence reads new messages and posts on your phone and collects what you need to remember. Nothing is sent anywhere."
+          }
+        }
+      }
+    },
+    "Aula+ finder ting som \"husk\", \"medbring\" og \"senest\" i nye beskeder og opslag. Med Apple Intelligence (iPhone 15 Pro eller nyere) bliver det mere præcist. Alt sker på telefonen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ finds things like \"husk\", \"medbring\" and \"senest\" in new messages and posts. With Apple Intelligence (iPhone 15 Pro or newer) it's more precise. Everything happens on your phone."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
