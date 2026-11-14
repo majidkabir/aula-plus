@@ -206,6 +206,8 @@ enum Demo {
 enum Route: Hashable {
     case posts, gallery, importantDates, documents, contacts, vacations, notifications, settings, tasks, profile, presence, birthdays
     case contact(Contact)
+    case groups, search, consents
+    case group(AulaGroup)
     case child(Child)
     case document(SecureDocument)
     case empty          // screenshot runs only

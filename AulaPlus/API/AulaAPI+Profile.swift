@@ -13,6 +13,10 @@ struct MyProfile: Codable, Identifiable, Hashable {
     var workPhone: String
     let pictureURL: URL?
     let canEditPicture: Bool
+    var address: String? = nil
+    /// A child of mine (no work phone), rather than one of my own profiles.
+    var isChild = false
+    var canEditContact = true
 }
 
 /// Someone who may pick up a child: the child's own family (from Aula) or a name the parents added.
@@ -50,7 +54,7 @@ extension AulaAPI {
     func myProfiles(institutionProfileIds: [Int]) async throws -> [MyProfile] {
         let q = institutionProfileIds.map { URLQueryItem(name: "instProfileIds[]", value: String($0)) }
         let dto: MasterDataDTO = try await call("profiles.getProfileMasterData", query: q)
-        return (dto.institutionProfiles?.items ?? []).compactMap { p in
+        func make(_ p: MasterDataDTO.Profile, child: Bool) -> MyProfile? {
             guard let id = p.id?.value ?? p.institutionProfileId?.value else { return nil }
             let name = p.fullName ?? p.name ?? [p.firstName, p.lastName].compactMap { $0 }.joined(separator: " ")
             let pic = p.profilePicture?.url ?? p.profilePictureUrl
@@ -60,8 +64,17 @@ extension AulaAPI {
                              email: p.email ?? "", mobilePhone: p.mobilePhoneNumber ?? "",
                              homePhone: p.homePhoneNumber ?? "", workPhone: p.workPhoneNumber ?? "",
                              pictureURL: pic.flatMap { URL(string: $0) },
-                             canEditPicture: p.currentUserCanEditProfilePicture ?? true)
+                             canEditPicture: p.currentUserCanEditProfilePicture ?? true,
+                             address: p.address?.text, isChild: child,
+                             canEditContact: p.currentUserCanEditContactInformation ?? true)
         }
+        let mine = dto.institutionProfiles?.items ?? []
+        var out = mine.compactMap { make($0, child: false) }
+        // My children's contact details (the same page on aula.dk).
+        for p in mine { for r in p.relations?.items ?? [] where r.role == "child" {
+            if let c = make(r, child: true), !out.contains(where: { $0.id == c.id }) { out.append(c) }
+        } }
+        return out
     }
 
     /// Saves phone numbers and e-mail, like "Rediger" on aula.dk's profile page.
@@ -71,9 +84,9 @@ extension AulaAPI {
                 "institutionProfileId": p.id,
                 "homePhoneNumber": p.homePhone,
                 "mobilePhoneNumber": p.mobilePhone,
-                "workPhoneNumber": p.workPhone,
                 "email": p.email,
             ]
+            if !p.isChild { d["workPhoneNumber"] = p.workPhone }
             d["profileId"] = p.profileId.map { $0 as Any } ?? NSNull()
             return d
         }
@@ -189,8 +202,8 @@ extension AulaAPI {
 
     func closedDays(institutionCodes: [String]) async throws -> [ClosedDays] {
         let q = institutionCodes.map { URLQueryItem(name: "institutionCodes[]", value: $0) }
-        let list: Lossy<ClosedDaysDTO> = try await call("presence.getClosedDays", query: q)
-        return list.items.flatMap { inst -> [ClosedDays] in
+        let wrapper: ClosedDaysWrapperDTO = try await call("presence.getClosedDays", query: q)
+        return (wrapper.institutionClosedDays?.items ?? []).flatMap { inst -> [ClosedDays] in
             guard let code = inst.institutionCode else { return [] }
             return (inst.closedDaysOverview?.closedDays?.items ?? []).compactMap { c in
                 guard let s = Self.parseDay(c.startDate) else { return nil }
@@ -222,6 +235,15 @@ extension AulaAPI {
     }
 }
 
+struct AddressDTO: Decodable {
+    let street: String?; let postalCode: FlexString?; let postalDistrict: String?
+    var text: String? {
+        let line2 = [postalCode?.value.nilIfEmpty, postalDistrict?.nilIfEmpty].compactMap { $0 }.joined(separator: " ")
+        let parts = [street?.nilIfEmpty, line2.nilIfEmpty].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
+    }
+}
+
 private struct MasterDataDTO: Decodable {
     struct Pic: Decodable { let url: String? }
     struct Inst: Decodable { let institutionName: String?; let institutionCode: String? }
@@ -243,6 +265,10 @@ private struct MasterDataDTO: Decodable {
         let profilePicture: Pic?
         let profilePictureUrl: String?
         let currentUserCanEditProfilePicture: Bool?
+        let currentUserCanEditContactInformation: Bool?
+        let address: AddressDTO?
+        let role: String?
+        let relations: Lossy<Profile>?
     }
     let institutionProfiles: Lossy<Profile>?
 }
@@ -281,6 +307,8 @@ private struct OpeningHoursDTO: Decodable {
     struct Inst: Decodable { let institutionCode: String?; let openingHoursDto: Lossy<Day>? }
     let openingHoursOverviewDto: Lossy<Inst>?
 }
+
+private struct ClosedDaysWrapperDTO: Decodable { let institutionClosedDays: Lossy<ClosedDaysDTO>? }
 
 private struct ClosedDaysDTO: Decodable {
     struct Day: Decodable { let startDate: String?; let endDate: String?; let name: String? }

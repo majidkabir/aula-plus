@@ -91,7 +91,7 @@ struct ImportantDate: Codable, Identifiable, Hashable {
     let allDay: Bool
 }
 
-private struct AlbumDTO: Decodable {
+struct AlbumDTO: Decodable {
     struct Thumb: Decodable { let url: String? ; init(from d: Decoder) throws {
         if let s = try? d.singleValueContainer().decode(String.self) { url = s; return }
         struct U: Decodable { let url: String? }
@@ -105,7 +105,7 @@ private struct AlbumDTO: Decodable {
     let totalSize: Int?
 }
 
-private struct AlbumsDTO: Decodable {
+struct AlbumsDTO: Decodable {
     let albums: Lossy<AlbumDTO>?
     init(from decoder: Decoder) throws {
         if let list = try? Lossy<AlbumDTO>(from: decoder) { albums = list; return }

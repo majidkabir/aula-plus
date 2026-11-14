@@ -4750,6 +4750,226 @@
           }
         }
       }
+    },
+    "Grupper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groups"
+          }
+        }
+      }
+    },
+    "Ingen grupper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No groups"
+          }
+        }
+      }
+    },
+    "Søg i Aula": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search Aula"
+          }
+        }
+      }
+    },
+    "Samtykker": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consents"
+          }
+        }
+      }
+    },
+    "Medlemmer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Members"
+          }
+        }
+      }
+    },
+    "Ingen begivenheder de næste 8 uger": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events in the next 8 weeks"
+          }
+        }
+      }
+    },
+    "Medarbejdere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Staff"
+          }
+        }
+      }
+    },
+    "Søg i": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search in"
+          }
+        }
+      }
+    },
+    "Personer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "People"
+          }
+        }
+      }
+    },
+    "Begivenheder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events"
+          }
+        }
+      }
+    },
+    "Søg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        }
+      }
+    },
+    "Opslag, personer, begivenheder og billeder. Beskeder søger du i under Beskeder.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posts, people, events and photos. Search messages under Messages."
+          }
+        }
+      }
+    },
+    "Kunne ikke åbne opslaget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't open the post"
+          }
+        }
+      }
+    },
+    "Ikke besvaret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not answered"
+          }
+        }
+      }
+    },
+    "Klasse eller stue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Class or room"
+          }
+        }
+      }
+    },
+    "Hele institutionen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The whole institution"
+          }
+        }
+      }
+    },
+    "Slet ikke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not at all"
+          }
+        }
+      }
+    },
+    "Fødselsdag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Birthday"
+          }
+        }
+      }
+    },
+    "Adresse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Address"
+          }
+        }
+      }
+    },
+    "Pædagog": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Educator"
+          }
+        }
+      }
+    },
+    "Lærer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teacher"
+          }
+        }
+      }
+    },
+    "Leder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Head"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
