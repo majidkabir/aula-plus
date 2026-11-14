@@ -87,6 +87,8 @@ struct ChildPresenceView: View {
                     Text("Institutionen tillader ikke at forældre ændrer tider her.")
                 }
             }
+            PickupPeopleSection(child: child)
+            OpeningHoursSection(institutionCodes: [child.institutionCode].compactMap { $0 })
         }
         .scrollContentBackground(.hidden)
         .themedBackground()
@@ -196,6 +198,8 @@ struct DayPlanEditor: View {
     @State private var names: [String] = []
     @State private var saving = false
     @State private var error: String?
+    @State private var weekly = false
+    @State private var confirmStop = false
 
     var body: some View {
         NavigationStack {
@@ -220,12 +224,19 @@ struct DayPlanEditor: View {
                 Section("Bemærkning") {
                     TextField("Valgfri", text: Binding(get: { plan.comment ?? "" }, set: { plan.comment = $0 }), axis: .vertical)
                 }
-                if plan.repeats {
-                    Section {
-                        Text("Dagen følger en fast ugeplan. Ændringen gælder kun denne dag.")
-                            .font(.footnote).foregroundStyle(.secondary)
+                Section {
+                    Toggle(plan.repeats ? "Ret den faste ugeplan" : "Gentag hver uge", isOn: $weekly)
+                    if plan.repeats, plan.templateId != nil {
+                        Button("Stop den faste plan fra denne dag", role: .destructive) { confirmStop = true }
                     }
+                } footer: {
+                    Text(plan.repeats
+                         ? (weekly ? "Ændringen gælder denne dag og alle de kommende uger." : "Dagen følger en fast ugeplan. Ændringen gælder kun denne dag.")
+                         : (weekly ? "Samme tider hver \(plan.date.formatted(.dateTime.weekday(.wide))) fra nu af." : "Gælder kun denne dag."))
                 }
+                .confirmationDialog("Stop den faste plan?", isPresented: $confirmStop, titleVisibility: .visible) {
+                    Button("Stop fra denne dag", role: .destructive) { Task { await stopRepeating() } }
+                } message: { Text("Tidligere uger beholder deres tider.") }
                 if let error {
                     Section { Text(error).foregroundStyle(.red) }
                 }
@@ -257,10 +268,22 @@ struct DayPlanEditor: View {
         plan.entry = Self.hhmm(entry)
         plan.exit = Self.hhmm(exit)
         do {
-            try await AulaAPI.shared.savePlan(plan)
+            try await AulaAPI.shared.savePlan(plan, weekly: weekly)
             done(true)
         } catch {
             self.error = String(localized: "Ikke gemt: \(error.localizedDescription)")
+        }
+    }
+
+    private func stopRepeating() async {
+        guard let id = plan.templateId else { return }
+        saving = true
+        defer { saving = false }
+        do {
+            try await AulaAPI.shared.deleteRepeatingPlan(templateId: id, from: plan.date)
+            done(true)
+        } catch {
+            self.error = String(localized: "Ikke ændret: \(error.localizedDescription)")
         }
     }
 

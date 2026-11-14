@@ -90,6 +90,23 @@ final class DataStore {
         return m
     }
 
+    /// Birthdays as all-day calendar events in the week of `day` (the list is one year ahead; earlier years reuse the day).
+    func birthdayEvents(weekOf day: Date) -> [Event] {
+        let cal = Calendar.week
+        let start = Week.start(of: day)
+        let days = Week.days(of: start)
+        return (birthdays.value ?? []).compactMap { b in
+            let md = cal.dateComponents([.month, .day], from: b.date)
+            guard let d = days.first(where: {
+                let c = cal.dateComponents([.month, .day], from: $0)
+                return c.month == md.month && c.day == md.day
+            }) else { return nil }
+            return Event(id: "bday-\(b.id)-\(cal.component(.year, from: d))", title: String(localized: "🎂 \(b.name) har fødselsdag"),
+                         start: d, end: cal.date(byAdding: .day, value: 1, to: d) ?? d, allDay: true,
+                         location: b.group, teacher: nil, substitute: nil, hasSubstitute: false, type: "birthday", childIds: [])
+        }
+    }
+
     func media(album: Album) -> Loadable<[Media]> {
         if let l = albumMedia[album.id] { return l }
         let l: Loadable<[Media]>
@@ -235,7 +252,8 @@ final class DataStore {
         birthdays = Loadable(key: "birthdays") {
             let s = try await AulaAPI.shared.bootstrap()
             let codes = Array(Set(s.children.compactMap(\.institutionCode))).sorted()
-            return try await AulaAPI.shared.birthdays(institutionCodes: codes)
+            // A whole year, so the calendar can show them in any week.
+            return try await AulaAPI.shared.birthdays(institutionCodes: codes, days: 366)
         }
         importantDates = Loadable(key: "important-dates") {
             _ = try await AulaAPI.shared.bootstrap()

@@ -12,6 +12,19 @@ struct Contact: Codable, Identifiable, Hashable {
     let phones: [String]
     let email: String?
     let pictureURL: URL?
+    var role: String? = nil
+    var mobilePhone: String? = nil
+    var homePhone: String? = nil
+    var workPhone: String? = nil
+    var institutionName: String? = nil
+    var group: String? = nil
+    /// Children of a parent, or parents of a child.
+    var relations: [ContactRelation]? = nil
+}
+
+struct ContactRelation: Codable, Hashable {
+    let name: String
+    let detail: String?
 }
 
 struct SecureDocument: Codable, Identifiable, Hashable {
@@ -51,7 +64,11 @@ private struct GroupsDTO: Decodable {
 
 private struct ContactDTO: Decodable {
     struct Pic: Decodable { let url: String? }
-    struct Relation: Decodable { let fullName: String?; let firstName: String?; let metadata: String? }
+    struct Relation: Decodable {
+        let fullName: String?; let firstName: String?; let lastName: String?; let metadata: String?
+        let relation: String?; let role: String?; let mainGroup: Group?; let shortName: String?
+    }
+    struct Group: Decodable { let name: String? }
     let id: FlexInt?
     let institutionProfileId: FlexInt?
     let fullName: String?
@@ -67,6 +84,9 @@ private struct ContactDTO: Decodable {
     let profilePicture: Pic?
     let profilePictureUrl: String?
     let relations: Lossy<Relation>?
+    let institutionName: String?
+    let mainGroup: Group?
+    let shortName: String?
 }
 
 private struct SecureDocsDTO: Decodable {
@@ -138,8 +158,19 @@ extension AulaAPI {
                 var phones: [String] = []
                 for p in phoneOptions.compactMap({ $0?.nilIfEmpty }) where !phones.contains(p) { phones.append(p) }
                 let pic: String? = c.profilePicture?.url ?? c.profilePictureUrl
+                let rels: [ContactRelation] = (c.relations?.items ?? []).compactMap { r in
+                    let n = r.fullName ?? [r.firstName, r.lastName].compactMap { $0 }.joined(separator: " ")
+                    guard !n.isEmpty else { return nil }
+                    let d = [r.relation?.nilIfEmpty, r.mainGroup?.name?.nilIfEmpty ?? r.metadata?.nilIfEmpty].compactMap { $0 }
+                    return ContactRelation(name: n, detail: d.isEmpty ? nil : d.joined(separator: " · "))
+                }
                 return Contact(id: id, name: name, detail: detailOptions.compactMap { $0 }.first,
-                               phones: phones, email: c.email?.nilIfEmpty, pictureURL: pic.flatMap { URL(string: $0) })
+                               phones: phones, email: c.email?.nilIfEmpty, pictureURL: pic.flatMap { URL(string: $0) },
+                               role: c.role?.nilIfEmpty, mobilePhone: (c.mobilePhoneNumber ?? c.phone)?.nilIfEmpty,
+                               homePhone: c.homePhoneNumber?.nilIfEmpty, workPhone: c.workPhoneNumber?.nilIfEmpty,
+                               institutionName: c.institutionName?.nilIfEmpty,
+                               group: c.mainGroup?.name?.nilIfEmpty ?? c.metadata?.nilIfEmpty,
+                               relations: rels)
             }
             all += batch
             if batch.count < 20 { break }

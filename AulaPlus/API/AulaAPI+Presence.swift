@@ -127,8 +127,8 @@ extension AulaAPI {
         return out.sorted { $0.date < $1.date }
     }
 
-    /// Creates or updates the planned times for one day (no repetition).
-    func savePlan(_ plan: DayPlan) async throws {
+    /// Creates or updates the planned times for one day, or every week from that day (`weekly`).
+    func savePlan(_ plan: DayPlan, weekly: Bool = false) async throws {
         let entry = plan.entry ?? "08:00"
         let exit = plan.exit ?? "16:00"
         let kind = plan.kind ?? .pickedUpBy
@@ -150,10 +150,10 @@ extension AulaAPI {
             "byDate": Self.dayFormatter.string(from: plan.date),
             "presenceActivity": activity,
             "comment": plan.comment ?? "",
-            "repeatPattern": "never",
+            "repeatPattern": weekly ? "weekly" : "never",
             "expiresAt": "\(endYear)-06-30T00:00:00+00:00",
         ]
-        if let id = plan.templateId, !plan.repeats { body["id"] = id }
+        if let id = plan.templateId, !plan.repeats || weekly { body["id"] = id }
         let _: Ignored = try await call("presence.updatePresenceTemplate", body: body)
     }
 
