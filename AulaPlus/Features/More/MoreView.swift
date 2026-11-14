@@ -317,6 +317,7 @@ struct AlbumView: View {
     /// Photos that were new when the album was opened. Kept for this visit after Aula is told they're seen.
     @State private var newIds: Set<Int> = []
     @State private var refreshedForExpiredURLs = false
+    @State private var refreshedForDates = false
     private let columns = [GridItem(.adaptive(minimum: 105), spacing: 3)]
 
     enum Filter: Hashable { case all, new, child(Int) }
@@ -328,7 +329,7 @@ struct AlbumView: View {
         let list = media.value ?? []
         guard let childId = album.childId else { return list }
         let ids = Set(list.map(\.id))
-        return list + faces.found(childId).filter { !ids.contains($0.id) }
+        return list + faces.found(childId).filter { !ids.contains($0.id) }.map(data.freshest)
     }
 
     private var shown: [Media] {
@@ -386,6 +387,10 @@ struct AlbumView: View {
             await notices
             // A new-photo notice means the cached list may be missing it.
             if data.newCount(in: album) > 0, media.savedAt.map({ $0 < .now.addingTimeInterval(-30) }) ?? false {
+                await media.refresh()
+            } else if !refreshedForDates, (media.value ?? []).contains(where: { $0.date == nil }) {
+                // Saved by an older version without photo dates: fetch again so the days show.
+                refreshedForDates = true
                 await media.refresh()
             }
             let ids = Set(all.map(\.id))

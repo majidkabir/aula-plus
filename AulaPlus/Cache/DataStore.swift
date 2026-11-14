@@ -84,6 +84,12 @@ final class DataStore {
         UserDefaults.standard.set(try? JSONEncoder().encode(d), forKey: draftsKey)
     }
 
+    /// The newest copy of a photo from any album loaded this session (dates and fresh links).
+    func freshest(_ m: Media) -> Media {
+        for l in albumMedia.values { if let f = l.value?.first(where: { $0.id == m.id }) { return f } }
+        return m
+    }
+
     func media(album: Album) -> Loadable<[Media]> {
         if let l = albumMedia[album.id] { return l }
         let l: Loadable<[Media]>
