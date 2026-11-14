@@ -149,23 +149,22 @@ struct MyProfileView: View {
     @State private var error: String?
     @State private var note: String?
     @State private var saving = false
-    @State private var pick: PhotosPickerItem?
-    @State private var newPicture: UIImage?
-    @State private var uploading = false
+    @State private var newPictures: [Int: UIImage] = [:]
+    @State private var uploading: Int?
 
     var body: some View {
         ThemedForm {
             if let first = profiles?.first {
                 Section {
                     VStack(spacing: 12) {
-                        BigAvatar(name: first.name, url: first.pictureURL, size: 160, image: newPicture)
-                            .overlay { if uploading { ProgressView().controlSize(.large) } }
+                        BigAvatar(name: first.name, url: first.pictureURL, size: 160, image: newPictures[first.id])
+                            .overlay { if uploading == first.id { ProgressView().controlSize(.large) } }
                         Text(first.name).font(.title2.bold())
                         if first.canEditPicture {
-                            PhotosPicker(selection: $pick, matching: .images) {
+                            PhotosPicker(selection: pickBinding(for: first), matching: .images) {
                                 Label("Skift profilbillede", systemImage: "camera.fill")
                             }
-                            .disabled(uploading)
+                            .disabled(uploading != nil)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -175,6 +174,24 @@ struct MyProfileView: View {
             if let binding = Binding($profiles) {
                 ForEach(binding) { $p in
                     Section {
+                        if p.isChild {
+                            HStack(spacing: 14) {
+                                BigAvatar(name: p.name, url: p.pictureURL, size: 64, image: newPictures[p.id])
+                                    .overlay { if uploading == p.id { ProgressView() } }
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(p.name).font(.headline)
+                                    if p.canEditPicture {
+                                        PhotosPicker(selection: pickBinding(for: p), matching: .images) {
+                                            Label("Skift billede", systemImage: "camera.fill").font(.subheadline)
+                                        }
+                                        .disabled(uploading != nil)
+                                    } else {
+                                        Text("Institutionen styrer billedet").font(.caption).foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
                         Group {
                             LabeledField("Mobil", text: $p.mobilePhone, placeholder: "Tilføj nummer").keyboardType(.phonePad).textContentType(.telephoneNumber)
                             LabeledField("Hjemme", text: $p.homePhone, placeholder: "Tilføj nummer").keyboardType(.phonePad)
@@ -185,9 +202,11 @@ struct MyProfileView: View {
                         .disabled(!p.canEditContact)
                         if let a = p.address { LabeledContent("Adresse", value: a) }
                     } header: {
-                        Text(p.isChild ? p.name : (p.institutionName ?? String(localized: "Kontaktoplysninger")))
+                        Text(p.isChild ? String(localized: "Barn") : (p.institutionName ?? String(localized: "Kontaktoplysninger")))
                     } footer: {
-                        if p.id == profiles?.last?.id {
+                        if !p.canEditContact {
+                            Text("Institutionen tillader ikke, at du ændrer disse oplysninger i Aula.")
+                        } else if p.id == profiles?.last?.id {
                             Text("Personale og andre forældre kan se det, institutionen deler i kontaktlisten.")
                         }
                     }
@@ -207,7 +226,10 @@ struct MyProfileView: View {
             }
         }
         .task { await load() }
-        .onChange(of: pick) { _, item in if let item { Task { await upload(item) } } }
+    }
+
+    private func pickBinding(for p: MyProfile) -> Binding<PhotosPickerItem?> {
+        Binding(get: { nil }, set: { item in if let item { Task { await upload(item, for: p) } } })
     }
 
     private func load() async {
@@ -215,7 +237,10 @@ struct MyProfileView: View {
             let p = MyProfile(id: 1, profileId: 1, name: "Majid Ghafouri", institutionName: "Valby Skole", institutionCode: nil,
                               email: "far@example.dk", mobilePhone: "20 30 40 50", homePhone: "", workPhone: "",
                               pictureURL: nil, canEditPicture: true)
-            profiles = [p]; saved = [p]
+            let kid = MyProfile(id: 101, profileId: 101, name: "Emma Ghafouri", institutionName: "Valby Skole", institutionCode: nil,
+                                email: "", mobilePhone: "", homePhone: "20 30 40 50", workPhone: "",
+                                pictureURL: nil, canEditPicture: true, address: nil, isChild: true, canEditContact: true)
+            profiles = [p, kid]; saved = [p, kid]
             return
         }
         do {
@@ -244,10 +269,8 @@ struct MyProfileView: View {
         }
     }
 
-    private func upload(_ item: PhotosPickerItem) async {
-        defer { pick = nil }
-        guard let first = profiles?.first,
-              let data = try? await item.loadTransferable(type: Data.self),
+    private func upload(_ item: PhotosPickerItem, for target: MyProfile) async {
+        guard let data = try? await item.loadTransferable(type: Data.self),
               let img = UIImage(data: data) else { return }
         // A square, reasonably small JPEG, like Aula's own crop.
         let side = min(img.size.width, img.size.height)
@@ -258,17 +281,22 @@ struct MyProfileView: View {
                                 width: img.size.width * target.width / side, height: img.size.height * target.height / side))
         }
         guard let jpeg = square.jpegData(compressionQuality: 0.85) else { return }
-        newPicture = square
-        uploading = true
+        newPictures[target.id] = square
+        uploading = target.id
         error = nil
-        defer { uploading = false }
+        defer { uploading = nil }
+        // A child's picture is uploaded by me: my own profile at the child's institution owns the upload.
+        let mine = profiles?.filter { !$0.isChild } ?? []
+        let owner = target.isChild ? (mine.first { $0.institutionCode == target.institutionCode } ?? mine.first) : nil
         do {
-            if !Demo.isOn { try await AulaAPI.shared.uploadProfilePicture(jpeg, for: first, allProfiles: true) }
+            if !Demo.isOn {
+                try await AulaAPI.shared.uploadProfilePicture(jpeg, for: target, owner: owner, allProfiles: !target.isChild)
+            }
             note = String(localized: "Profilbillede skiftet")
             // The new picture shows everywhere (front page, settings, children) once the session is fetched again.
             await app.session.refresh()
         } catch {
-            newPicture = nil
+            newPictures[target.id] = nil
             self.error = String(localized: "Billedet blev ikke skiftet: \(error.localizedDescription)")
         }
     }

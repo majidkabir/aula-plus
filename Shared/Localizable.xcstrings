@@ -5430,6 +5430,36 @@
           }
         }
       }
+    },
+    "Skift billede": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change photo"
+          }
+        }
+      }
+    },
+    "Institutionen styrer billedet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The institution manages the photo"
+          }
+        }
+      }
+    },
+    "Institutionen tillader ikke, at du ændrer disse oplysninger i Aula.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The institution doesn't let you change these details in Aula."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
