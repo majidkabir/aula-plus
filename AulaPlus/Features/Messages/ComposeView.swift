@@ -3,7 +3,11 @@ import SwiftUI
 /// New message: search recipients, subject, text.
 struct ComposeView: View {
     var initialRecipients: [Recipient] = []
+    /// A saved draft to continue.
+    var draft: MessageDraft? = nil
     let done: (Bool) -> Void
+    @Environment(DataStore.self) private var data
+    @State private var askSave = false
 
     @State private var query = ""
     @State private var results: [Recipient] = []
@@ -68,16 +72,45 @@ struct ComposeView: View {
                 }
                 if let error { Section { Text(error).foregroundStyle(.red).font(.footnote) } }
             }
-            .onAppear { if recipients.isEmpty { recipients = initialRecipients } }
+            .onAppear {
+                if let draft, recipients.isEmpty, subject.isEmpty, text.isEmpty {
+                    recipients = draft.recipients
+                    subject = draft.subject
+                    text = draft.text
+                    sensitive = draft.sensitive
+                }
+                if recipients.isEmpty { recipients = initialRecipients }
+            }
+            .interactiveDismissDisabled(hasContent)
+            .confirmationDialog("Gem som kladde?", isPresented: $askSave, titleVisibility: .visible) {
+                Button("Gem kladde") { saveDraft(); done(false) }
+                Button("Slet", role: .destructive) {
+                    if let draft { data.deleteDraft(draft.id) }
+                    done(false)
+                }
+            } message: { Text("Kladder gemmes kun på denne telefon.") }
             .navigationTitle("Ny besked")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuller") { done(false) } }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Annuller") { if hasContent { askSave = true } else { done(false) } }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     if sending { ProgressView() } else { Button("Send") { Task { await send() } }.disabled(!canSend) }
                 }
             }
         }
+    }
+
+    private var hasContent: Bool {
+        let changed = draft.map { $0.subject != subject || $0.text != text || $0.recipients != recipients } ?? true
+        return changed && (!subject.trimmingCharacters(in: .whitespaces).isEmpty
+            || !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+
+    private func saveDraft() {
+        data.saveDraft(MessageDraft(id: draft?.id ?? UUID(), recipients: recipients, subject: subject, text: text,
+                                    sensitive: sensitive, savedAt: .now))
     }
 
     private func search(_ q: String) {
@@ -98,6 +131,7 @@ struct ComposeView: View {
         defer { sending = false }
         do {
             try await AulaAPI.shared.startThread(subject: subject, text: text, recipients: recipients, sensitive: sensitive)
+            if let draft { data.deleteDraft(draft.id) }
             done(true)
         } catch {
             self.error = String(localized: "Beskeden blev ikke sendt: \(error.localizedDescription)")

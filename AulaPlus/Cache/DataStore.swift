@@ -15,11 +15,74 @@ final class DataStore {
     let birthdays: Loadable<[Birthday]>
     let albums: Loadable<[Album]>
     let vacationRequests: Loadable<[VacationRequest]>
+    let folders: Loadable<[MailFolder]>
+    /// Unsent messages, kept on this phone only.
+    private(set) var drafts: [MessageDraft] = DataStore.loadDrafts()
 
     @ObservationIgnored private var weeks: [String: Loadable<[Event]>] = [:]
     @ObservationIgnored private var threadPages: [String: Loadable<ThreadPage>] = [:]
     @ObservationIgnored private var weekPlans: [String: Loadable<[WeekPlan]>] = [:]
     @ObservationIgnored private var albumMedia: [Int: Loadable<[Media]>] = [:]
+    @ObservationIgnored private var folderThreads: [Int: Loadable<[ThreadSummary]>] = [:]
+
+    // MARK: Messages: folders, mute, drafts
+
+    /// Threads in one folder; `nil` = the inbox.
+    func threads(in folderId: Int?) -> Loadable<[ThreadSummary]> {
+        guard let folderId else { return threads }
+        if let l = folderThreads[folderId] { return l }
+        let l = Loadable<[ThreadSummary]>(key: "threads-folder-\(folderId)") {
+            try await AulaAPI.shared.threads(folderId: folderId).threads
+        }
+        folderThreads[folderId] = l
+        return l
+    }
+
+    private var allThreadLists: [Loadable<[ThreadSummary]>] { [threads] + Array(folderThreads.values) }
+
+    func updateThread(_ id: String, _ change: (inout ThreadSummary) -> Void) {
+        for l in allThreadLists {
+            l.mutate { list in if let i = list.firstIndex(where: { $0.id == id }) { change(&list[i]) } }
+        }
+    }
+
+    func setMuted(_ t: ThreadSummary, _ muted: Bool) async throws {
+        guard let sub = t.subscriptionId else { throw AulaError.http(400) }
+        if !Demo.isOn { try await AulaAPI.shared.setMuted(subscriptionId: sub, muted: muted) }
+        updateThread(t.id) { $0.isMuted = muted }
+    }
+
+    /// Moves a thread to a folder (`nil` = inbox) and refreshes both lists.
+    func move(_ t: ThreadSummary, to folderId: Int?) async throws {
+        if !Demo.isOn { try await AulaAPI.shared.moveThread(t.id, to: folderId) }
+        for l in allThreadLists { l.mutate { $0.removeAll { $0.id == t.id } } }
+        Task { await threads(in: folderId).refresh() }
+    }
+
+    func leave(_ t: ThreadSummary) async throws {
+        if !Demo.isOn { try await AulaAPI.shared.leaveThread(t.id) }
+        for l in allThreadLists { l.mutate { $0.removeAll { $0.id == t.id } } }
+    }
+
+    func saveDraft(_ d: MessageDraft) {
+        drafts.removeAll { $0.id == d.id }
+        drafts.insert(d, at: 0)
+        Self.storeDrafts(drafts)
+    }
+
+    func deleteDraft(_ id: UUID) {
+        drafts.removeAll { $0.id == id }
+        Self.storeDrafts(drafts)
+    }
+
+    private static let draftsKey = "messageDrafts"
+    private static func loadDrafts() -> [MessageDraft] {
+        guard let data = UserDefaults.standard.data(forKey: draftsKey) else { return [] }
+        return (try? JSONDecoder().decode([MessageDraft].self, from: data)) ?? []
+    }
+    private static func storeDrafts(_ d: [MessageDraft]) {
+        UserDefaults.standard.set(try? JSONEncoder().encode(d), forKey: draftsKey)
+    }
 
     func media(album: Album) -> Loadable<[Media]> {
         if let l = albumMedia[album.id] { return l }
@@ -159,6 +222,10 @@ final class DataStore {
             let codes = Array(Set(s.children.compactMap(\.institutionCode))).sorted()
             return try await AulaAPI.shared.notifications(childIds: s.children.map(\.id), institutionCodes: codes)
         }
+        folders = Loadable(key: "mail-folders") {
+            _ = try await AulaAPI.shared.bootstrap()
+            return try await AulaAPI.shared.folders()
+        }
         birthdays = Loadable(key: "birthdays") {
             let s = try await AulaAPI.shared.bootstrap()
             let codes = Array(Set(s.children.compactMap(\.institutionCode))).sorted()
@@ -239,12 +306,7 @@ final class DataStore {
 
     func markRead(threadId: String) {
         threads.mutate { list in
-            if let i = list.firstIndex(where: { $0.id == threadId }) {
-                let t = list[i]
-                list[i] = ThreadSummary(id: t.id, subject: t.subject, preview: t.preview, sender: t.sender,
-                                        date: t.date, isRead: true, isSensitive: t.isSensitive, regarding: t.regarding,
-                                        isMarked: t.isMarked)
-            }
+            if let i = list.firstIndex(where: { $0.id == threadId }) { list[i].isRead = true }
         }
     }
 
@@ -255,10 +317,14 @@ final class DataStore {
     }
 
     func removeThread(_ threadId: String) {
-        threads.mutate { $0.removeAll { $0.id == threadId } }
+        for l in allThreadLists { l.mutate { $0.removeAll { $0.id == threadId } } }
     }
 
     func reset() {
+        folders.forget()
+        folderThreads.values.forEach { $0.forget() }
+        drafts = []
+        Self.storeDrafts([])
         presence.forget()
         threads.forget()
         posts.forget()

@@ -3350,6 +3350,666 @@
           }
         }
       }
+    },
+    "Indbakke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inbox"
+          }
+        }
+      }
+    },
+    "Slettet post": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleted"
+          }
+        }
+      }
+    },
+    "Kladder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drafts"
+          }
+        }
+      }
+    },
+    "Kladder (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drafts (%lld)"
+          }
+        }
+      }
+    },
+    "Administrér mapper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage folders"
+          }
+        }
+      }
+    },
+    "Autosvar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto-reply"
+          }
+        }
+      }
+    },
+    "Flyt til": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to"
+          }
+        }
+      }
+    },
+    "Slå lyd til": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unmute"
+          }
+        }
+      }
+    },
+    "Slå lyd fra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mute"
+          }
+        }
+      }
+    },
+    "Forlad samtalen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave conversation"
+          }
+        }
+      }
+    },
+    "Forlad samtalen?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave the conversation?"
+          }
+        }
+      }
+    },
+    "Forlad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave"
+          }
+        }
+      }
+    },
+    "Du får ikke flere beskeder i denne tråd.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You won't get more messages in this thread."
+          }
+        }
+      }
+    },
+    "Flere handlinger": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More actions"
+          }
+        }
+      }
+    },
+    "Ikke flyttet: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not moved: %@"
+          }
+        }
+      }
+    },
+    "Ikke ændret: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not changed: %@"
+          }
+        }
+      }
+    },
+    "Søg i alle beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search all messages"
+          }
+        }
+      }
+    },
+    "Ingen kladder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No drafts"
+          }
+        }
+      }
+    },
+    "Mapper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folders"
+          }
+        }
+      }
+    },
+    "Ny mappe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New folder"
+          }
+        }
+      }
+    },
+    "Navn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Opret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "Omdøb mappe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename folder"
+          }
+        }
+      }
+    },
+    "Slet mappen \"%@\"?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the folder \"%@\"?"
+          }
+        }
+      }
+    },
+    "Beskederne i mappen flyttes til Slettet post.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messages in the folder move to Deleted."
+          }
+        }
+      }
+    },
+    "Mapperne er de samme som på aula.dk. Tryk på en mappe for at omdøbe den, swipe for at slette.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folders are the same as on aula.dk. Tap a folder to rename it, swipe to delete."
+          }
+        }
+      }
+    },
+    "Autosvar er slået til": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto-reply is on"
+          }
+        }
+      }
+    },
+    "Slå autosvar fra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off auto-reply"
+          }
+        }
+      }
+    },
+    "Fx: Jeg er på ferie og svarer, når jeg er tilbage.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g. I'm on holiday and will reply when I'm back."
+          }
+        }
+      }
+    },
+    "Slutdato": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End date"
+          }
+        }
+      }
+    },
+    "Alle der skriver til dig i perioden, får automatisk dette svar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everyone who writes to you in this period gets this reply automatically."
+          }
+        }
+      }
+    },
+    "Ingen modtagere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No recipients"
+          }
+        }
+      }
+    },
+    "Gem som kladde?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save as draft?"
+          }
+        }
+      }
+    },
+    "Gem kladde": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save draft"
+          }
+        }
+      }
+    },
+    "Kladder gemmes kun på denne telefon.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drafts are kept on this phone only."
+          }
+        }
+      }
+    },
+    "Aula-notifikationer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula notifications"
+          }
+        }
+      }
+    },
+    "Kalender på telefonen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar on your phone"
+          }
+        }
+      }
+    },
+    "Aula": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula"
+          }
+        }
+      }
+    },
+    "Push i Aula-appen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Push in the Aula app"
+          }
+        }
+      }
+    },
+    "E-mail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email"
+          }
+        }
+      }
+    },
+    "Hvornår": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When"
+          }
+        }
+      }
+    },
+    "Daglig opsummering kl.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily summary at"
+          }
+        }
+      }
+    },
+    "Beskeder fra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messages from"
+          }
+        }
+      }
+    },
+    "Andet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other"
+          }
+        }
+      }
+    },
+    "Værktøjer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools"
+          }
+        }
+      }
+    },
+    "Gemt på Aula": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved on Aula"
+          }
+        }
+      }
+    },
+    "Det er Aulas egne notifikationer. Aula+ giver besked om nyt for sig selv.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These are Aula's own notifications. Aula+ notifies you separately."
+          }
+        }
+      }
+    },
+    "Mandag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monday"
+          }
+        }
+      }
+    },
+    "Tirsdag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tuesday"
+          }
+        }
+      }
+    },
+    "Onsdag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wednesday"
+          }
+        }
+      }
+    },
+    "Torsdag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thursday"
+          }
+        }
+      }
+    },
+    "Fredag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Friday"
+          }
+        }
+      }
+    },
+    "Lørdag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saturday"
+          }
+        }
+      }
+    },
+    "Søndag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sunday"
+          }
+        }
+      }
+    },
+    "Kunne ikke hente indstillingerne: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load the settings: %@"
+          }
+        }
+      }
+    },
+    "Abonnér i Kalender": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscribe in Calendar"
+          }
+        }
+      }
+    },
+    "Kopiér link": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy link"
+          }
+        }
+      }
+    },
+    "Kopieret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        }
+      }
+    },
+    "Abonnér (kun næste uge)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscribe (next week only)"
+          }
+        }
+      }
+    },
+    "Kalender-appen henter ændringer fra Aula af sig selv. Linket er personligt – del det ikke.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Calendar app fetches changes from Aula by itself. The link is personal – don't share it."
+          }
+        }
+      }
+    },
+    "Slet kalenderlink": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete calendar link"
+          }
+        }
+      }
+    },
+    "Opret kalenderlink": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create calendar link"
+          }
+        }
+      }
+    },
+    "Aula laver et personligt link med begivenheder, ferier, ture og møder. Når du opretter det, accepterer du Aulas vilkår for kalenderdeling: begivenhederne kopieres til din kalender, og Aula kan ikke slette dem derfra igen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula makes a personal link with events, holidays, trips and meetings. By creating it you accept Aula's calendar sharing terms: events are copied to your calendar and Aula can't remove them from there."
+          }
+        }
+      }
+    },
+    "Slet kalenderlinket?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the calendar link?"
+          }
+        }
+      }
+    },
+    "Abonnementer på linket holder op med at blive opdateret.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscriptions to the link stop updating."
+          }
+        }
+      }
+    },
+    "Ikke oprettet: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not created: %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

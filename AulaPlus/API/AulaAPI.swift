@@ -155,12 +155,15 @@ actor AulaAPI {
         }
     }
 
-    func threads(page: Int = 0) async throws -> (threads: [ThreadSummary], more: Bool) {
-        let dto: ThreadsDTO = try await call("messaging.getThreads", query: [
+    /// `folderId` nil = the inbox.
+    func threads(page: Int = 0, folderId: Int? = nil) async throws -> (threads: [ThreadSummary], more: Bool) {
+        var q: [URLQueryItem] = [
             .init(name: "sortOn", value: "date"),
             .init(name: "orderDirection", value: "desc"),
             .init(name: "page", value: String(page)),
-        ])
+        ]
+        if let folderId { q.append(.init(name: "folderId", value: String(folderId))) }
+        let dto: ThreadsDTO = try await call("messaging.getThreads", query: q)
         return (dto.threads?.items.map(\.model) ?? [], dto.moreMessagesExist ?? false)
     }
 
