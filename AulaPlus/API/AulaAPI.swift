@@ -109,7 +109,8 @@ actor AulaAPI {
                        widgetIds: widgets,
                        guardianProfileIds: profile.institutionProfiles?.items.map(\.id.value) ?? [],
                        widgetNames: widgetNames,
-                       widgetLinks: widgetLinks)
+                       widgetLinks: widgetLinks,
+                       pictureURL: profile.institutionProfiles?.items.compactMap { $0.profilePicture?.url.flatMap(URL.init(string:)) }.first)
     }
 
     // MARK: Endpoints

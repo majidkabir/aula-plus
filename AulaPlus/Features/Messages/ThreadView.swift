@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 struct ThreadView: View {
@@ -10,6 +11,8 @@ struct ThreadView: View {
     @State private var olderExhausted = false
     @State private var loadingOlder = false
     @State private var draft = ""
+    @State private var photos: [PickedPhoto] = []
+    @State private var photoItems: [PhotosPickerItem] = []
     @State private var sending = false
     @State private var sendError: String?
     @State private var muted: Bool?
@@ -140,7 +143,21 @@ struct ThreadView: View {
                 if let sendError {
                     Text(sendError).font(.caption).foregroundStyle(.red)
                 }
+                if !photos.isEmpty { PhotoThumbStrip(photos: $photos) }
                 HStack(alignment: .bottom, spacing: 8) {
+                    PhotosPicker(selection: $photoItems, maxSelectionCount: 10, matching: .images) {
+                        Image(systemName: "photo.badge.plus").font(.system(size: 22)).frame(width: 34, height: 34)
+                    }
+                    .accessibilityLabel(Text("Vedhæft billeder"))
+                    .onChange(of: photoItems) { _, picked in
+                        guard !picked.isEmpty else { return }
+                        Task {
+                            for item in picked {
+                                if let d = try? await item.loadTransferable(type: Data.self), let p = PickedPhoto.make(d) { photos.append(p) }
+                            }
+                            photoItems = []
+                        }
+                    }
                     TextField("Skriv et svar", text: $draft, axis: .vertical)
                         .lineLimit(1...6)
                         .focused($composerFocused)
@@ -152,7 +169,7 @@ struct ThreadView: View {
                         if sending { ProgressView().frame(width: 34, height: 34) }
                         else { Image(systemName: "arrow.up.circle.fill").font(.system(size: 32)) }
                     }
-                    .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sending)
+                    .disabled((draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && photos.isEmpty) || sending)
                     .accessibilityLabel(Text("Send"))
                 }
             }
@@ -164,13 +181,15 @@ struct ThreadView: View {
 
     private func send() async {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
+        guard !text.isEmpty || !photos.isEmpty else { return }
         sending = true
         sendError = nil
         defer { sending = false }
         do {
-            try await AulaAPI.shared.reply(threadId: thread.id, text: text)
+            let ids = try await AulaAPI.shared.upload(photos)
+            try await AulaAPI.shared.reply(threadId: thread.id, text: text, attachmentIds: ids)
             draft = ""
+            photos = []
             composerFocused = false
             await page.refresh()
             await data.threads.refresh()

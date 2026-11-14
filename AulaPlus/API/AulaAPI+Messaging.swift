@@ -3,12 +3,12 @@ import Foundation
 extension AulaAPI {
     /// Replies in an existing thread.
     /// Request shape from the decompiled official app (`messaging.reply`).
-    func reply(threadId: String, text: String) async throws {
+    func reply(threadId: String, text: String, attachmentIds: [Int] = []) async throws {
         let body: [String: Any] = [
             "threadId": Int(threadId) ?? threadId,
             "message": [
                 "text": Self.htmlFromPlainText(text),
-                "attachmentIds": [Int](),
+                "attachmentIds": attachmentIds,
             ] as [String: Any],
             "commonInboxId": NSNull(),
             "bundleId": NSNull(),

@@ -37,6 +37,8 @@ struct EventDetail: Codable, Hashable {
     let myResponse: RSVP?
     let invitees: [Invitee]
     let attachments: [Attachment]
+    var type: String? = nil
+    var slots: [MeetingSlot] = []
 }
 
 struct Recipient: Codable, Hashable, Identifiable {
@@ -66,6 +68,8 @@ private struct EventDetailDTO: Decodable {
     let responseStatus: String?
     let invitees: Lossy<Invitee>?
     let attachments: Lossy<AttachmentDTO>?
+    let type: String?
+    let timeSlot: TimeSlotDTO?
 }
 
 /// Accepts whatever startNewThread answers (an id, an object, or nothing)
@@ -116,7 +120,8 @@ extension AulaAPI {
                            deadlineExceeded: d.isDeadlineExceeded ?? false,
                            myResponse: d.responseStatus.flatMap { RSVP(rawValue: $0.lowercased()) },
                            invitees: invitees,
-                           attachments: d.attachments?.items.map(\.model) ?? [])
+                           attachments: d.attachments?.items.map(\.model) ?? [],
+                           type: d.type, slots: d.timeSlot?.slots ?? [])
     }
 
     func respond(eventId: Int, as profileId: Int, response: RSVP) async throws {
@@ -146,7 +151,7 @@ extension AulaAPI {
 
     /// Starts a new thread. Returns the new thread id when Aula sends one.
     @discardableResult
-    func startThread(subject: String, text: String, recipients: [Recipient], sensitive: Bool) async throws -> String? {
+    func startThread(subject: String, text: String, recipients: [Recipient], sensitive: Bool, attachmentIds: [Int] = []) async throws -> String? {
         let recips: [[String: Any]] = recipients.map { r in
             ["id": r.id,
              "mailBoxOwnerType": r.type.lowercased().contains("group") ? "Group" : "InstitutionProfile",
@@ -155,7 +160,7 @@ extension AulaAPI {
         }
         let created: CreatedThread = try await call("messaging.startNewThread", body: [
             "subject": subject,
-            "message": ["text": Self.htmlFromPlainText(text), "attachmentIds": [Int]()] as [String: Any],
+            "message": ["text": Self.htmlFromPlainText(text), "attachmentIds": attachmentIds] as [String: Any],
             "recipients": recips,
             "bccRecipients": [[String: Any]](),
             "sensitive": sensitive,

@@ -15,6 +15,7 @@ struct ComposeView: View {
     @State private var subject = ""
     @State private var text = ""
     @State private var sensitive = false
+    @State private var photos: [PickedPhoto] = []
     @State private var sending = false
     @State private var error: String?
     @State private var searchTask: Task<Void, Never>?
@@ -67,6 +68,7 @@ struct ComposeView: View {
                     TextField("Emne", text: $subject)
                     TextField("Besked", text: $text, axis: .vertical).lineLimit(6...20)
                 }
+                Section { PhotoPickerStrip(photos: $photos) }
                 Section {
                     Toggle("Følsom besked", isOn: $sensitive)
                 }
@@ -130,7 +132,9 @@ struct ComposeView: View {
         error = nil
         defer { sending = false }
         do {
-            try await AulaAPI.shared.startThread(subject: subject, text: text, recipients: recipients, sensitive: sensitive)
+            let ids = try await AulaAPI.shared.upload(photos)
+            try await AulaAPI.shared.startThread(subject: subject, text: text, recipients: recipients, sensitive: sensitive,
+                                                 attachmentIds: ids)
             if let draft { data.deleteDraft(draft.id) }
             done(true)
         } catch {

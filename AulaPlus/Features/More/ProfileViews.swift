@@ -265,6 +265,8 @@ struct MyProfileView: View {
         do {
             if !Demo.isOn { try await AulaAPI.shared.uploadProfilePicture(jpeg, for: first, allProfiles: true) }
             note = String(localized: "Profilbillede skiftet")
+            // The new picture shows everywhere (front page, settings, children) once the session is fetched again.
+            await app.session.refresh()
         } catch {
             newPicture = nil
             self.error = String(localized: "Billedet blev ikke skiftet: \(error.localizedDescription)")
