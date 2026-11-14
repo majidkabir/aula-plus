@@ -34,6 +34,7 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSFaceIDUsageDescription: Aula+ kan låses med Face ID, så andre ikke kan læse beskeder om dine børn.
         NSPhotoLibraryAddUsageDescription: Aula+ gemmer billeder og videoer fra galleriet i dine Fotos.
+        NSRemindersFullAccessUsageDescription: Aula+ lægger det, du skal huske fra beskeder og opslag, i Påmindelser.
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers: [com.majidkabir.aulaplus.refresh]
         CFBundleDevelopmentRegion: da

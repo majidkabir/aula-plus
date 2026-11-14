@@ -71,6 +71,8 @@ struct ParentTaskRow: View {
     let task: ParentTask
     @State private var finder = ParentTaskFinder.shared
     @Environment(DataStore.self) private var data
+    @State private var addingEvent = false
+    @State private var note: String?
 
     var body: some View {
         let isDone = finder.done.contains(task.id)
@@ -101,6 +103,11 @@ struct ParentTaskRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             }
+            TaskAddMenu(task: task, addingEvent: $addingEvent, note: $note)
+        }
+        .sheet(isPresented: $addingEvent) { AddToCalendarSheet(event: ReminderMaker.event(for: task), childNames: []) }
+        .alert(note ?? "", isPresented: Binding(get: { note != nil }, set: { if !$0 { note = nil } })) {
+            Button("OK", role: .cancel) {}
         }
     }
 
@@ -158,13 +165,55 @@ struct SourceTasksBanner: View {
                             }
                             Spacer(minLength: 0)
                         }
+                        .padding(.trailing, 34)
                     }
                     .buttonStyle(.plain)
+                    .overlay(alignment: .trailing) { BannerAddMenu(task: t) }
                 }
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
+    }
+}
+
+/// "+" menu: put a task in Påmindelser or the calendar.
+struct TaskAddMenu: View {
+    let task: ParentTask
+    @Binding var addingEvent: Bool
+    @Binding var note: String?
+
+    var body: some View {
+        Menu {
+            Button {
+                Task {
+                    do {
+                        try await ReminderMaker.add(task)
+                        note = String(localized: "Lagt i Påmindelser")
+                    } catch {
+                        note = error.localizedDescription
+                    }
+                }
+            } label: { Label("Tilføj til Påmindelser", systemImage: "checklist") }
+            Button { addingEvent = true } label: { Label("Tilføj til Kalender", systemImage: "calendar.badge.plus") }
+        } label: {
+            Image(systemName: "plus.circle").font(.title3).foregroundStyle(.orange)
+        }
+        .accessibilityLabel(Text("Tilføj til Påmindelser eller Kalender"))
+    }
+}
+
+private struct BannerAddMenu: View {
+    let task: ParentTask
+    @State private var addingEvent = false
+    @State private var note: String?
+
+    var body: some View {
+        TaskAddMenu(task: task, addingEvent: $addingEvent, note: $note)
+            .sheet(isPresented: $addingEvent) { AddToCalendarSheet(event: ReminderMaker.event(for: task), childNames: []) }
+            .alert(note ?? "", isPresented: Binding(get: { note != nil }, set: { if !$0 { note = nil } })) {
+                Button("OK", role: .cancel) {}
+            }
     }
 }
