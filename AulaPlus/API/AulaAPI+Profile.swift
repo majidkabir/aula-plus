@@ -80,6 +80,22 @@ extension AulaAPI {
         for p in mine { for r in p.relations?.items ?? [] where r.role == "child" {
             if let c = make(r, child: true), !out.contains(where: { $0.id == c.id }) { out.append(c) }
         } }
+        // aula.dk asks for each child's own record (as when you tap the child): it carries what I may edit.
+        let kids = out.filter(\.isChild).map(\.id)
+        if !kids.isEmpty,
+           let own: MasterDataDTO = try? await call("profiles.getProfileMasterData",
+                                                     query: kids.map { URLQueryItem(name: "instProfileIds[]", value: String($0)) }) {
+            for p in own.institutionProfiles?.items ?? [] {
+                guard let c = make(p, child: true), let i = out.firstIndex(where: { $0.id == c.id }) else { continue }
+                let old = out[i]
+                out[i] = MyProfile(id: c.id, profileId: c.profileId ?? old.profileId, name: c.name.isEmpty ? old.name : c.name,
+                                   institutionName: c.institutionName ?? old.institutionName,
+                                   institutionCode: c.institutionCode ?? old.institutionCode,
+                                   email: c.email, mobilePhone: c.mobilePhone, homePhone: c.homePhone, workPhone: c.workPhone,
+                                   pictureURL: c.pictureURL ?? old.pictureURL, canEditPicture: c.canEditPicture,
+                                   address: c.address ?? old.address, isChild: true, canEditContact: c.canEditContact)
+            }
+        }
         return out
     }
 
@@ -104,9 +120,10 @@ extension AulaAPI {
     }
 
     /// Uploads a new profile picture: Aula hands out an upload form for its storage, then links the photo.
-    func uploadProfilePicture(_ jpeg: Data, for profile: MyProfile, allProfiles: Bool) async throws {
-        let mediaId = try await uploadPhoto(jpeg, name: "profilbillede.jpg", owner: profile.id,
-                                            institutionCode: profile.institutionCode, tags: [profile.id])
+    /// For a child, `owner` is my own profile at the child's institution (I upload, the picture is the child's).
+    func uploadProfilePicture(_ jpeg: Data, for profile: MyProfile, owner: MyProfile? = nil, allProfiles: Bool) async throws {
+        let mediaId = try await uploadPhoto(jpeg, name: "profilbillede.jpg", owner: owner?.id ?? profile.id,
+                                            institutionCode: profile.institutionCode ?? owner?.institutionCode, tags: [profile.id])
         let _: Ignored = try await call("profiles.updateProfilePicture", body: [
             "institutionProfileId": profile.id,
             "mediaId": mediaId,
