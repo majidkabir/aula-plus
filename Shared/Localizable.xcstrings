@@ -3031,16 +3031,6 @@
         }
       }
     },
-    "Billeder uden tag, hvor Aula+ genkender %@. Markeret med ✦.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Untagged photos where Aula+ recognises %@. Marked with ✦."
-          }
-        }
-      }
-    },
     "Album %lld af %lld": {
       "localizations": {
         "en": {
@@ -3187,6 +3177,56 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aula+ recognises your children's faces in untagged photos. It all happens on this phone: nothing is sent anywhere, and other children's faces aren't stored."
+          }
+        }
+      }
+    },
+    "Lærer %@s ansigt …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learning %@'s face …"
+          }
+        }
+      }
+    },
+    "Lær fra Fotos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learn from Photos"
+          }
+        }
+      }
+    },
+    "Lærte %@s ansigt fra %lld billeder. Åbn albums eller tryk \"Søg i alle albums\" for at finde %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learned %1$@'s face from %2$lld photos. Open albums or tap \"Search all albums\" to find %3$@."
+          }
+        }
+      }
+    },
+    "Fandt ikke %@s ansigt. Vælg flere billeder, hvor ansigtet ses tydeligt forfra.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't find %@'s face. Pick more photos where the face is clearly seen from the front."
+          }
+        }
+      }
+    },
+    "Billeder uden tag, hvor Aula+ genkender %@. Markeret med ✦. Flere rigtige med \"Lær fra Fotos\": vælg billeder af %@, fx fra Personer i Fotos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untagged photos where Aula+ recognises %1$@. Marked with ✦. For better results use \"Learn from Photos\": pick photos of %2$@, e.g. from People in Photos."
           }
         }
       }

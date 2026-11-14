@@ -199,6 +199,43 @@ final class FaceIndex {
         save()
     }
 
+    /// Learns the child's face from photos the parent picks in the Photos app (e.g. from the
+    /// child in "People"). Photos often show several people, so it finds the face that recurs
+    /// across the picked photos and takes that face from each photo. Returns faces learned.
+    func learn(_ child: Child, fromPhotos images: [CGImage]) async -> Int {
+        learning = true
+        defer { learning = false }
+        var perPhoto: [[FaceEngine.Face]] = []
+        for image in images { perPhoto.append(await FaceEngine.shared.faces(in: image)) }
+        let picked = Self.consensus(perPhoto)
+        guard !picked.isEmpty else { return 0 }
+        var refs = store.refs[child.id] ?? []
+        refs.append(contentsOf: picked)
+        store.refs[child.id] = Array(refs.suffix(80))
+        store.version += 1
+        save()
+        return picked.count
+    }
+
+    /// The face that appears in the most photos, and its closest match in each photo.
+    nonisolated static func consensus(_ perPhoto: [[FaceEngine.Face]]) -> [[Float]] {
+        let all = perPhoto.enumerated().flatMap { i, faces in faces.map { (i, $0) } }
+        guard !all.isEmpty else { return [] }
+        func support(_ f: FaceEngine.Face, _ photo: Int) -> Int {
+            perPhoto.enumerated().filter { j, faces in j != photo && faces.contains { dot(f.embedding, $0.embedding) >= 0.55 } }.count
+        }
+        let scored = all.map { ($0.1, support($0.1, $0.0)) }
+        guard let seed = scored.max(by: { ($0.1, $0.0.size) < ($1.1, $1.0.size) }) else { return [] }
+        if seed.1 < 2 {
+            // Not enough overlap to be sure: only photos with a single face.
+            return perPhoto.filter { $0.count == 1 }.map { $0[0].embedding }
+        }
+        return perPhoto.compactMap { faces in
+            faces.max { dot(seed.0.embedding, $0.embedding) < dot(seed.0.embedding, $1.embedding) }
+                .flatMap { dot(seed.0.embedding, $0.embedding) >= 0.45 ? $0.embedding : nil }
+        }
+    }
+
     /// "Det er Emma": the biggest face in this photo becomes one of the child's reference faces.
     func confirm(_ m: Media, is child: Child) async -> Bool {
         guard let image = await Self.image(m), let face = await FaceEngine.shared.faces(in: image).first else { return false }
@@ -272,7 +309,7 @@ final class FaceIndex {
         return top.reduce(0, +) / Float(top.count)
     }
 
-    private static func dot(_ a: [Float], _ b: [Float]) -> Float {
+    nonisolated private static func dot(_ a: [Float], _ b: [Float]) -> Float {
         zip(a, b).reduce(Float(0)) { $0 + $1.0 * $1.1 }
     }
 
