@@ -287,16 +287,23 @@ extension AulaAPI {
             var seen = Set<Int>()
             return found.sorted { $0.0 < $1.0 }.flatMap(\.1).filter { seen.insert($0.id).inserted }
         }
+        // At most 3 albums at a time, so an album the user opens isn't stuck behind the scan.
         return await withTaskGroup(of: (Int, [Media]).self) { group in
-            for (i, album) in list.enumerated() {
+            var next = 0
+            func add() {
+                guard next < list.count else { return }
+                let (i, album) = (next, list[next])
+                next += 1
                 group.addTask {
                     let media = (try? await self.media(albumId: album.id, institutionProfileIds: institutionProfileIds)) ?? []
                     return (i, media.filter { $0.isTagged(childId) })
                 }
             }
+            for _ in 0..<3 { add() }
             var out: [(Int, [Media])] = []
             for await r in group {
                 out.append(r)
+                add()
                 if let progress { await progress(merged(out), nil) }
             }
             return merged(out)
@@ -307,7 +314,8 @@ extension AulaAPI {
         // Aula lists a photo once per child it's shared with; show each photo once.
         var seen = Set<Int>()
         return items.filter { seen.insert($0.id.value).inserted }.map { m in
-            let thumbs: [String?] = [m.mediumThumbnailUrl, m.thumbnailUrl, m.smallThumbnailUrl, m.largeThumbnailUrl, m.file?.url]
+            // Small first: grids show hundreds of these, the viewer uses `fullURL`.
+            let thumbs: [String?] = [m.smallThumbnailUrl, m.thumbnailUrl, m.mediumThumbnailUrl, m.largeThumbnailUrl, m.file?.url]
             let fulls: [String?] = [m.file?.url, m.largeThumbnailUrl, m.mediumThumbnailUrl]
             let thumb: String? = thumbs.compactMap { $0 }.first
             let full: String? = fulls.compactMap { $0 }.first
@@ -390,11 +398,14 @@ extension AulaAPI {
         }
     }
 
-    /// Marks notifications as seen (Aula deletes them, like the web app does).
-    func deleteNotifications(_ list: [AulaNotification]) async throws {
-        let items: [[String: Any]] = list.compactMap { n in
-            guard let id = n.notificationId, let owner = n.institutionProfileId else { return nil }
-            return ["notificationId": id, "institutionProfileId": owner]
+    /// Marks notifications as seen on Aula (it deletes them, like the web app does).
+    /// A notification without an owner profile is sent once per guardian profile.
+    func deleteNotifications(_ list: [AulaNotification], fallbackOwners: [Int] = []) async throws {
+        var items: [[String: Any]] = []
+        for n in list {
+            guard let id = n.notificationId ?? Optional(n.id) else { continue }
+            let owners = n.institutionProfileId.map { [$0] } ?? fallbackOwners
+            for owner in owners { items.append(["notificationId": id, "institutionProfileId": owner]) }
         }
         guard !items.isEmpty else { return }
         let _: Ignored = try await call("Notifications.deleteNotifications", body: ["notifications": items])

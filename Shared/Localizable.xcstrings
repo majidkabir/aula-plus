@@ -2920,6 +2920,16 @@
           }
         }
       }
+    },
+    "Alle billeder af %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All photos of %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

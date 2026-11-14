@@ -13,6 +13,8 @@ struct AulaPlusApp: App {
     init() {
         UNUserNotificationCenter.current().delegate = NotificationRouter.shared
         Self.roundedNavigationTitles()
+        // Photo thumbnails (AsyncImage) come back from cache instead of being downloaded again.
+        URLCache.shared = URLCache(memoryCapacity: 64 * 1024 * 1024, diskCapacity: 400 * 1024 * 1024)
     }
 
     /// Navigation titles in the same rounded, heavy type as the rest of the app.

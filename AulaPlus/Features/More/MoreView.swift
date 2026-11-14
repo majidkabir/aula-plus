@@ -228,12 +228,12 @@ private struct ChildAlbumTile: View {
                 if let n = media.value?.count {
                     if media.isPartial { Text("\(n) billeder …") } else { Text("\(n) billeder") }
                 }
-                else if media.error != nil { Text("Kunne ikke hente") }
-                else { Text("Henter …") }
+                else if media.isLoading { Text("Henter …") }
+                else { Text("Alle billeder af \(child.firstName)") }
             }
         }
         .buttonStyle(.plain)
-        .task { await media.load(maxAge: 3600) }
+        // No load here: fetching every child's photos would slow down the album the user opens.
     }
 }
 
@@ -363,8 +363,10 @@ struct AlbumView: View {
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await media.refresh() }
         .task {
-            await data.notifications.load(maxAge: 60)
+            // Photos first; the "new" markers load alongside instead of before them.
+            async let notices: Void = data.notifications.load(maxAge: 120)
             await media.load(maxAge: album.childId == nil ? 3600 : 600)
+            await notices
             // A new-photo notice means the cached list may be missing it.
             if data.newCount(in: album) > 0, media.savedAt.map({ $0 < .now.addingTimeInterval(-30) }) ?? false {
                 await media.refresh()

@@ -68,7 +68,14 @@ final class DataStore {
 
     // MARK: Gallery "new" markers (from Aula's gallery notifications)
 
-    private var galleryNotifications: [AulaNotification] { (notifications.value ?? []).filter(\.isGallery) }
+    /// Gallery notifications already seen here. Kept on the device so the "new" counts stay
+    /// gone even when Aula keeps the notification (or deleting it there fails).
+    private var seenNotificationIds: [String] = UserDefaults.standard.stringArray(forKey: "seenNotificationIds") ?? []
+
+    private var galleryNotifications: [AulaNotification] {
+        let seen = Set(seenNotificationIds)
+        return (notifications.value ?? []).filter { $0.isGallery && !seen.contains($0.id) }
+    }
 
     /// Notifications that make photos in `album` "new".
     func newNotifications(in album: Album) -> [AulaNotification] {
@@ -98,8 +105,16 @@ final class DataStore {
         var ids = Set<String>()
         let unique = seen.filter { ids.insert($0.id).inserted }
         guard !unique.isEmpty else { return }
-        notifications.mutate { $0.removeAll { ids.contains($0.id) } }
-        if !Demo.isOn { try? await AulaAPI.shared.deleteNotifications(unique) }
+        seenNotificationIds = Array((seenNotificationIds + unique.map(\.id)).suffix(3000))
+        UserDefaults.standard.set(seenNotificationIds, forKey: "seenNotificationIds")
+        guard !Demo.isOn else { return }
+        do {
+            let owners = (try? await AulaAPI.shared.bootstrap())?.guardianProfileIds ?? []
+            try await AulaAPI.shared.deleteNotifications(unique, fallbackOwners: owners)
+            notifications.mutate { $0.removeAll { ids.contains($0.id) } }
+        } catch {
+            // Seen locally anyway; Aula may still show it as new in its own app.
+        }
     }
 
     private init() {
