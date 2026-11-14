@@ -142,7 +142,7 @@ struct InitialsAvatar: View {
     var color: Color = .gray
     var size: CGFloat = 32
     var body: some View {
-        let initials = name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init).joined()
+        let initials = name.split(separator: " ").filter { $0.first?.isLetter == true }.prefix(2).compactMap(\.first).map(String.init).joined()
         Text(initials.isEmpty ? "?" : initials)
             .font(.system(size: size * 0.4, weight: .semibold, design: .rounded))
             .foregroundStyle(.white)
