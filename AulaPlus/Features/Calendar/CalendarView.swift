@@ -6,6 +6,7 @@ struct CalendarView: View {
     @State private var selectedDay = Calendar.week.startOfDay(for: .now)
     @State private var addingEvent: Event?
     @State private var creating = false
+    @State private var demoEvent: Event?
 
     private var weekStart: Date { Week.start(of: selectedDay) }
     private var week: Loadable<[Event]> { data.events(weekOf: selectedDay) }
@@ -87,6 +88,11 @@ struct CalendarView: View {
             .refreshable { await week.refresh() }
             .task(id: weekStart) { await week.load(maxAge: 600) }
             .task { await data.birthdays.load(maxAge: 6 * 3600) }
+            .navigationDestination(item: $demoEvent) { EventDetailView(event: $0) }
+            .task {
+                if Demo.screen == "event" { demoEvent = Demo.meeting }
+                if Demo.screen == "createEvent" { creating = true }
+            }
             .sheet(isPresented: $creating) {
                 CreateEventView(day: selectedDay) { made in
                     creating = false

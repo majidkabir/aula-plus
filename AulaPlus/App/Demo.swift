@@ -81,6 +81,27 @@ enum Demo {
         return out.sorted { $0.start < $1.start }
     }
 
+    /// A school-home talk with bookable times (screenshots of the booking UI).
+    static var meeting: Event {
+        Event(id: "m1", title: "Skole-hjem-samtale 3.A", start: at(3, 14), end: at(3, 18), allDay: false,
+              location: "Klasselokalet", teacher: nil, substitute: nil, hasSubstitute: false,
+              type: "school_home_meeting", childIds: [101])
+    }
+
+    static var meetingDetail: EventDetail {
+        let slots = (0..<12).map { i -> MeetingSlot in
+            let s = at(3 + i / 6, 14).addingTimeInterval(Double(i % 6) * 20 * 60)
+            return MeetingSlot(slotId: 1, index: i, start: s, end: s.addingTimeInterval(15 * 60),
+                               bookedFor: [1, 2, 4, 7].contains(i) ? 900 + i : i == 5 ? 101 : nil, blocked: i == 9)
+        }
+        return EventDetail(id: 1, title: meeting.title,
+                           html: "<p>Vælg en tid til samtalen om Emmas trivsel og faglige udvikling. Samtalen varer 15 minutter.</p>",
+                           start: meeting.start, end: meeting.end, allDay: false, location: "Klasselokalet",
+                           creator: "Line Hansen", responseRequired: true, responseDeadline: at(2, 12), deadlineExceeded: false,
+                           myResponse: nil, invitees: [.init(institutionProfileId: 101, name: "Emma Ghafouri", response: nil)],
+                           attachments: [], type: "school_home_meeting", slots: slots)
+    }
+
     static var posts: [Post] {[
         Post(id: 1, title: "Julefrokost i SFO'en", html: "<p>Vi holder julefrokost torsdag d. 18. Alle forældre er velkomne fra kl. 15.</p>",
              date: ago(90), author: "SFO Solstrålen", isImportant: true, attachments: [], canComment: true),
@@ -208,6 +229,7 @@ enum Route: Hashable {
     case contact(Contact)
     case groups, search, consents
     case group(AulaGroup)
+    case event(Event)
     case child(Child)
     case document(SecureDocument)
     case empty          // screenshot runs only

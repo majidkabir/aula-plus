@@ -150,6 +150,7 @@ struct EventDetailView: View {
     }
 
     private func load() async {
+        if Demo.isOn { detail = event.type == "school_home_meeting" ? Demo.meetingDetail : nil; return }
         do {
             detail = try await AulaAPI.shared.eventDetail(id: event.id)
             error = nil

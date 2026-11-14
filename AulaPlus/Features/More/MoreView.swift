@@ -104,6 +104,7 @@ struct RouteView: View {
         case .notifications: NotificationsView()
         case .settings: SettingsView(embedded: true)
         case .tasks: ParentTasksView()
+        case .event(let e): EventDetailView(event: e)
         case .profile: MyProfileView()
         case .birthdays: BirthdaysView()
         case .presence: PresenceHubView()
@@ -210,6 +211,7 @@ struct GalleryView: View {
         }
         .themedBackground()
         .navigationTitle("Galleri")
+        .task { if Demo.screen == "createAlbum" { creatingAlbum = true } }
         .sheet(isPresented: $creatingAlbum) {
             CreateAlbumView { made in
                 creatingAlbum = false

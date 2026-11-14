@@ -63,6 +63,7 @@ struct MessagesView: View {
                     if sent { Task { await data.threads.refresh() } }
                 }
             }
+            .task { if Demo.screen == "compose" { composing = true } }
             .sheet(isPresented: $composing) {
                 ComposeView { sent in
                     composing = false
