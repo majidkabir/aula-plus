@@ -14,7 +14,7 @@ struct SettingsView: View {
     }
 
     private var content: some View {
-            List {
+            ThemedList {
                 if let s = app.session.value {
                     Section("Logget ind som") {
                         HStack(spacing: 12) {

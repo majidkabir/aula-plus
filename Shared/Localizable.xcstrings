@@ -2900,6 +2900,26 @@
           }
         }
       }
+    },
+    "Se dem i galleriet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See them in the gallery"
+          }
+        }
+      }
+    },
+    "Abrikos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apricot"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

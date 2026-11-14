@@ -217,7 +217,7 @@ struct EventCard: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground),
+        .background(Color.card,
                     in: RoundedRectangle(cornerRadius: Theme.rowRadius + 2, style: .continuous))
         .opacity(isPast ? 0.6 : 1)
         .accessibilityElement(children: .combine)

@@ -19,7 +19,7 @@ struct ChildPresenceView: View {
     private var isSick: Bool { presence?.status == .sick }
 
     var body: some View {
-        List {
+        ThemedList {
             Section {
                 HStack(spacing: 14) {
                     ChildAvatar(child: child, size: 56)
@@ -199,7 +199,7 @@ struct DayPlanEditor: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            ThemedForm {
                 Section(plan.date.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized) {
                     DatePicker("Afleveres", selection: $entry, displayedComponents: .hourAndMinute)
                     DatePicker("Hentes", selection: $exit, displayedComponents: .hourAndMinute)
@@ -290,7 +290,7 @@ struct VacationForm: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            ThemedForm {
                 Section {
                     DatePicker("Fra", selection: $from, in: Calendar.week.startOfDay(for: .now)..., displayedComponents: .date)
                     DatePicker("Til", selection: $to, in: from..., displayedComponents: .date)
@@ -346,7 +346,7 @@ struct ActionTile: View {
             }
             .frame(maxWidth: .infinity, minHeight: 84, alignment: .topLeading)
             .padding(14)
-            .background(Color(.secondarySystemGroupedBackground),
+            .background(Color.card,
                         in: RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
         }
         .buttonStyle(.plain)

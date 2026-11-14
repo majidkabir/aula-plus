@@ -4,12 +4,13 @@ import SwiftUI
 /// Selectable colour themes. Each has a brand colour, a second colour for gradients,
 /// and a soft "wash" that tints the top of every screen.
 enum AppTheme: String, CaseIterable, Identifiable, Codable {
-    case ocean, forest, sunset, lavender, graphite
+    case apricot, ocean, forest, sunset, lavender, graphite
 
     var id: String { rawValue }
 
     var name: LocalizedStringKey {
         switch self {
+        case .apricot: return "Abrikos"
         case .ocean: return "Hav"
         case .forest: return "Skov"
         case .sunset: return "Solnedgang"
@@ -21,6 +22,7 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
     /// (light, dark) RGB for the brand colour. Dark variants are lifted for contrast on black.
     private var brandRGB: ((Double, Double, Double), (Double, Double, Double)) {
         switch self {
+        case .apricot: return ((0.87, 0.40, 0.11), (1.00, 0.62, 0.35))
         case .ocean: return ((0.16, 0.40, 0.93), (0.36, 0.58, 1.00))
         case .forest: return ((0.10, 0.52, 0.36), (0.26, 0.76, 0.52))
         case .sunset: return ((0.90, 0.33, 0.22), (1.00, 0.50, 0.36))
@@ -31,6 +33,7 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
 
     private var secondaryRGB: (Double, Double, Double) {
         switch self {
+        case .apricot: return (1.00, 0.76, 0.40)
         case .ocean: return (0.20, 0.74, 0.95)
         case .forest: return (0.55, 0.80, 0.30)
         case .sunset: return (0.99, 0.66, 0.22)
@@ -60,6 +63,7 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
     /// Child colours that would be confused with this theme's brand colour.
     var clashingChildColors: [Color] {
         switch self {
+        case .apricot: return [.orange, .brown]
         case .ocean: return [.indigo]
         case .forest: return [.green, .mint, .teal]
         case .sunset: return [.orange, .brown]
@@ -88,7 +92,7 @@ final class ThemeStore {
     }
     private init() {
         let demo = UserDefaults.standard.string(forKey: "demoTheme")
-        theme = AppTheme(rawValue: demo ?? UserDefaults.standard.string(forKey: "theme") ?? "") ?? .ocean
+        theme = AppTheme(rawValue: demo ?? UserDefaults.standard.string(forKey: "theme") ?? "") ?? .apricot
     }
 }
 
@@ -105,11 +109,11 @@ struct ThemeBackground: View {
     var body: some View {
         let t = ThemeStore.shared.theme
         ZStack {
-            Color(.systemGroupedBackground)
-            LinearGradient(colors: [t.brand.opacity(scheme == .dark ? 0.28 : 0.16),
-                                    t.secondary.opacity(scheme == .dark ? 0.10 : 0.06),
+            Color.canvas
+            LinearGradient(colors: [t.secondary.opacity(scheme == .dark ? 0.12 : 0.16),
+                                    t.brand.opacity(scheme == .dark ? 0.05 : 0.04),
                                     .clear],
-                           startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.45))
+                           startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.35))
         }
         .ignoresSafeArea()
     }

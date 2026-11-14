@@ -111,7 +111,7 @@ struct PostDetailView: View {
                     TextField("Skriv en kommentar", text: $newComment, axis: .vertical)
                         .lineLimit(1...4)
                         .padding(.horizontal, 14).padding(.vertical, 10)
-                        .background(Color(.secondarySystemGroupedBackground), in: Capsule())
+                        .background(Color.card, in: Capsule())
                     Button {
                         Task { await postComment() }
                     } label: {

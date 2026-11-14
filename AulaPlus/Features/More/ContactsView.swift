@@ -17,7 +17,7 @@ struct ContactsView: View {
     }
 
     var body: some View {
-        List {
+        ThemedList {
             Section {
                 if groups.count > 1 {
                     Picker("Gruppe", selection: $groupId) {
@@ -123,7 +123,7 @@ struct DocumentsView: View {
     @State private var files: Loadable<[CommonFile]>?
 
     var body: some View {
-        List {
+        ThemedList(rowBackground: .clear) {
             Picker("Vis", selection: $tab) {
                 Text("Sikre dokumenter").tag(0)
                 Text("Fælles filer").tag(1)
