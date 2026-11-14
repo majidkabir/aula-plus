@@ -214,7 +214,7 @@ struct PhotoGrid: View {
         Button { viewing = m } label: {
             Color.cardSoft
                 .overlay {
-                    CachedImage(key: "t\(m.id)", url: m.thumbURL ?? m.fullURL, maxPixel: photos.count == 1 ? 900 : 400) {
+                    CachedImage(key: "t\(m.id)", url: m.thumbURL ?? m.fullURL, maxPixel: photos.count == 1 ? 900 : 400, fallbacks: m.thumbFallbacks) {
                         Image(systemName: "photo").foregroundStyle(.secondary)
                     }
                 }
