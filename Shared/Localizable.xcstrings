@@ -4010,6 +4010,26 @@
           }
         }
       }
+    },
+    "Uden dato": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No date"
+          }
+        }
+      }
+    },
+    "1 billede": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 photo"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

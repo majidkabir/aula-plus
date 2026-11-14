@@ -123,7 +123,8 @@ enum Demo {
             case 2: [MediaTag(id: 101, name: "Emma Ghafouri"), MediaTag(id: 102, name: "Noah Ghafouri")]
             default: []
             }
-            return Media(id: i, thumbURL: nil, fullURL: nil, isVideo: i == 7, title: nil, tags: tags, canEditTags: true)
+            return Media(id: i, thumbURL: nil, fullURL: nil, isVideo: i == 7, title: nil, tags: tags, canEditTags: true,
+                         date: Calendar.current.date(byAdding: .hour, value: -i * 9, to: .now))
         }
     }
 

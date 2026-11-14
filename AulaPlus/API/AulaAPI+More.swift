@@ -34,6 +34,8 @@ struct Media: Codable, Identifiable, Hashable {
     var canEditTags: Bool? = nil
     /// A mid-size version for finding faces (large/medium thumbnail, else the full photo).
     var scanURL: URL? = nil
+    /// When the photo was put on Aula.
+    var date: Date? = nil
 
     var tagList: [MediaTag] { tags ?? [] }
     func isTagged(_ childId: Int) -> Bool { tagList.contains { $0.id == childId } }
@@ -111,7 +113,7 @@ private struct AlbumsDTO: Decodable {
 }
 
 struct MediaDTO: Decodable {
-    struct File: Decodable { let url: String? }
+    struct File: Decodable { let url: String?; let created: String? }
     struct Tag: Decodable {
         struct Profile: Decodable { let name: String?; let fullName: String? }
         let id: FlexInt?
@@ -476,7 +478,8 @@ extension MediaDTO {
                      description: m.description,
                      canEditTags: m.currentUserCanEditTags,
                      scanURL: ([m.largeThumbnailUrl, m.mediumThumbnailUrl, m.file?.url] as [String?])
-                         .compactMap { $0 }.first.flatMap { URL(string: $0) })
+                         .compactMap { $0 }.first.flatMap { URL(string: $0) },
+                     date: AulaDate.parse(m.file?.created))
     }
 }
 
