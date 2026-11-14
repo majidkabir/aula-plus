@@ -348,10 +348,17 @@ struct AlbumView: View {
             }
             filterBar
             faceBar
-            LazyVGrid(columns: columns, spacing: 3) {
-                ForEach(shown) { m in
-                    Button { viewing = m } label: { tile(m) }
-                        .buttonStyle(.plain)
+            // Grouped by day, newest first, like the Photos app.
+            LazyVGrid(columns: columns, spacing: 3, pinnedViews: [.sectionHeaders]) {
+                ForEach(PhotoDay.group(shown)) { day in
+                    Section {
+                        ForEach(day.items) { m in
+                            Button { viewing = m } label: { tile(m) }
+                                .buttonStyle(.plain)
+                        }
+                    } header: {
+                        PhotoDayHeader(day: day)
+                    }
                 }
             }
             if !all.isEmpty && shown.isEmpty {
@@ -391,7 +398,7 @@ struct AlbumView: View {
             Task { await FaceFinding.learnAndScan(photos, children: children, data: data) }
         }
         .fullScreenCover(item: $viewing) { start in
-            MediaViewer(items: shown, start: start, children: app.children, newIds: newIds)
+            MediaViewer(items: PhotoDay.group(shown).flatMap(\.items), start: start, children: app.children, newIds: newIds)
         }
     }
 
@@ -586,6 +593,20 @@ struct MediaViewer: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .navigationTitle(items.isEmpty ? "" : "\(current + 1) / \(items.count)")
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    if items.indices.contains(current), let d = items[current].date {
+                        // Like the Photos app: the day on top, time and position below.
+                        VStack(spacing: 0) {
+                            Text(PhotoDay.title(for: d)).font(.subheadline.weight(.semibold))
+                            Text("\(d.formatted(date: .omitted, time: .shortened)) · \(current + 1) / \(items.count)")
+                                .font(.caption2).foregroundStyle(.secondary)
+                        }
+                    } else {
+                        Text(items.isEmpty ? "" : "\(current + 1) / \(items.count)").font(.subheadline.weight(.semibold))
+                    }
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Luk") { dismiss() } }
@@ -913,5 +934,57 @@ struct ImportantDateRow: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+/// Photos taken (uploaded) on one day, for date headers like the Photos app.
+struct PhotoDay: Identifiable {
+    let id: String
+    let date: Date?
+    var items: [Media]
+
+    /// Newest day first; photos without a date last.
+    static func group(_ list: [Media]) -> [PhotoDay] {
+        let cal = Calendar.current
+        var days: [String: PhotoDay] = [:]
+        for m in list {
+            let start = m.date.map { cal.startOfDay(for: $0) }
+            let key = start.map { String(Int($0.timeIntervalSince1970)) } ?? "none"
+            days[key, default: PhotoDay(id: key, date: start, items: [])].items.append(m)
+        }
+        return days.values
+            .map { d in PhotoDay(id: d.id, date: d.date, items: d.items.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }) }
+            .sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
+    }
+
+    /// "I dag", "I går", "Mandag", "5. nov." or "5. nov. 2025".
+    static func title(for d: Date) -> String {
+        let cal = Calendar.current
+        if cal.isDateInToday(d) { return String(localized: "I dag") }
+        if cal.isDateInYesterday(d) { return String(localized: "I går") }
+        if let days = cal.dateComponents([.day], from: cal.startOfDay(for: d), to: cal.startOfDay(for: .now)).day, days < 7 {
+            return d.formatted(.dateTime.weekday(.wide)).capitalized
+        }
+        if cal.isDate(d, equalTo: .now, toGranularity: .year) {
+            return d.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
+        }
+        return d.formatted(.dateTime.day().month(.abbreviated).year())
+    }
+}
+
+struct PhotoDayHeader: View {
+    let day: PhotoDay
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(day.date.map(PhotoDay.title(for:)) ?? String(localized: "Uden dato"))
+                .font(.headline)
+            Spacer()
+            Text(day.items.count == 1 ? String(localized: "1 billede") : String(localized: "\(day.items.count) billeder"))
+                .font(.caption).foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(.bar)
+        .accessibilityAddTraits(.isHeader)
     }
 }
