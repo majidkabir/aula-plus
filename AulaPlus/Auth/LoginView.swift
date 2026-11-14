@@ -40,9 +40,10 @@ struct LoginView: View {
                 startLogin()
             } label: {
                 Group {
-                    if working { ProgressView().tint(.white) } else { Text("Log ind med MitID") }
+                    if working { ProgressView().tint(Color.onBrand) } else { Text("Log ind med MitID") }
                 }
                 .font(.headline)
+                .foregroundStyle(Color.onBrand)
                 .frame(maxWidth: .infinity, minHeight: 52)
             }
             .buttonStyle(.borderedProminent)

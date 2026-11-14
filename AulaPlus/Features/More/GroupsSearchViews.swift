@@ -297,18 +297,29 @@ struct ConsentsView: View {
             if let binding = Binding($items) {
                 let people = Array(Set(binding.wrappedValue.map(\.profileName))).sorted()
                 ForEach(people, id: \.self) { person in
-                    Section(person) {
-                        ForEach(binding) { $c in
-                            if c.profileName == person {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text(c.text).font(.subheadline)
-                                    Picker("Svar", selection: Binding(get: { c.answer ?? "" }, set: { c.answer = $0 })) {
-                                        if c.answer == nil { Text("Ikke besvaret").tag("") }
-                                        ForEach(c.allowed, id: \.self) { Text(Self.label($0)).tag($0) }
+                    ForEach(binding) { $c in
+                        if c.profileName == person {
+                            Section {
+                                Text(c.text).font(.subheadline.weight(.medium))
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .listRowBackground(Color.card)
+                                ForEach(c.allowed, id: \.self) { a in
+                                    Button { c.answer = a } label: {
+                                        HStack {
+                                            Text(Self.label(a)).foregroundStyle(.primary)
+                                            Spacer()
+                                            if c.answer == a { Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Color.brand) }
+                                        }
+                                        .contentShape(Rectangle())
                                     }
-                                    .pickerStyle(.menu)
+                                    .buttonStyle(.plain)
                                     .disabled(!c.editable)
+                                    .accessibilityAddTraits(c.answer == a ? .isSelected : [])
                                 }
+                            } header: {
+                                Text(person)
+                            } footer: {
+                                if c.answer == nil { Text("Ikke besvaret endnu") }
                             }
                         }
                     }

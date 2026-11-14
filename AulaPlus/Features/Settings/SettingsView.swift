@@ -158,7 +158,7 @@ struct SettingsView: View {
             }
             .scrollContentBackground(.hidden)
             .themedBackground()
-            .navigationTitle("Profil")
+            .navigationTitle("Indstillinger")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if !embedded {

@@ -5290,6 +5290,136 @@
           }
         }
       }
+    },
+    "Ingen match": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No matches"
+          }
+        }
+      }
+    },
+    "Institutionen deler ikke nogen i denne gruppe. Prøv en anden fane.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The institution doesn't share anyone in this group. Try another tab."
+          }
+        }
+      }
+    },
+    "Prøv et andet navn.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try another name."
+          }
+        }
+      }
+    },
+    "Ingen sikre dokumenter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No secure documents"
+          }
+        }
+      }
+    },
+    "Ingen fælles filer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No shared files"
+          }
+        }
+      }
+    },
+    "Dokumenter, som institutionen deler med dig, vises her.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Documents the institution shares with you show up here."
+          }
+        }
+      }
+    },
+    "Filer, som institutionen deler med alle forældre, vises her.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files the institution shares with all parents show up here."
+          }
+        }
+      }
+    },
+    "Besvaret": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answered"
+          }
+        }
+      }
+    },
+    "Tilføj nummer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add number"
+          }
+        }
+      }
+    },
+    "Tilføj e-mail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add email"
+          }
+        }
+      }
+    },
+    "Ikke besvaret endnu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not answered yet"
+          }
+        }
+      }
+    },
+    "Tryk på en ledig tid for at booke den. Book senest %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a free time to book it. Book by %@."
+          }
+        }
+      }
+    },
+    "Fundet i beskeder og opslag, der fx siger \"husk\" eller \"medbring\". Alt sker på telefonen. Tjek altid den oprindelige besked.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found in messages and posts that say things like \"remember\" or \"bring\". Everything happens on your phone. Always check the original message."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

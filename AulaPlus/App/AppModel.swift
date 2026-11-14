@@ -77,6 +77,28 @@ final class AppModel {
             case "notifications": selectedTab = .more; morePath.append(Route.notifications)
             case "settings": selectedTab = .more; morePath.append(Route.settings)
             case "empty": selectedTab = .more; morePath.append(Route.empty)
+            case "tasks", "presence":
+                let r: Route = Demo.screen == "tasks" ? .tasks : .presence
+                Task { try? await Task.sleep(for: .milliseconds(700)); todayPath.append(r) }
+            case "event": selectedTab = .calendar
+            case "createEvent": selectedTab = .calendar
+            case "compose": selectedTab = .messages
+            case "createAlbum": selectedTab = .more; morePath.append(Route.gallery)
+            case "profile", "birthdays", "contacts", "groups", "search", "consents", "importantDates", "documents", "posts", "vacations":
+                selectedTab = .more
+                let r: Route = switch Demo.screen {
+                case "profile": .profile
+                case "birthdays": .birthdays
+                case "contacts": .contacts
+                case "groups": .groups
+                case "search": .search
+                case "consents": .consents
+                case "importantDates": .importantDates
+                case "documents": .documents
+                case "vacations": .vacations
+                default: .posts
+                }
+                morePath.append(r)
             default: break
             }
             AppLock.shared.sync(loggedIn: false)

@@ -54,7 +54,7 @@ struct ParentTasksView: View {
             } footer: {
                 Text(ParentTaskFinder.usesAI
                      ? "Fundet af Apple Intelligence på telefonen. Beskederne sendes ingen steder hen. Tjek altid den oprindelige besked."
-                     : "Fundet ud fra nøgleord som \"husk\", \"medbring\" og \"senest\". Med Apple Intelligence (iPhone 15 Pro eller nyere) bliver det mere præcist. Alt sker på telefonen.")
+                     : "Fundet i beskeder og opslag, der fx siger \"husk\" eller \"medbring\". Alt sker på telefonen. Tjek altid den oprindelige besked.")
             }
         }
         .overlay {

@@ -183,8 +183,10 @@ struct LockView: View {
                 } label: {
                     Label(String(localized: "Lås op med \(lock.methodName)"), systemImage: lock.symbol)
                         .font(.headline).frame(maxWidth: .infinity)
+                        .foregroundStyle(Color.onBrand)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Color.brand)
                 .controlSize(.large)
                 Button("Log ud", role: .destructive) { confirmLogout = true }
                     .font(.subheadline)

@@ -257,12 +257,17 @@ struct CreateAlbumView: View {
                         Button {
                             if chosen.contains(g.id) { chosen.remove(g.id) } else { chosen.insert(g.id) }
                         } label: {
-                            HStack {
+                            HStack(spacing: 12) {
+                                Image(systemName: chosen.contains(g.id) ? "checkmark.circle.fill" : "circle")
+                                    .font(.title3)
+                                    .foregroundStyle(chosen.contains(g.id) ? Color.brand : Color.secondary)
                                 Text(g.name).foregroundStyle(.primary)
                                 Spacer()
-                                if chosen.contains(g.id) { Image(systemName: "checkmark").foregroundStyle(Color.brand) }
                             }
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(chosen.contains(g.id) ? .isSelected : [])
                     }
                 } header: { Text("Del med") } footer: { Text("Albummet kan ses af medlemmerne i de valgte grupper.") }
                 Section { PhotoPickerStrip(photos: $photos, maxCount: 100, label: "Vælg billeder") }
@@ -401,7 +406,13 @@ struct MeetingSlotsSection: View {
         } header: {
             Text("Vælg tid")
         } footer: {
-            Text(detail.deadlineExceeded ? String(localized: "Svarfristen er overskredet.") : String(localized: "Tryk på en ledig tid for at booke den."))
+            if detail.deadlineExceeded {
+                Text("Svarfristen er overskredet.")
+            } else if let d = detail.responseDeadline {
+                Text("Tryk på en ledig tid for at booke den. Book senest \(d.formatted(.dateTime.weekday(.wide).day().month(.wide).hour().minute())).")
+            } else {
+                Text("Tryk på en ledig tid for at booke den.")
+            }
         }
     }
 

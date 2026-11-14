@@ -38,13 +38,15 @@ jobs:
             CODE_SIGNING_ALLOWED=NO | grep -E "error:|\*\* BUILD" || true
           test -d build/Build/Products/Debug-iphonesimulator/AulaPlus.app
       - name: Capture
+        env:
+          SCREENS: today messages thread compose calendar event createEvent weekPlan more post child tasks presence profile contacts groups search consents birthdays importantDates documents vacations login notifications settings gallery album createAlbum empty lock
         run: |
           UDID=${{ steps.sim.outputs.udid }}
           xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/AulaPlus.app
           mkdir -p shots
           for mode in light dark; do
             xcrun simctl ui "$UDID" appearance $mode
-            for screen in today messages thread calendar weekPlan more post child login notifications settings gallery album empty lock; do
+            for screen in $SCREENS; do
               xcrun simctl terminate "$UDID" com.majidkabir.aulaplus 2>/dev/null || true
               xcrun simctl launch "$UDID" com.majidkabir.aulaplus -demo YES -screen $screen
               sleep 5

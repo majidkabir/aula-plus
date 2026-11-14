@@ -104,6 +104,7 @@ struct RouteView: View {
         case .notifications: NotificationsView()
         case .settings: SettingsView(embedded: true)
         case .tasks: ParentTasksView()
+        case .event(let e): EventDetailView(event: e)
         case .profile: MyProfileView()
         case .birthdays: BirthdaysView()
         case .presence: PresenceHubView()
@@ -210,6 +211,7 @@ struct GalleryView: View {
         }
         .themedBackground()
         .navigationTitle("Galleri")
+        .task { if Demo.screen == "createAlbum" { creatingAlbum = true } }
         .sheet(isPresented: $creatingAlbum) {
             CreateAlbumView { made in
                 creatingAlbum = false
@@ -857,14 +859,14 @@ struct NotificationsView: View {
     @State private var openingPost: Post?
 
     var body: some View {
-        ThemedList(rowBackground: .clear) {
+        ThemedList {
             StaleBanner(error: data.notifications.error, savedAt: data.notifications.savedAt)
-                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
             ForEach(data.notifications.value ?? []) { n in
                 row(n)
             }
         }
-        .listStyle(.plain)
         .overlay {
             if (data.notifications.value ?? []).isEmpty {
                 if data.notifications.isLoading { ProgressView() }
@@ -889,7 +891,14 @@ struct NotificationsView: View {
         } else if let postId = n.postId {
             Button {
                 Task { openingPost = try? await AulaAPI.shared.post(id: postId) }
-            } label: { content }
+            } label: {
+                HStack {
+                    content
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
             .buttonStyle(.plain)
         } else {
             content
@@ -944,14 +953,14 @@ struct ImportantDatesView: View {
     @Environment(DataStore.self) private var data
 
     var body: some View {
-        ThemedList(rowBackground: .clear) {
+        ThemedList {
             StaleBanner(error: data.importantDates.error, savedAt: data.importantDates.savedAt)
-                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
             ForEach(data.importantDates.value ?? []) { d in
                 ImportantDateRow(date: d)
             }
         }
-        .listStyle(.plain)
         .overlay {
             if (data.importantDates.value ?? []).isEmpty, !data.importantDates.isLoading {
                 ContentUnavailableView("Ingen vigtige datoer", systemImage: "star")
