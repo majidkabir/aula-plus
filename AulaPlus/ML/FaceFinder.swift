@@ -172,6 +172,21 @@ final class FaceIndex {
     func hasReferences(_ childId: Int) -> Bool { (store.refs[childId]?.count ?? 0) > 0 }
     func referenceCount(_ childId: Int) -> Int { store.refs[childId]?.count ?? 0 }
 
+    /// Photos found earlier were stored before Aula+ knew their dates (and their links expire):
+    /// take the fresh copy whenever the same photo turns up in an album again.
+    func updateFound(from media: [Media]) {
+        let fresh = Dictionary(media.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        var changed = false
+        for (kid, list) in store.found {
+            store.found[kid] = list.map { m in
+                guard let f = fresh[m.id], f != m else { return m }
+                changed = true
+                return f
+            }
+        }
+        if changed { save() }
+    }
+
     /// Found by face (not tagged by staff), and not rejected by the user.
     func isFaceMatch(_ m: Media, _ childId: Int) -> Bool {
         guard isEnabled, !m.isTagged(childId), !(store.rejected[childId]?.contains(m.id) ?? false) else { return false }
@@ -285,6 +300,7 @@ final class FaceIndex {
     /// Checks photos not yet scored against the current reference faces. Runs one photo at a time.
     func scan(_ media: [Media], children: [Child]) async {
         guard isEnabled else { return }
+        updateFound(from: media)
         let kids = children.filter { hasReferences($0.id) }
         guard !kids.isEmpty, scanning == nil else { return }
         let todo = media.filter { !$0.isVideo && store.scoredWith[$0.id] != store.version }
