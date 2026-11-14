@@ -175,7 +175,7 @@ struct GalleryView: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(data.albums.value ?? []) { album in
                     NavigationLink(value: album) {
-                        AlbumTile(title: album.title, coverURL: album.coverURL, tint: Self.tint(album.id),
+                        AlbumTile(title: album.title, coverKey: "c\(album.id)", coverURL: album.coverURL, tint: Self.tint(album.id),
                                   newCount: data.newCount(in: album)) {
                             Text(Fmt.listDate(album.date))
                             if let n = album.count { Text("· \(n) billeder") }
@@ -222,7 +222,7 @@ private struct ChildAlbumTile: View {
         let album = Album.tagged(child)
         let media = data.media(album: album)
         NavigationLink(value: album) {
-            AlbumTile(title: album.title, coverURL: media.value?.first?.thumbURL,
+            AlbumTile(title: album.title, coverKey: media.value?.first.map { "t\($0.id)" } ?? "", coverURL: media.value?.first?.thumbURL,
                       tint: Palette.color(for: child.id, in: app.children), newCount: data.newCount(in: album),
                       placeholder: { ChildAvatar(child: child, size: 64) }) {
                 if let n = media.value?.count {
@@ -239,6 +239,7 @@ private struct ChildAlbumTile: View {
 
 struct AlbumTile<Subtitle: View, Placeholder: View>: View {
     let title: String
+    var coverKey: String = ""
     let coverURL: URL?
     let tint: Color
     let newCount: Int
@@ -253,9 +254,7 @@ struct AlbumTile<Subtitle: View, Placeholder: View>: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 130)
                 .overlay {
-                    AsyncImage(url: coverURL) { img in
-                        img.resizable().scaledToFill()
-                    } placeholder: {
+                    CachedImage(key: coverKey.isEmpty ? (coverURL?.path ?? "") : coverKey, url: coverURL, maxPixel: 600) {
                         LinearGradient(colors: [tint.opacity(0.35), tint.opacity(0.12)],
                                        startPoint: .topLeading, endPoint: .bottomTrailing)
                             .overlay(placeholder())
@@ -273,8 +272,8 @@ struct AlbumTile<Subtitle: View, Placeholder: View>: View {
 }
 
 extension AlbumTile where Placeholder == AlbumPlaceholderIcon {
-    init(title: String, coverURL: URL?, tint: Color, newCount: Int, @ViewBuilder subtitle: @escaping () -> Subtitle) {
-        self.init(title: title, coverURL: coverURL, tint: tint, newCount: newCount,
+    init(title: String, coverKey: String = "", coverURL: URL?, tint: Color, newCount: Int, @ViewBuilder subtitle: @escaping () -> Subtitle) {
+        self.init(title: title, coverKey: coverKey, coverURL: coverURL, tint: tint, newCount: newCount,
                   placeholder: { AlbumPlaceholderIcon(tint: tint) }, subtitle: subtitle)
     }
 }
@@ -317,6 +316,7 @@ struct AlbumView: View {
     @State private var filter: Filter = .all
     /// Photos that were new when the album was opened. Kept for this visit after Aula is told they're seen.
     @State private var newIds: Set<Int> = []
+    @State private var refreshedForExpiredURLs = false
     private let columns = [GridItem(.adaptive(minimum: 105), spacing: 3)]
 
     enum Filter: Hashable { case all, new, child(Int) }
@@ -365,7 +365,9 @@ struct AlbumView: View {
         .task {
             // Photos first; the "new" markers load alongside instead of before them.
             async let notices: Void = data.notifications.load(maxAge: 120)
-            await media.load(maxAge: album.childId == nil ? 3600 : 600)
+            // The cached list shows at once; it's refreshed in the background after 15 minutes,
+            // when Aula's signed photo URLs may have expired.
+            await media.load(maxAge: 900)
             await notices
             // A new-photo notice means the cached list may be missing it.
             if data.newCount(in: album) > 0, media.savedAt.map({ $0 < .now.addingTimeInterval(-30) }) ?? false {
@@ -420,14 +422,19 @@ struct AlbumView: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
+    /// A thumbnail couldn't load: the cached list's signed URLs have expired. Fetch fresh ones once.
+    private func urlsExpired() {
+        guard !refreshedForExpiredURLs, !media.isLoading else { return }
+        refreshedForExpiredURLs = true
+        Task { await media.refresh() }
+    }
+
     private func tile(_ m: Media) -> some View {
         Color.cardSoft
             .frame(maxWidth: .infinity)
             .frame(height: 115)
             .overlay {
-                AsyncImage(url: m.thumbURL) { img in
-                    img.resizable().scaledToFill()
-                } placeholder: {
+                CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, onFailure: urlsExpired) {
                     Color.clear
                 }
             }
@@ -498,10 +505,20 @@ struct MediaViewer: View {
         NavigationStack {
             TabView(selection: $current) {
                 ForEach(Array(items.enumerated()), id: \.element.id) { i, m in
-                    AsyncImage(url: m.isVideo ? m.thumbURL : (m.fullURL ?? m.thumbURL)) { img in
-                        img.resizable().scaledToFit()
-                    } placeholder: {
-                        ProgressView().tint(.white)
+                    Group {
+                        if m.isVideo {
+                            CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, contentMode: .fit) {
+                                ProgressView().tint(.white)
+                            }
+                        } else {
+                            // Full size; the cached thumbnail shows at once while it loads.
+                            CachedImage(key: "f\(m.id)", url: m.fullURL ?? m.thumbURL, maxPixel: nil, contentMode: .fit) {
+                                CachedImage(key: "t\(m.id)", url: m.thumbURL, maxPixel: 360, contentMode: .fit) {
+                                    ProgressView().tint(.white)
+                                }
+                                .overlay { ProgressView().tint(.white) }
+                            }
+                        }
                     }
                     .overlay {
                         if m.isVideo, let url = m.fullURL {
