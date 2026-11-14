@@ -5420,6 +5420,16 @@
           }
         }
       }
+    },
+    "Beskeden er slettet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The message was deleted"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

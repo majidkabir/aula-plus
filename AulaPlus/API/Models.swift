@@ -157,6 +157,7 @@ struct Message: Codable, Identifiable, Hashable {
     let date: Date?
     let html: String
     let attachments: [Attachment]
+    var deleted: Bool? = nil
 }
 
 struct ThreadPage: Codable {
@@ -165,6 +166,8 @@ struct ThreadPage: Codable {
     let moreExist: Bool
     let lastReadMessageId: String?
     let isOwnMailbox: Bool
+    /// Newest real message (incl. deleted ones and auto-replies) — what aula.dk moves the read marker to.
+    var readMarkerId: String? = nil
 }
 
 struct Event: Codable, Identifiable, Hashable {
@@ -448,20 +451,23 @@ struct ThreadMessagesDTO: Decodable {
     let mailBoxOwner: Owner?
 
     var model: ThreadPage {
-        let msgs = (messages?.items ?? [])
-            .filter { ["Message", "MessageEdited"].contains($0.messageType ?? "Message") }
-            .map { m in
-                Message(id: m.id?.value ?? UUID().uuidString,
-                        sender: m.sender?.best ?? "",
-                        date: AulaDate.parse(m.sendDateTime),
-                        html: m.text?.html ?? "",
-                        attachments: m.attachments?.items.map(\.model) ?? [])
-            }
+        // Same types aula.dk counts as messages; system lines (recipients added etc.) are skipped.
+        let real = (messages?.items ?? [])
+            .filter { ["Message", "MessageEdited", "MessageDeleted", "AutoReply"].contains($0.messageType ?? "Message") }
+        let msgs = real.map { m in
+            Message(id: m.id?.value ?? UUID().uuidString,
+                    sender: m.sender?.best ?? "",
+                    date: AulaDate.parse(m.sendDateTime),
+                    html: m.messageType == "MessageDeleted" ? "" : m.text?.html ?? "",
+                    attachments: m.messageType == "MessageDeleted" ? [] : m.attachments?.items.map(\.model) ?? [],
+                    deleted: m.messageType == "MessageDeleted" ? true : nil)
+        }
         return ThreadPage(subject: subject ?? "",
                           messages: msgs,
                           moreExist: moreMessagesExist ?? false,
                           lastReadMessageId: lastReadMessageId?.value,
-                          isOwnMailbox: mailBoxOwner?.mailBoxOwnerType == "institutionProfile")
+                          isOwnMailbox: mailBoxOwner?.mailBoxOwnerType == "institutionProfile",
+                          readMarkerId: real.first?.id?.value)
     }
 }
 
