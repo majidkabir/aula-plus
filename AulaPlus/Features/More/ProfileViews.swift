@@ -65,8 +65,11 @@ struct ContactDetailView: View {
                 }
             }
             let info: [(String, String)] = [
-                (String(localized: "Rolle"), Self.roleName(contact.role)), (String(localized: "Gruppe"), contact.group),
+                (String(localized: "Rolle"), Self.roleName(contact.institutionRole) ?? Self.roleName(contact.role)),
+                (String(localized: "Gruppe"), contact.group),
                 (String(localized: "Institution"), contact.institutionName),
+                (String(localized: "Fødselsdag"), contact.birthday?.formatted(.dateTime.day().month(.wide).year())),
+                (String(localized: "Adresse"), contact.address),
             ].compactMap { k, v in v.map { (k, $0) } }
             if !info.isEmpty {
                 Section("Om") { ForEach(info, id: \.0) { LabeledContent($0.0, value: $0.1) } }
@@ -100,8 +103,12 @@ struct ContactDetailView: View {
     static func roleName(_ role: String?) -> String? {
         switch role?.lowercased() {
         case "guardian": String(localized: "Forælder")
-        case "child": String(localized: "Barn")
+        case "child", "daycare", "early-student", "middle-late-student": String(localized: "Barn")
         case "employee": String(localized: "Ansat")
+        case "preschool-teacher": String(localized: "Pædagog")
+        case "teacher": String(localized: "Lærer")
+        case "leader": String(localized: "Leder")
+        case "pedagogue": String(localized: "Pædagog")
         case nil, "": nil
         default: role
         }
@@ -168,13 +175,17 @@ struct MyProfileView: View {
             if let binding = Binding($profiles) {
                 ForEach(binding) { $p in
                     Section {
-                        TextField("Mobil", text: $p.mobilePhone).keyboardType(.phonePad).textContentType(.telephoneNumber)
-                        TextField("Hjemme", text: $p.homePhone).keyboardType(.phonePad)
-                        TextField("Arbejde", text: $p.workPhone).keyboardType(.phonePad)
-                        TextField("E-mail", text: $p.email).keyboardType(.emailAddress).textContentType(.emailAddress)
-                            .textInputAutocapitalization(.never).autocorrectionDisabled()
+                        Group {
+                            TextField("Mobil", text: $p.mobilePhone).keyboardType(.phonePad).textContentType(.telephoneNumber)
+                            TextField("Hjemme", text: $p.homePhone).keyboardType(.phonePad)
+                            if !p.isChild { TextField("Arbejde", text: $p.workPhone).keyboardType(.phonePad) }
+                            TextField("E-mail", text: $p.email).keyboardType(.emailAddress).textContentType(.emailAddress)
+                                .textInputAutocapitalization(.never).autocorrectionDisabled()
+                        }
+                        .disabled(!p.canEditContact)
+                        if let a = p.address { LabeledContent("Adresse", value: a) }
                     } header: {
-                        Text(p.institutionName ?? String(localized: "Kontaktoplysninger"))
+                        Text(p.isChild ? p.name : (p.institutionName ?? String(localized: "Kontaktoplysninger")))
                     } footer: {
                         if p.id == profiles?.last?.id {
                             Text("Personale og andre forældre kan se det, institutionen deler i kontaktlisten.")

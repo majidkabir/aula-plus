@@ -21,6 +21,8 @@ struct MoreView: View {
                     NavigationLink(value: Route.birthdays) { row("Fødselsdage", "birthday.cake.fill", .pink) }
                     NavigationLink(value: Route.documents) { row("Dokumenter", "doc.text.fill", .blue) }
                     NavigationLink(value: Route.contacts) { row("Kontakter", "person.2.fill", .green) }
+                    NavigationLink(value: Route.groups) { row("Grupper", "person.3.fill", .cyan) }
+                    NavigationLink(value: Route.search) { row("Søg i Aula", "magnifyingglass", .indigo) }
                 }
                 Section("Komme/gå") {
                     NavigationLink(value: Route.presence) { row("Tider, hentning og åbningstider", "clock.fill", .teal) }
@@ -64,6 +66,7 @@ struct MoreView: View {
                 Section {
                     NavigationLink(value: Route.notifications) { row("Notifikationer", "bell.fill", .red) }
                     NavigationLink(value: Route.profile) { row("Min profil", "person.crop.circle.fill", .purple) }
+                    NavigationLink(value: Route.consents) { row("Samtykker", "hand.raised.fill", .mint) }
                     NavigationLink(value: Route.settings) { row("Indstillinger", "gearshape.fill", .gray) }
                 }
             }
@@ -105,6 +108,10 @@ struct RouteView: View {
         case .birthdays: BirthdaysView()
         case .presence: PresenceHubView()
         case .contact(let c): ContactDetailView(contact: c)
+        case .groups: GroupsView()
+        case .group(let g): GroupView(group: g)
+        case .search: GlobalSearchView()
+        case .consents: ConsentsView()
         case .child(let c): ChildPresenceView(child: c)
         case .document(let d): DocumentDetailView(doc: d)
         case .empty:

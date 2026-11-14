@@ -1,10 +1,5 @@
 import Foundation
 
-struct AulaGroup: Codable, Identifiable, Hashable {
-    let id: Int
-    let name: String
-}
-
 struct Contact: Codable, Identifiable, Hashable {
     let id: Int              // institution profile id (usable as message recipient)
     let name: String
@@ -20,6 +15,10 @@ struct Contact: Codable, Identifiable, Hashable {
     var group: String? = nil
     /// Children of a parent, or parents of a child.
     var relations: [ContactRelation]? = nil
+    var address: String? = nil
+    var birthday: Date? = nil
+    /// e.g. "preschool-teacher", "leader".
+    var institutionRole: String? = nil
 }
 
 struct ContactRelation: Codable, Hashable {
@@ -87,6 +86,9 @@ private struct ContactDTO: Decodable {
     let institutionName: String?
     let mainGroup: Group?
     let shortName: String?
+    let address: AddressDTO?
+    let birthday: String?
+    let institutionRole: String?
 }
 
 private struct SecureDocsDTO: Decodable {
@@ -170,7 +172,8 @@ extension AulaAPI {
                                homePhone: c.homePhoneNumber?.nilIfEmpty, workPhone: c.workPhoneNumber?.nilIfEmpty,
                                institutionName: c.institutionName?.nilIfEmpty,
                                group: c.mainGroup?.name?.nilIfEmpty ?? c.metadata?.nilIfEmpty,
-                               relations: rels)
+                               relations: rels, address: c.address?.text,
+                               birthday: AulaAPI.parseDay(c.birthday), institutionRole: c.institutionRole?.nilIfEmpty)
             }
             all += batch
             if batch.count < 20 { break }
