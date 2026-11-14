@@ -97,6 +97,7 @@ struct RouteView: View {
         case .vacations: VacationRequestsView()
         case .notifications: NotificationsView()
         case .settings: SettingsView(embedded: true)
+        case .tasks: ParentTasksView()
         case .child(let c): ChildPresenceView(child: c)
         case .document(let d): DocumentDetailView(doc: d)
         case .empty:

@@ -69,6 +69,20 @@ struct SettingsView: View {
                     }
                 } header: { Text("Aula") }
                 Section {
+                    Toggle(isOn: Binding(get: { ParentTaskFinder.shared.isEnabled },
+                                         set: { ParentTaskFinder.shared.isEnabled = $0 })) {
+                        HStack(spacing: 12) {
+                            IconTile(systemImage: "checklist", color: .orange)
+                            Text("Find det, jeg skal gøre")
+                        }
+                    }
+                    Button(role: .destructive) { ParentTaskFinder.shared.eraseAll() } label: { Text("Glem fundne opgaver") }
+                } footer: {
+                    Text(ParentTaskFinder.usesAI
+                         ? "Apple Intelligence læser nye beskeder og opslag på telefonen og samler det, du skal huske. Intet sendes nogen steder hen."
+                         : "Aula+ finder ting som \"husk\", \"medbring\" og \"senest\" i nye beskeder og opslag. Med Apple Intelligence (iPhone 15 Pro eller nyere) bliver det mere præcist. Alt sker på telefonen.")
+                }
+                Section {
                     Toggle(isOn: Binding(get: { FaceIndex.shared.isEnabled }, set: { FaceIndex.shared.isEnabled = $0 })) {
                         HStack(spacing: 12) {
                             IconTile(systemImage: "face.smiling", color: .purple)
