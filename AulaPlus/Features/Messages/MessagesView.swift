@@ -54,132 +54,7 @@ struct MessagesView: View {
     var body: some View {
         @Bindable var app = app
         NavigationStack(path: $app.messagesPath) {
-            ThemedList(rowBackground: .clear) {
-                Section {
-                    ChildFilterBar().listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
-                    StaleBanner(error: data.threads.error, savedAt: data.threads.savedAt)
-                        .listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
-                }
-                .listSectionSeparator(.hidden)
-
-                if showDrafts {
-                    ForEach(data.drafts) { d in
-                        Button { openDraft = d } label: { DraftRow(draft: d) }
-                            .buttonStyle(.plain)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 12, leading: 26, bottom: 12, trailing: 24))
-                            .listRowBackground(
-                                RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.card)
-                                    .padding(.horizontal, 12).padding(.vertical, 4)
-                            )
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) { data.deleteDraft(d.id) } label: { Label("Slet", systemImage: "trash") }
-                            }
-                    }
-                }
-                ForEach(showDrafts ? [] : threads) { t in
-                    NavigationLink(value: t) { ThreadRow(thread: t) }
-                        // Each thread on its own rounded card.
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 12, leading: 26, bottom: 12, trailing: 24))
-                        .listRowBackground(
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                .fill(t.isRead ? Color.card : Color.brand.opacity(0.10))
-                                .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.card))
-                                .padding(.horizontal, 12).padding(.vertical, 4)
-                        )
-                        .swipeActions(edge: .leading) {
-                            Button { Task { await toggleMarked(t) } } label: {
-                                Label(t.isMarked == true ? String(localized: "Fjern markering") : String(localized: "Markér"),
-                                      systemImage: t.isMarked == true ? "star.slash" : "star.fill")
-                            }
-                            .tint(.yellow)
-                        }
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) { deleting = t } label: { Label("Slet", systemImage: "trash") }
-                            Button { Task { await toggleMuted(t) } } label: {
-                                Label(t.isMuted == true ? String(localized: "Slå lyd til") : String(localized: "Slå lyd fra"),
-                                      systemImage: t.isMuted == true ? "bell" : "bell.slash")
-                            }
-                            .tint(.indigo)
-                        }
-                        .contextMenu {
-                            Button { Task { await toggleMarked(t) } } label: {
-                                Label(t.isMarked == true ? String(localized: "Fjern markering") : String(localized: "Markér"),
-                                      systemImage: t.isMarked == true ? "star.slash" : "star")
-                            }
-                            if t.subscriptionId != nil {
-                                Button { Task { await toggleMuted(t) } } label: {
-                                    Label(t.isMuted == true ? String(localized: "Slå lyd til") : String(localized: "Slå lyd fra"),
-                                          systemImage: t.isMuted == true ? "bell" : "bell.slash")
-                                }
-                            }
-                            Menu {
-                                MoveToFolderItems(thread: t, currentFolderId: folderId) { target in
-                                    Task { await move(t, to: target) }
-                                }
-                            } label: { Label("Flyt til", systemImage: "folder") }
-                            Button(role: .destructive) { deleting = t } label: { Label("Slet", systemImage: "trash") }
-                        }
-                }
-
-                if search.isEmpty && folderId == nil && !showDrafts && !threads.isEmpty && !noMoreOlder {
-                    Button {
-                        Task { await loadOlder() }
-                    } label: {
-                        HStack {
-                            Spacer()
-                            if loadingOlder { ProgressView() } else { Text("Hent ældre beskeder") }
-                            Spacer()
-                        }
-                    }
-                }
-            }
-            .listStyle(.plain)
-            .overlay {
-                if showDrafts && data.drafts.isEmpty {
-                    ContentUnavailableView("Ingen kladder", systemImage: "doc.text")
-                } else if !showDrafts && threads.isEmpty {
-                    if source.isLoading || searching { ProgressView() }
-                    else { ContentUnavailableView(onlyUnread ? String(localized: "Ingen ulæste beskeder") : String(localized: "Ingen beskeder"),
-                                                  systemImage: "tray") }
-                }
-            }
-            .searchable(text: $search, prompt: String(localized: "Søg i alle beskeder"))
-            .task(id: search) { await searchAula() }
-            .navigationTitle(folderTitle)
-            .toolbarTitleMenu {
-                Button { showDrafts = false; folderId = nil } label: { Label("Indbakke", systemImage: "tray") }
-                Button { showDrafts = true } label: {
-                    Label(data.drafts.isEmpty ? String(localized: "Kladder") : String(localized: "Kladder (\(data.drafts.count))"),
-                          systemImage: "doc.text")
-                }
-                ForEach(data.folders.value ?? []) { f in
-                    Button { showDrafts = false; folderId = f.id } label: {
-                        Label(f.isDeleted ? String(localized: "Slettet post") : f.name, systemImage: f.isDeleted ? "trash" : "folder")
-                    }
-                }
-                Divider()
-                Button { managingFolders = true } label: { Label("Administrér mapper", systemImage: "folder.badge.gearshape") }
-                Button { editingAutoReply = true } label: { Label("Autosvar", systemImage: "arrowshape.turn.up.left.circle") }
-            }
-            .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Menu {
-                        Toggle("Kun ulæste", isOn: $onlyUnread)
-                        Toggle("Kun markerede", isOn: $onlyMarked)
-                    } label: {
-                        Image(systemName: onlyUnread || onlyMarked
-                              ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
-                    }
-                    .accessibilityLabel(Text("Filtrér"))
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { composing = true } label: { Image(systemName: "square.and.pencil") }
-                        .accessibilityLabel(Text("Ny besked"))
-                }
-            }
+            list
             .sheet(isPresented: $managingFolders) { FoldersView() }
             .sheet(isPresented: $editingAutoReply) { AutoReplyView() }
             .sheet(item: $openDraft) { d in
@@ -218,6 +93,145 @@ struct MessagesView: View {
                 Button("OK", role: .cancel) {}
             }
         }
+    }
+
+    private var list: some View {
+    ThemedList(rowBackground: .clear) {
+        listContent
+    }
+    .listStyle(.plain)
+    .overlay {
+        if showDrafts && data.drafts.isEmpty {
+            ContentUnavailableView("Ingen kladder", systemImage: "doc.text")
+        } else if !showDrafts && threads.isEmpty {
+            if source.isLoading || searching { ProgressView() }
+            else { ContentUnavailableView(onlyUnread ? String(localized: "Ingen ulæste beskeder") : String(localized: "Ingen beskeder"),
+                                          systemImage: "tray") }
+        }
+    }
+    .searchable(text: $search, prompt: String(localized: "Søg i alle beskeder"))
+    .task(id: search) { await searchAula() }
+    .navigationTitle(folderTitle)
+    .toolbarTitleMenu {
+        folderMenu
+    }
+    .navigationDestination(for: ThreadSummary.self) { ThreadView(thread: $0) }
+    .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+            Menu {
+                Toggle("Kun ulæste", isOn: $onlyUnread)
+                Toggle("Kun markerede", isOn: $onlyMarked)
+            } label: {
+                Image(systemName: onlyUnread || onlyMarked
+                      ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+            }
+            .accessibilityLabel(Text("Filtrér"))
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button { composing = true } label: { Image(systemName: "square.and.pencil") }
+                .accessibilityLabel(Text("Ny besked"))
+        }
+    }
+    }
+
+    @ViewBuilder private var listContent: some View {
+        Section {
+            ChildFilterBar().listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
+            StaleBanner(error: data.threads.error, savedAt: data.threads.savedAt)
+                .listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
+        }
+        .listSectionSeparator(.hidden)
+
+        if showDrafts {
+            ForEach(data.drafts) { d in
+                Button { openDraft = d } label: { DraftRow(draft: d) }
+                    .buttonStyle(.plain)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 26, bottom: 12, trailing: 24))
+                    .listRowBackground(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.card)
+                            .padding(.horizontal, 12).padding(.vertical, 4)
+                    )
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) { data.deleteDraft(d.id) } label: { Label("Slet", systemImage: "trash") }
+                    }
+            }
+        }
+        ForEach(showDrafts ? [] : threads) { t in threadCell(t) }
+
+        if search.isEmpty && folderId == nil && !showDrafts && !threads.isEmpty && !noMoreOlder {
+            Button {
+                Task { await loadOlder() }
+            } label: {
+                HStack {
+                    Spacer()
+                    if loadingOlder { ProgressView() } else { Text("Hent ældre beskeder") }
+                    Spacer()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var folderMenu: some View {
+        Button { showDrafts = false; folderId = nil } label: { Label("Indbakke", systemImage: "tray") }
+        Button { showDrafts = true } label: {
+            Label(data.drafts.isEmpty ? String(localized: "Kladder") : String(localized: "Kladder (\(data.drafts.count))"),
+                  systemImage: "doc.text")
+        }
+        ForEach(data.folders.value ?? []) { f in
+            Button { showDrafts = false; folderId = f.id } label: {
+                Label(f.isDeleted ? String(localized: "Slettet post") : f.name, systemImage: f.isDeleted ? "trash" : "folder")
+            }
+        }
+        Divider()
+        Button { managingFolders = true } label: { Label("Administrér mapper", systemImage: "folder.badge.gearshape") }
+        Button { editingAutoReply = true } label: { Label("Autosvar", systemImage: "arrowshape.turn.up.left.circle") }
+    }
+
+    private func threadCell(_ t: ThreadSummary) -> some View {
+        NavigationLink(value: t) { ThreadRow(thread: t) }
+            // Each thread on its own rounded card.
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 12, leading: 26, bottom: 12, trailing: 24))
+            .listRowBackground(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(t.isRead ? Color.card : Color.brand.opacity(0.10))
+                    .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.card))
+                    .padding(.horizontal, 12).padding(.vertical, 4)
+            )
+            .swipeActions(edge: .leading) {
+                Button { Task { await toggleMarked(t) } } label: {
+                    Label(t.isMarked == true ? String(localized: "Fjern markering") : String(localized: "Markér"),
+                          systemImage: t.isMarked == true ? "star.slash" : "star.fill")
+                }
+                .tint(.yellow)
+            }
+            .swipeActions(edge: .trailing) {
+                Button(role: .destructive) { deleting = t } label: { Label("Slet", systemImage: "trash") }
+                Button { Task { await toggleMuted(t) } } label: {
+                    Label(t.isMuted == true ? String(localized: "Slå lyd til") : String(localized: "Slå lyd fra"),
+                          systemImage: t.isMuted == true ? "bell" : "bell.slash")
+                }
+                .tint(.indigo)
+            }
+            .contextMenu {
+                Button { Task { await toggleMarked(t) } } label: {
+                    Label(t.isMarked == true ? String(localized: "Fjern markering") : String(localized: "Markér"),
+                          systemImage: t.isMarked == true ? "star.slash" : "star")
+                }
+                if t.subscriptionId != nil {
+                    Button { Task { await toggleMuted(t) } } label: {
+                        Label(t.isMuted == true ? String(localized: "Slå lyd til") : String(localized: "Slå lyd fra"),
+                              systemImage: t.isMuted == true ? "bell" : "bell.slash")
+                    }
+                }
+                Menu {
+                    MoveToFolderItems(thread: t, currentFolderId: folderId) { target in
+                        Task { await move(t, to: target) }
+                    }
+                } label: { Label("Flyt til", systemImage: "folder") }
+                Button(role: .destructive) { deleting = t } label: { Label("Slet", systemImage: "trash") }
+            }
     }
 
     private func updateOlder(_ id: String, _ change: (inout ThreadSummary) -> Void) {
