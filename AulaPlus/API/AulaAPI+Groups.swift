@@ -4,7 +4,7 @@ import Foundation
 struct AulaGroup: Codable, Identifiable, Hashable {
     let id: Int
     let name: String
-    let institutionCode: String?
+    var institutionCode: String? = nil
 }
 
 struct GroupMember: Codable, Identifiable, Hashable {

@@ -1,10 +1,5 @@
 import Foundation
 
-struct AulaGroup: Codable, Identifiable, Hashable {
-    let id: Int
-    let name: String
-}
-
 struct Contact: Codable, Identifiable, Hashable {
     let id: Int              // institution profile id (usable as message recipient)
     let name: String
