@@ -50,11 +50,16 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
         })
     }
 
-    /// Text/icon colour on top of `brand`: dark on the light graphite dark-mode brand, else white.
+    /// Text/icon colour on top of `brand`: white where it reads well (≥ 3:1, bold text), else near-black.
+    /// The lifted dark-mode brand colours are too light for white text.
     var onBrand: Color {
-        let isGraphite = self == .graphite
+        let (l, d) = brandRGB
         return Color(UIColor { tc in
-            isGraphite && tc.userInterfaceStyle == .dark ? .black : .white
+            let c = tc.userInterfaceStyle == .dark ? d : l
+            func lin(_ v: Double) -> Double { v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4) }
+            let lum = 0.2126 * lin(c.0) + 0.7152 * lin(c.1) + 0.0722 * lin(c.2)
+            let whiteContrast = 1.05 / (lum + 0.05)
+            return whiteContrast >= 3 ? .white : UIColor(white: 0.08, alpha: 1)
         })
     }
 
