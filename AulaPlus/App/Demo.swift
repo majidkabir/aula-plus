@@ -159,6 +159,16 @@ enum Demo {
         }
     }
 
+    static var birthdays: [Birthday] {
+        let cal = Calendar.current
+        return [
+            Birthday(id: 9001, name: "Liva Holm", date: cal.date(byAdding: .day, value: 2, to: cal.startOfDay(for: .now))!,
+                     group: "Solsikken", institutionCode: "101002"),
+            Birthday(id: noah.id, name: noah.name, date: cal.date(byAdding: .day, value: 5, to: cal.startOfDay(for: .now))!,
+                     group: "Solsikken", institutionCode: "101002"),
+        ]
+    }
+
     /// Fixture for a Loadable cache key (prefix match for week-keyed caches).
     static func value(for key: String) -> Any? {
         switch key {
@@ -170,6 +180,10 @@ enum Demo {
         case "important-dates": return importantDates
         case "albums": return albums
         case "vacation-requests": return vacationRequests
+        case "birthdays": return birthdays
+        case "posts-important": return posts.filter(\.isImportant)
+        case "posts-staff", "posts-unread": return posts
+        case "posts-parents", "posts-own", "posts-saved": return [Post]()
         default:
             if key.hasPrefix("events-") { return events }
             if key.hasPrefix("thread-") { return threadPage }

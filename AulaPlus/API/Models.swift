@@ -168,6 +168,45 @@ struct Post: Codable, Identifiable, Hashable {
     let isImportant: Bool
     let attachments: [Attachment]
     var canComment: Bool? = nil
+    /// Saved ("Gemt") on Aula.
+    var isBookmarked: Bool? = nil
+}
+
+/// The overview filters on aula.dk.
+enum PostFilter: String, CaseIterable, Identifiable {
+    case all, unread, important, staff, parents, own, saved
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .all: String(localized: "Alle")
+        case .unread: String(localized: "Ulæste")
+        case .important: String(localized: "Vigtige")
+        case .staff: String(localized: "Personale")
+        case .parents: String(localized: "Forældre")
+        case .own: String(localized: "Egne opslag")
+        case .saved: String(localized: "Gemte")
+        }
+    }
+    /// The query aula.dk sends for this filter.
+    var query: [URLQueryItem] {
+        switch self {
+        case .all: []
+        case .unread: [.init(name: "isUnread", value: "true")]
+        case .important: [.init(name: "isImportant", value: "true")]
+        case .staff: [.init(name: "creatorPortalRole", value: "employee")]
+        case .parents: [.init(name: "creatorPortalRole", value: "guardian")]
+        case .own: [.init(name: "ownPost", value: "true")]
+        case .saved: [.init(name: "isBookmarked", value: "true")]
+        }
+    }
+}
+
+struct Birthday: Codable, Identifiable, Hashable {
+    let id: Int          // institution profile id
+    let name: String
+    let date: Date       // this year's (or next year's) birthday
+    let group: String?
+    let institutionCode: String?
 }
 
 struct WeekPlan: Codable, Hashable {
@@ -435,6 +474,7 @@ struct PostDTO: Decodable {
     let attachments: Lossy<AttachmentDTO>?
     let allowComments: Bool?
     let canCurrentUserComment: Bool?
+    let isBookmarked: Bool?
 
     var model: Post {
         Post(id: id.value,
@@ -444,7 +484,8 @@ struct PostDTO: Decodable {
              author: ownerProfile?.best ?? "",
              isImportant: isImportant ?? false,
              attachments: attachments?.items.map(\.model) ?? [],
-             canComment: (allowComments ?? false) && (canCurrentUserComment ?? true))
+             canComment: (allowComments ?? false) && (canCurrentUserComment ?? true),
+             isBookmarked: isBookmarked ?? false)
     }
 }
 

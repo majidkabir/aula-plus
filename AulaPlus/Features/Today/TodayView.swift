@@ -43,6 +43,7 @@ struct TodayView: View {
                     unreadSection
                     importantPosts
                     upcomingDates
+                    birthdaysCard
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 24)
@@ -72,7 +73,8 @@ struct TodayView: View {
                 async let e: () = data.importantDates.load(maxAge: 1800)
                 async let f: () = data.vacationRequests.load(maxAge: 1800)
                 async let g: () = data.notifications.load(maxAge: 300)
-                _ = await (a, b, c, d, e, f, g)
+                async let h: () = data.birthdays.load(maxAge: 6 * 3600)
+                _ = await (a, b, c, d, e, f, g, h)
             }
         }
     }
@@ -191,6 +193,32 @@ struct TodayView: View {
             SectionTitle(title: "Kommende", systemImage: "star.fill", tint: .yellow)
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(soon)) { ImportantDateRow(date: $0) }
+            }
+            .cardStyle()
+        }
+    }
+
+    @ViewBuilder private var birthdaysCard: some View {
+        let soon = (data.birthdays.value ?? []).filter { $0.date.timeIntervalSinceNow < 7 * 86_400 }.prefix(6)
+        if !soon.isEmpty {
+            SectionTitle(title: "Fødselsdage", systemImage: "birthday.cake.fill", tint: .pink)
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(soon)) { b in
+                    let mine = app.children.contains { $0.id == b.id }
+                    HStack(spacing: 10) {
+                        Text("🎂").font(.title3)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(b.name).font(.subheadline.weight(mine ? .bold : .semibold)).lineLimit(1)
+                            if let g = b.group { Text(g).font(.caption).foregroundStyle(.secondary) }
+                        }
+                        Spacer(minLength: 8)
+                        Text(Calendar.current.isDateInToday(b.date) ? String(localized: "I dag")
+                             : b.date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Calendar.current.isDateInToday(b.date) ? Color.pink : Color.secondary)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
             }
             .cardStyle()
         }

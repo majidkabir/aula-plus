@@ -211,12 +211,12 @@ actor AulaAPI {
         return seen.values.sorted { $0.start < $1.start }
     }
 
-    func posts(institutionProfileIds: [Int], index: Int = 0, limit: Int = 20) async throws -> [Post] {
+    func posts(institutionProfileIds: [Int], filter: PostFilter = .all, index: Int = 0, limit: Int = 20) async throws -> [Post] {
         var q: [URLQueryItem] = [
             .init(name: "parent", value: "profile"),
             .init(name: "index", value: String(index)),
             .init(name: "limit", value: String(limit)),
-        ]
+        ] + filter.query
         q += institutionProfileIds.map { .init(name: "institutionProfileIds[]", value: String($0)) }
         let dto: PostsDTO = try await call("posts.getAllPosts", query: q)
         return dto.posts?.items.map(\.model) ?? []
