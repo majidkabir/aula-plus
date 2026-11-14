@@ -275,10 +275,10 @@ struct MyProfileView: View {
         // A square, reasonably small JPEG, like Aula's own crop.
         let side = min(img.size.width, img.size.height)
         let crop = CGRect(x: (img.size.width - side) / 2, y: (img.size.height - side) / 2, width: side, height: side)
-        let target = CGSize(width: 800, height: 800)
-        let square = UIGraphicsImageRenderer(size: target).image { _ in
-            img.draw(in: CGRect(x: -crop.minX * target.width / side, y: -crop.minY * target.height / side,
-                                width: img.size.width * target.width / side, height: img.size.height * target.height / side))
+        let canvas = CGSize(width: 800, height: 800)
+        let square = UIGraphicsImageRenderer(size: canvas).image { _ in
+            img.draw(in: CGRect(x: -crop.minX * canvas.width / side, y: -crop.minY * canvas.height / side,
+                                width: img.size.width * canvas.width / side, height: img.size.height * canvas.height / side))
         }
         guard let jpeg = square.jpegData(compressionQuality: 0.85) else { return }
         newPictures[target.id] = square
