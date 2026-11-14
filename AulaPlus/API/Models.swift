@@ -86,6 +86,18 @@ struct Presence: Codable, Hashable {
     let exitWith: String?
     let comment: String?
     let location: String?
+
+    /// Aula's "no plan" times: the institution's whole opening window.
+    static func isPlaceholder(entry: String?, exit: String?) -> Bool {
+        (entry == nil || entry == "05:00" || entry == "00:00") && (exit == nil || exit == "23:59")
+    }
+
+    /// Not coming today: no drop-off or pick-up planned and not checked in.
+    var isDayOff: Bool {
+        checkIn == nil && checkOut == nil
+            && Self.isPlaceholder(entry: plannedEntry, exit: plannedExit)
+            && (status == nil || status == .notArrived || status == .notPresent)
+    }
 }
 
 struct Attachment: Codable, Hashable {
