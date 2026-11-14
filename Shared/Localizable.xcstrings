@@ -2930,6 +2930,66 @@
           }
         }
       }
+    },
+    "Weekend": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekend"
+          }
+        }
+      }
+    },
+    "Fri i dag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day off"
+          }
+        }
+      }
+    },
+    "Næste aflevering": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next drop-off"
+          }
+        }
+      }
+    },
+    "Ingen aflevering i weekenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No drop-off this weekend"
+          }
+        }
+      }
+    },
+    "Ingen aflevering i dag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No drop-off today"
+          }
+        }
+      }
+    },
+    "%@ %@ · hentes %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@ · pick-up %3$@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -133,12 +133,19 @@ actor AulaAPI {
             for try await list in group {
                 for d in list {
                     guard let cid = d.institutionProfile?.id?.value else { continue }
+                    // No plan for the day (weekend, holiday): Aula fills in 05:00–23:59. Show no times then.
+                    var entry = AulaDate.shortTime(d.entryTime)
+                    var exit = AulaDate.shortTime(d.exitTime)
+                    if Presence.isPlaceholder(entry: entry, exit: exit) || Calendar.week.isDateInWeekend(.now) {
+                        entry = nil
+                        exit = nil
+                    }
                     out.append(Presence(childId: cid,
                                         status: d.status.flatMap(PresenceStatus.init(rawValue:)),
                                         checkIn: AulaDate.shortTime(d.checkInTime),
                                         checkOut: AulaDate.shortTime(d.checkOutTime),
-                                        plannedEntry: AulaDate.shortTime(d.entryTime),
-                                        plannedExit: AulaDate.shortTime(d.exitTime),
+                                        plannedEntry: entry,
+                                        plannedExit: exit,
                                         exitWith: d.exitWith?.nilIfEmpty,
                                         comment: d.comment?.nilIfEmpty,
                                         location: d.location?.name?.nilIfEmpty))

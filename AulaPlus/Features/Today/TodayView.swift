@@ -85,7 +85,11 @@ struct TodayView: View {
     }
 
     /// Earliest planned pick-up among visible children not yet picked up.
+    /// "Fri" when none of them is coming today.
     private var firstPickup: String? {
+        let ids0 = Set(app.visibleChildren.map(\.id))
+        let today = (data.presence.value ?? []).filter { ids0.contains($0.childId) }
+        if !today.isEmpty, today.allSatisfy(\.isDayOff) { return String(localized: "Fri") }
         let ids = Set(app.visibleChildren.map(\.id))
         return (data.presence.value ?? [])
             .filter { ids.contains($0.childId) && $0.checkOut == nil }
@@ -210,11 +214,12 @@ struct ChildDayCard: View {
     struct Fact { let icon: String; let label: String; let value: String }
 
     static func facts(_ p: Presence) -> [Fact] {
+        let planned = !Presence.isPlaceholder(entry: p.plannedEntry, exit: p.plannedExit)
         let raw: [(String, String, String?)] = [
             ("arrow.down.right.circle", String(localized: "Kom"), p.checkIn),
-            ("arrow.down.right.circle", String(localized: "Afleveres"), p.checkIn == nil ? p.plannedEntry : nil),
+            ("arrow.down.right.circle", String(localized: "Afleveres"), p.checkIn == nil && planned ? p.plannedEntry : nil),
             ("arrow.up.right.circle", String(localized: "Gik"), p.checkOut),
-            ("arrow.up.right.circle", String(localized: "Hentes"), p.checkOut == nil ? p.plannedExit : nil),
+            ("arrow.up.right.circle", String(localized: "Hentes"), p.checkOut == nil && planned ? p.plannedExit : nil),
             ("person.circle", String(localized: "Hentes af"), p.exitWith),
             ("mappin.circle", String(localized: "Lokation"), p.location),
         ]
@@ -225,7 +230,19 @@ struct ChildDayCard: View {
     let presence: Presence?
     let events: [Event]
     @Environment(AppModel.self) private var app
+    @Environment(DataStore.self) private var data
     @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// Not coming today (weekend, holiday): no times, no timeline, the next drop-off instead.
+    private var dayOff: Bool { presence?.isDayOff ?? false }
+    private var isWeekend: Bool { Calendar.week.isDateInWeekend(.now) }
+
+    /// First upcoming day with a real drop-off plan.
+    private var nextDropOff: DayPlan? {
+        (data.upcomingPlans(childId: child.id).value ?? [])
+            .sorted { $0.date < $1.date }
+            .first { !$0.isOnVacation && $0.entry != nil && !Presence.isPlaceholder(entry: $0.entry, exit: $0.exit) }
+    }
 
     private var upcoming: [Event] { events.filter { $0.end >= .now } }
     private var doneCount: Int { events.count - upcoming.count }
@@ -243,7 +260,15 @@ struct ChildDayCard: View {
                             .accessibilityHidden(true)
                     }
                     Text(child.institutionName).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
-                    if let status = presence?.status {
+                    if dayOff {
+                        Label(isWeekend ? String(localized: "Weekend") : String(localized: "Fri i dag"),
+                              systemImage: isWeekend ? "sun.max.fill" : "house.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 10).padding(.vertical, 4)
+                            .background(Color.card, in: Capsule())
+                            .foregroundStyle(color)
+                            .padding(.top, 2)
+                    } else if let status = presence?.status {
                         Label(status.label, systemImage: status.symbol)
                             .font(.subheadline.weight(.semibold))
                             .padding(.horizontal, 10).padding(.vertical, 4)
@@ -285,7 +310,9 @@ struct ChildDayCard: View {
                 }
             }
 
-            if presence != nil || !events.isEmpty {
+            if dayOff {
+                nextDropOffRow(color)
+            } else if presence != nil || !events.isEmpty {
                 DayTimeline(presence: presence, events: events, color: color)
             }
 
@@ -330,6 +357,36 @@ struct ChildDayCard: View {
             }
         }
         .pastelCard(color, padding: 18)
+        .task(id: dayOff) {
+            if dayOff { await data.upcomingPlans(childId: child.id).load(maxAge: 3600) }
+        }
+    }
+
+    /// "Næste aflevering · Mandag 07:45 · hentes 16:00".
+    @ViewBuilder private func nextDropOffRow(_ color: Color) -> some View {
+        if let next = nextDropOff, let entry = next.entry {
+            HStack(spacing: 10) {
+                Image(systemName: "calendar.badge.clock").font(.body.weight(.bold)).foregroundStyle(color)
+                    .frame(width: 30, height: 30)
+                    .background(Color.card, in: Circle())
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Næste aflevering").font(.caption).foregroundStyle(.secondary)
+                    Text(Self.nextText(next, entry: entry)).font(.subheadline.weight(.semibold))
+                }
+            }
+            .accessibilityElement(children: .combine)
+        } else {
+            Text(isWeekend ? "Ingen aflevering i weekenden" : "Ingen aflevering i dag")
+                .font(.subheadline).foregroundStyle(.secondary)
+        }
+    }
+
+    static func nextText(_ p: DayPlan, entry: String) -> String {
+        let day = Calendar.week.isDateInTomorrow(p.date)
+            ? String(localized: "I morgen")
+            : p.date.formatted(.dateTime.weekday(.wide)).capitalized
+        if let exit = p.exit { return String(localized: "\(day) \(entry) · hentes \(exit)") }
+        return "\(day) \(entry)"
     }
 
     static func moreText(more: Int, done: Int) -> String {

@@ -66,6 +66,22 @@ final class DataStore {
         return updated
     }
 
+    @ObservationIgnored private var nextPlans: [Int: Loadable<[DayPlan]>] = [:]
+
+    /// The child's drop-off/pick-up plans for the next 10 days (to show the next drop-off on a day off).
+    func upcomingPlans(childId: Int) -> Loadable<[DayPlan]> {
+        let today = Calendar.week.startOfDay(for: .now)
+        let key = Week.dayKey(today)
+        if let l = nextPlans[childId], l.key.hasSuffix(key) { return l }
+        let l = Loadable<[DayPlan]>(key: "next-plans-\(childId)-\(key)") {
+            let from = Calendar.week.date(byAdding: .day, value: 1, to: today)!
+            let to = Calendar.week.date(byAdding: .day, value: 10, to: today)!
+            return try await AulaAPI.shared.dayPlans(childIds: [childId], from: from, to: to)
+        }
+        nextPlans[childId] = l
+        return l
+    }
+
     // MARK: Gallery "new" markers (from Aula's gallery notifications)
 
     /// Gallery notifications already seen here. Kept on the device so the "new" counts stay
@@ -264,6 +280,11 @@ enum Week {
     static func isoWeek(_ date: Date) -> (year: Int, week: Int) {
         let c = Calendar.week.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
         return (c.yearForWeekOfYear ?? 0, c.weekOfYear ?? 0)
+    }
+
+    static func dayKey(_ date: Date) -> String {
+        let c = Calendar.week.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
     }
 
     static func key(_ date: Date) -> String {
