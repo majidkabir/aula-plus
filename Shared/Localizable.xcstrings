@@ -2990,6 +2990,206 @@
           }
         }
       }
+    },
+    "Leder efter dine børn på billederne … %lld af %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looking for your children in the photos … %lld of %lld"
+          }
+        }
+      }
+    },
+    "Lærer ansigter at kende …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learning faces …"
+          }
+        }
+      }
+    },
+    "Fundet med ansigtsgenkendelse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found by face recognition"
+          }
+        }
+      }
+    },
+    "%lld billeder fundet på telefonen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld photos found on this phone"
+          }
+        }
+      }
+    },
+    "Billeder uden tag, hvor Aula+ genkender %@. Markeret med ✦.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untagged photos where Aula+ recognises %@. Marked with ✦."
+          }
+        }
+      }
+    },
+    "Album %lld af %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Album %lld of %lld"
+          }
+        }
+      }
+    },
+    "Søg i alle albums": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search all albums"
+          }
+        }
+      }
+    },
+    "Find %@ på billeder uden tag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find %@ in untagged photos"
+          }
+        }
+      }
+    },
+    "Aula+ lærer %@s ansigt fra billeder med tag. Har %@ ingen, så åbn et billede og vælg \"Det er %@\" under ☺︎.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ learns %1$@'s face from tagged photos. If there are none, open a photo and choose \"This is %3$@\" under ☺︎."
+          }
+        }
+      }
+    },
+    "Ansigtsgenkendelse på telefonen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face recognition on this phone"
+          }
+        }
+      }
+    },
+    "Det er ikke %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That's not %@"
+          }
+        }
+      }
+    },
+    "Det er %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is %@"
+          }
+        }
+      }
+    },
+    "Ansigtsgenkendelse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face recognition"
+          }
+        }
+      }
+    },
+    "Fandt ikke et ansigt på billedet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't find a face in the photo."
+          }
+        }
+      }
+    },
+    "Måske %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maybe %@"
+          }
+        }
+      }
+    },
+    "Ja": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        }
+      }
+    },
+    "Nej": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        }
+      }
+    },
+    "Find mine børn på billeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find my children in photos"
+          }
+        }
+      }
+    },
+    "Slet ansigtsdata": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete face data"
+          }
+        }
+      }
+    },
+    "Aula+ genkender dine børns ansigter på billeder uden tag. Alt sker på telefonen: intet sendes nogen steder, og andre børns ansigter gemmes ikke.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ recognises your children's faces in untagged photos. It all happens on this phone: nothing is sent anywhere, and other children's faces aren't stored."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -32,6 +32,8 @@ struct Media: Codable, Identifiable, Hashable {
     var description: String? = nil
     /// Aula's `currentUserCanEditTags`: whether this user may tag people in the photo.
     var canEditTags: Bool? = nil
+    /// A mid-size version for finding faces (large/medium thumbnail, else the full photo).
+    var scanURL: URL? = nil
 
     var tagList: [MediaTag] { tags ?? [] }
     func isTagged(_ childId: Int) -> Bool { tagList.contains { $0.id == childId } }
@@ -333,7 +335,9 @@ extension AulaAPI {
                          title: m.title?.nilIfEmpty,
                          tags: tags,
                          description: m.description,
-                         canEditTags: m.currentUserCanEditTags)
+                         canEditTags: m.currentUserCanEditTags,
+                         scanURL: ([m.largeThumbnailUrl, m.mediumThumbnailUrl, m.file?.url] as [String?])
+                             .compactMap { $0 }.first.flatMap { URL(string: $0) })
         }
     }
 
