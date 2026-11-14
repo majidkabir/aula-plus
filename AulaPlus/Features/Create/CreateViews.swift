@@ -266,6 +266,7 @@ struct CreateAlbumView: View {
                             }
                             .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                         .accessibilityAddTraits(chosen.contains(g.id) ? .isSelected : [])
                     }
                 } header: { Text("Del med") } footer: { Text("Albummet kan ses af medlemmerne i de valgte grupper.") }

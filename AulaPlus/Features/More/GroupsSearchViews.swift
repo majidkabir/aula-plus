@@ -312,6 +312,7 @@ struct ConsentsView: View {
                                         }
                                         .contentShape(Rectangle())
                                     }
+                                    .buttonStyle(.plain)
                                     .disabled(!c.editable)
                                     .accessibilityAddTraits(c.answer == a ? .isSelected : [])
                                 }

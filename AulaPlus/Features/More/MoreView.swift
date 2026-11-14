@@ -891,7 +891,14 @@ struct NotificationsView: View {
         } else if let postId = n.postId {
             Button {
                 Task { openingPost = try? await AulaAPI.shared.post(id: postId) }
-            } label: { content }
+            } label: {
+                HStack {
+                    content
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
             .buttonStyle(.plain)
         } else {
             content
