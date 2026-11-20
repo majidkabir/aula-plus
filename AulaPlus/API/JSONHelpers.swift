@@ -30,6 +30,8 @@ struct FlexInt: Decodable, Hashable {
 }
 
 /// An array that silently drops elements it cannot decode.
+extension Lossy: Sendable where T: Sendable {}
+
 struct Lossy<T: Decodable>: Decodable {
     let items: [T]
     init(from decoder: Decoder) throws {
