@@ -57,6 +57,9 @@ final class ParentTaskFinder {
         return dir.appendingPathComponent("parent-tasks.json")
     }()
     @ObservationIgnored private var running: Task<Void, Never>?
+    /// False while `shared` is being created: the widget writer reads `shared`, so calling it from init
+    /// would re-enter the static initializer and crash.
+    @ObservationIgnored private var ready = false
     /// Bumped when the AI prompt changes, so everything is read again once.
     private static let aiVersion = 1
 
@@ -67,6 +70,7 @@ final class ParentTaskFinder {
             store.aiVersion = Self.aiVersion
         }
         publish()
+        ready = true
     }
 
     /// Open tasks, soonest first (undated ones by when they were sent).
@@ -154,7 +158,7 @@ final class ParentTaskFinder {
     private func publish() {
         tasks = store.tasks
         done = store.done
-        WidgetWriter.update()   // widgets and Siri read the open tasks from the snapshot
+        if ready { WidgetWriter.update() }   // widgets and Siri read the open tasks from the snapshot
     }
 
     private func save() {
