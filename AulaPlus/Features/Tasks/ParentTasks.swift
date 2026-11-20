@@ -154,6 +154,7 @@ final class ParentTaskFinder {
     private func publish() {
         tasks = store.tasks
         done = store.done
+        WidgetWriter.update()   // widgets and Siri read the open tasks from the snapshot
     }
 
     private func save() {
@@ -200,24 +201,22 @@ struct ExtractedTask {
 /// Apple Intelligence on the phone (iPhone 15 Pro and newer, iOS 26).
 @available(iOS 26.0, *)
 enum AIReader {
-    static var isAvailable: Bool {
-        let model = SystemLanguageModel.default
-        guard case .available = model.availability else { return false }
-        return model.supportsLocale(Locale(identifier: "da_DK"))
-    }
+    static var isAvailable: Bool { AIModel.isAvailable }
 
     static func read(_ text: String, sentAt: Date) async throws -> [FoundTask] {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "yyyy-MM-dd EEEE"
-        let session = LanguageModelSession(instructions: """
+        let instructions = """
             You read messages from a Danish daycare or school to parents. List only concrete things the parent \
             has to do or remember: bring or pack something, reply, sign up, pay, fill in or sign a form, \
             pick up or drop off at a special time, or a day the place is closed. Ignore greetings, news and \
             descriptions of what the children did. Write each task in Danish. Never invent tasks.
-            """)
-        let prompt = "The message was sent \(f.string(from: sentAt)).\n\n" + String(text.prefix(2500))
-        let answer = try await session.respond(to: prompt, generating: ExtractedTasks.self)
+            """
+        let prompt = "The message was sent \(f.string(from: sentAt)).\n\n" + String(text.prefix(AIModel.cloud ? 8000 : 2500))
+        let answer = try await AIModel.run(instructions: instructions) { session in
+            try await session.respond(to: prompt, generating: ExtractedTasks.self)
+        }
         f.dateFormat = "yyyy-MM-dd"
         f.timeZone = AulaDate.copenhagen
         var seen = Set<String>()

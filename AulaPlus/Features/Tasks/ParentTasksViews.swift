@@ -52,7 +52,9 @@ struct ParentTasksView: View {
             Section {
                 EmptyView()
             } footer: {
-                Text(ParentTaskFinder.usesAI
+                Text(AIModel.cloud
+                     ? "Fundet af Apple Intelligence via Private Cloud Compute (gemmes ikke). Tjek altid den oprindelige besked."
+                     : ParentTaskFinder.usesAI
                      ? "Fundet af Apple Intelligence på telefonen. Beskederne sendes ingen steder hen. Tjek altid den oprindelige besked."
                      : "Fundet i beskeder og opslag, der fx siger \"husk\" eller \"medbring\". Alt sker på telefonen. Tjek altid den oprindelige besked.")
             }

@@ -58,11 +58,14 @@ struct SummaryPoints {
 @available(iOS 26.0, *)
 enum AISummary {
     static func make(_ text: String) async throws -> [String] {
-        let session = LanguageModelSession(instructions: """
+        let instructions = """
             Summarize messages from a Danish daycare or school for a busy parent. Write in Danish. \
             Keep dates, times and things to bring. Leave out greetings. Never add anything that is not in the text.
-            """)
-        let answer = try await session.respond(to: String(text.prefix(3500)), generating: SummaryPoints.self)
+            """
+        let input = String(text.prefix(AIModel.cloud ? 12000 : 3500))
+        let answer = try await AIModel.run(instructions: instructions) { session in
+            try await session.respond(to: input, generating: SummaryPoints.self)
+        }
         return answer.content.points.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
     }
 }
