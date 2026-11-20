@@ -1,0 +1,12 @@
+name: Probe
+on: push
+jobs:
+  probe:
+    runs-on: xcode-27
+    steps:
+      - run: |
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          F=$(find "$SDK/System/Library/Frameworks/FoundationModels.framework" -name "arm64e-apple-ios.swiftinterface" | head -1)
+          echo "== $F"
+          grep -n -i -B2 -A25 "PrivateCloudCompute" "$F" | head -250
+          grep -n -i "quota\|isAvailable\|case rateLimited\|case quota" "$F" | head -60
