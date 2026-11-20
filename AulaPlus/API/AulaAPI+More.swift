@@ -169,6 +169,8 @@ private struct NotificationDTO: Decodable {
     let mediaId: FlexInt?
     let institutionProfileId: FlexInt?
     let relatedChildInstitutionProfileId: FlexInt?
+    let albumName: String?
+    let eventTitle: String?
 }
 
 private struct CommentDTO: Decodable {
@@ -332,7 +334,11 @@ extension AulaAPI {
         q += institutionCodes.map { .init(name: "activeInstitutionCodes[]", value: $0) }
         let list: Lossy<NotificationDTO> = try await call("notifications.getNotificationsForActiveProfile", query: q)
         return list.items.map { n in
-            let titles: [String?] = [n.title, n.heading, n.postTitle, n.threadSubject,
+            let albumTitle: String? = n.albumName?.nilIfEmpty.map { name in
+                ["NewMedia", "MediaAddedToAlbum"].contains(n.notificationEventType ?? "")
+                    ? String(localized: "Nye billeder i albummet: \(name)") : name
+            }
+            let titles: [String?] = [n.title, n.heading, n.postTitle, n.threadSubject, albumTitle, n.eventTitle,
                                      n.messageText.map { HTML.plainText($0) }, Self.galleryTitle(n.notificationEventType),
                                      n.notificationEventType]
             let title: String = titles.compactMap { $0?.nilIfEmpty }.first ?? String(localized: "Notifikation")

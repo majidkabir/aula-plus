@@ -9,6 +9,8 @@ enum BackgroundRefresh {
     static let taskId = "com.majidkabir.aulaplus.refresh"
     private static let seenThreadsKey = "bg.seenUnreadThreads"
     private static let seenPostsKey = "bg.seenPosts"
+    /// Aula's own notification list: photos, events, invitations, holiday requests … (messages and posts are checked above).
+    private static let seenNotesKey = "bg.seenNotifications"
     static let enabledKey = "notifications.enabled"
 
     static var isEnabled: Bool { UserDefaults.standard.bool(forKey: enabledKey) }
@@ -52,6 +54,15 @@ enum BackgroundRefresh {
            let p = try? await AulaAPI.shared.posts(institutionProfileIds: s.institutionProfileIds) {
             UserDefaults.standard.set(p.map(\.id), forKey: seenPostsKey)
         }
+        if let n = try? await auladkNotifications() {
+            UserDefaults.standard.set(n.map(\.id), forKey: seenNotesKey)
+        }
+    }
+
+    private static func auladkNotifications() async throws -> [AulaNotification] {
+        let s = try await AulaAPI.shared.bootstrap()
+        let codes = Array(Set(s.children.compactMap(\.institutionCode))).sorted()
+        return try await AulaAPI.shared.notifications(childIds: s.children.map(\.id), institutionCodes: codes)
     }
 
     /// Runs inside the background task.
@@ -84,6 +95,21 @@ enum BackgroundRefresh {
             }
             defaults.set(posts.map(\.id), forKey: seenPostsKey)
         }
+
+        // Everything else Aula notifies about: new photos, albums, tags, events, invitations, holiday requests …
+        if let list = try? await auladkNotifications() {
+            await MainActor.run { DataStore.shared.notifications.replace(list) }
+            // First run after an update: only remember what's there, so old items don't all pop up.
+            if defaults.object(forKey: seenNotesKey) != nil {
+                let seen = Set(defaults.stringArray(forKey: seenNotesKey) ?? [])
+                for n in list.prefix(20) where !seen.contains(n.id) && n.threadId == nil && n.postId == nil {
+                    var info: [String: Any] = ["notification": true]
+                    if let a = n.albumId { info["albumId"] = a; info["albumTitle"] = n.title }
+                    await notify(id: "note-\(n.id)", title: n.title, body: n.childName ?? "", info: info)
+                }
+            }
+            defaults.set(list.map(\.id), forKey: seenNotesKey)
+        }
     }
 
     private static func notify(id: String, title: String, body: String, info: [String: Any]) async {
@@ -107,9 +133,14 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
         let info = response.notification.request.content.userInfo
         let threadId = info["threadId"] as? String
         let postId = info["postId"] as? Int
+        let albumId = info["albumId"] as? Int
+        let albumTitle = info["albumTitle"] as? String ?? ""
+        let other = info["notification"] as? Bool ?? false
         await MainActor.run {
             if let threadId { AppModel.shared.openThread(id: threadId) }
             else if let postId { AppModel.shared.openPost(id: postId) }
+            else if let albumId { AppModel.shared.openAlbum(id: albumId, title: albumTitle) }
+            else if other { AppModel.shared.openNotifications() }
         }
     }
 
