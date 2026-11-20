@@ -5470,6 +5470,496 @@
           }
         }
       }
+    },
+    "Indhold": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content"
+          }
+        }
+      }
+    },
+    "Overblik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overview"
+          }
+        }
+      }
+    },
+    "Komme/gå-status": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-in status"
+          }
+        }
+      }
+    },
+    "Næste begivenheder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next events"
+          }
+        }
+      }
+    },
+    "Husk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To do"
+          }
+        }
+      }
+    },
+    "Aula+ widget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aula+ widget"
+          }
+        }
+      }
+    },
+    "Vælg barn og hvad widgetten viser.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the child and what the widget shows."
+          }
+        }
+      }
+    },
+    "Tom = alle børn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empty = all children"
+          }
+        }
+      }
+    },
+    "Næste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
+    },
+    "%@ · Næste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · Next"
+          }
+        }
+      }
+    },
+    "Intet i kalenderen den næste uge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing in the calendar this week"
+          }
+        }
+      }
+    },
+    "Intet at huske lige nu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to remember right now"
+          }
+        }
+      }
+    },
+    "Husk: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To do: %@"
+          }
+        }
+      }
+    },
+    "Intet at huske": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to remember"
+          }
+        }
+      }
+    },
+    "%lld ulæste beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld unread messages"
+          }
+        }
+      }
+    },
+    "%lld ulæste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld unread"
+          }
+        }
+      }
+    },
+    "Status, begivenheder, huskeliste eller beskeder – for ét barn eller alle. Hold fingeren på widgetten for at vælge.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status, events, to-dos or messages – for one child or all. Touch and hold the widget to choose."
+          }
+        }
+      }
+    },
+    "(opdateret %@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(updated %@)"
+          }
+        }
+      }
+    },
+    "i dag": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "today"
+          }
+        }
+      }
+    },
+    "i morgen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tomorrow"
+          }
+        }
+      }
+    },
+    "Åbn Aula+ og log ind først.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Aula+ and log in first."
+          }
+        }
+      }
+    },
+    "Hvad skal jeg huske?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What do I need to remember?"
+          }
+        }
+      }
+    },
+    "Det, du skal gøre eller huske fra beskeder og opslag i Aula.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you need to do or remember from Aula messages and posts."
+          }
+        }
+      }
+    },
+    "Der er ikke noget at huske lige nu.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There's nothing to remember right now."
+          }
+        }
+      }
+    },
+    "Du skal huske én ting:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need to remember one thing:"
+          }
+        }
+      }
+    },
+    "Du skal huske %lld ting:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need to remember %lld things:"
+          }
+        }
+      }
+    },
+    "Ulæste beskeder i Aula": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unread messages in Aula"
+          }
+        }
+      }
+    },
+    "Hvor mange ulæste beskeder du har, og fra hvem.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How many unread messages you have, and from whom."
+          }
+        }
+      }
+    },
+    "Du har ingen ulæste beskeder.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have no unread messages."
+          }
+        }
+      }
+    },
+    "%@ om %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ about %2$@"
+          }
+        }
+      }
+    },
+    "Du har én ulæst besked": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have one unread message"
+          }
+        }
+      }
+    },
+    "Du har %lld ulæste beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have %lld unread messages"
+          }
+        }
+      }
+    },
+    "Hvordan går det med mit barn?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How is my child doing?"
+          }
+        }
+      }
+    },
+    "Komme/gå-status, hvornår barnet hentes, og hvad der sker næste gang.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check-in status, pick-up time and what's next."
+          }
+        }
+      }
+    },
+    "Status for %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status for %@"
+          }
+        }
+      }
+    },
+    "Jeg kan ikke finde det barn i Aula+.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I can't find that child in Aula+."
+          }
+        }
+      }
+    },
+    "Næste: %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next: %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Hvad sker der i Aula?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's happening in Aula?"
+          }
+        }
+      }
+    },
+    "De næste begivenheder i kalenderen den kommende uge.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The next events in the calendar this week."
+          }
+        }
+      }
+    },
+    "kl. %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "at %@"
+          }
+        }
+      }
+    },
+    "Der er ikke noget i kalenderen den næste uge.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There's nothing in the calendar this week."
+          }
+        }
+      }
+    },
+    "Næste: ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next: "
+          }
+        }
+      }
+    },
+    "Åbn beskeder i Aula+": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open messages in Aula+"
+          }
+        }
+      }
+    },
+    "Åbn huskelisten i Aula+": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the to-do list in Aula+"
+          }
+        }
+      }
+    },
+    "Status": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status"
+          }
+        }
+      }
+    },
+    "Åbn beskeder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open messages"
+          }
+        }
+      }
+    },
+    "Brug Apples større model": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Apple's larger model"
+          }
+        }
+      }
+    },
+    "Apple Intelligence læser nye beskeder og opslag og samler det, du skal huske. Teksten læses af Apples større model via Private Cloud Compute: den gemmes ikke, og Apple kan ikke se den. Slå det fra for kun at bruge telefonen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence reads new messages and posts and collects what you need to remember. The text is read by Apple's larger model via Private Cloud Compute: it isn't stored and Apple can't see it. Turn this off to use only the phone."
+          }
+        }
+      }
+    },
+    "Fundet af Apple Intelligence via Private Cloud Compute (gemmes ikke). Tjek altid den oprindelige besked.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found by Apple Intelligence via Private Cloud Compute (not stored). Always check the original message."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

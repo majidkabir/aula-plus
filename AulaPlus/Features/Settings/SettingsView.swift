@@ -9,6 +9,8 @@ struct SettingsView: View {
     @State private var notificationsOn = BackgroundRefresh.isEnabled
     @State private var language: String = (UserDefaults.standard.array(forKey: "AppleLanguagesOverride") as? [String])?.first ?? ""
 
+    @State private var useCloud = AIModel.cloudAllowed
+
     var body: some View {
         if embedded { content } else { NavigationStack { content } }
     }
@@ -77,11 +79,23 @@ struct SettingsView: View {
                             Text("Find det, jeg skal gøre")
                         }
                     }
+                    if AIModel.cloudSupported {
+                        Toggle(isOn: Binding(get: { useCloud }, set: { useCloud = $0; AIModel.cloudAllowed = $0 })) {
+                            HStack(spacing: 12) {
+                                IconTile(systemImage: "lock.icloud", color: .blue)
+                                Text("Brug Apples større model")
+                            }
+                        }
+                    }
                     Button(role: .destructive) { ParentTaskFinder.shared.eraseAll() } label: { Text("Glem fundne opgaver") }
                 } footer: {
-                    Text(ParentTaskFinder.usesAI
-                         ? "Apple Intelligence læser nye beskeder og opslag på telefonen og samler det, du skal huske. Intet sendes nogen steder hen."
-                         : "Aula+ finder ting som \"husk\", \"medbring\" og \"senest\" i nye beskeder og opslag. Med Apple Intelligence (iPhone 15 Pro eller nyere) bliver det mere præcist. Alt sker på telefonen.")
+                    if AIModel.cloud {
+                        Text("Apple Intelligence læser nye beskeder og opslag og samler det, du skal huske. Teksten læses af Apples større model via Private Cloud Compute: den gemmes ikke, og Apple kan ikke se den. Slå det fra for kun at bruge telefonen.")
+                    } else {
+                        Text(ParentTaskFinder.usesAI
+                             ? "Apple Intelligence læser nye beskeder og opslag på telefonen og samler det, du skal huske. Intet sendes nogen steder hen."
+                             : "Aula+ finder ting som \"husk\", \"medbring\" og \"senest\" i nye beskeder og opslag. Med Apple Intelligence (iPhone 15 Pro eller nyere) bliver det mere præcist. Alt sker på telefonen.")
+                    }
                 }
                 Section {
                     Toggle(isOn: Binding(get: { FaceIndex.shared.isEnabled }, set: { FaceIndex.shared.isEnabled = $0 })) {
