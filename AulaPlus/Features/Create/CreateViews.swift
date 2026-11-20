@@ -80,7 +80,7 @@ struct PhotoThumbStrip: View {
 extension AulaAPI {
     /// Uploads picked photos as the guardian at the right institution and returns their media ids.
     func upload(_ photos: [PickedPhoto], institutionCode: String? = nil, albumId: Int? = nil,
-                progress: ((Int) -> Void)? = nil) async throws -> [Int] {
+                progress: (@MainActor @Sendable (Int) -> Void)? = nil) async throws -> [Int] {
         guard !photos.isEmpty else { return [] }
         let owners = try await ownerProfiles()
         guard let owner = owners.first(where: { $0.institutionCode == institutionCode }) ?? owners.first else {
@@ -90,7 +90,7 @@ extension AulaAPI {
         for (i, p) in photos.enumerated() {
             ids.append(try await uploadPhoto(p.jpeg, name: "billede-\(i + 1).jpg", owner: owner.institutionProfileId,
                                              institutionCode: owner.institutionCode, albumId: albumId))
-            progress?(i + 1)
+            await progress?(i + 1)
         }
         return ids
     }
