@@ -52,6 +52,18 @@ final class AppModel {
         }
     }
 
+    func openAlbum(id: Int, title: String) {
+        selectedTab = .more
+        morePath = NavigationPath()
+        morePath.append(Album(id: id, title: title, date: nil, coverURL: nil, count: nil))
+    }
+
+    func openNotifications() {
+        selectedTab = .more
+        morePath = NavigationPath()
+        morePath.append(Route.notifications)
+    }
+
     var children: [Child] { session.value?.children ?? [] }
 
     var visibleChildren: [Child] {

@@ -5460,6 +5460,16 @@
           }
         }
       }
+    },
+    "Nye billeder i albummet: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New photos in the album: %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
