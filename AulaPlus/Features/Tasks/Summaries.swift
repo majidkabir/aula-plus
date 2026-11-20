@@ -117,7 +117,8 @@ struct SummaryBox: View {
 
 /// Puts a task in the Reminders app (needs permission once).
 enum ReminderMaker {
-    private static let store = EKEventStore()
+    // EKEventStore is safe to use from any thread.
+    nonisolated(unsafe) private static let store = EKEventStore()
 
     static func add(_ t: ParentTask) async throws {
         guard try await store.requestFullAccessToReminders() else {

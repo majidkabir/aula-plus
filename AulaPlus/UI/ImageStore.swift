@@ -7,7 +7,8 @@ import UIKit
 actor ImageStore {
     static let shared = ImageStore()
 
-    private nonisolated let memory: NSCache<NSString, UIImage> = {
+    // NSCache is thread-safe.
+    nonisolated(unsafe) private let memory: NSCache<NSString, UIImage> = {
         let c = NSCache<NSString, UIImage>()
         c.totalCostLimit = 96 * 1024 * 1024
         return c

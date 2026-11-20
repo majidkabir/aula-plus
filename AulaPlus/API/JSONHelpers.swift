@@ -65,12 +65,13 @@ struct HTMLField: Decodable {
 enum AulaDate {
     static let copenhagen = TimeZone(identifier: "Europe/Copenhagen")!
 
-    private static let isoFrac: ISO8601DateFormatter = {
+    // ISO8601DateFormatter is thread-safe for formatting and parsing once configured.
+    nonisolated(unsafe) private static let isoFrac: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return f
     }()
-    private static let iso: ISO8601DateFormatter = {
+    nonisolated(unsafe) private static let iso: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime]
         return f

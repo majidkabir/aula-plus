@@ -125,7 +125,8 @@ enum BackgroundRefresh {
 }
 
 /// Routes a tapped notification to the right screen.
-final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
+/// No stored state, so it is safe to share.
+final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate, @unchecked Sendable {
     static let shared = NotificationRouter()
 
     func userNotificationCenter(_ center: UNUserNotificationCenter,
