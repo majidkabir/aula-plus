@@ -36,9 +36,14 @@ jobs:
           done
           exit $missing
 
-      - name: Xcode version
-        # App Store Connect only accepts builds made with Xcode 26 or later.
-        run: xcodebuild -version
+      - name: Use newest released Xcode
+        # App Store Connect wants the newest SDK (iOS 27 SDK required from April 2027). Betas can't ship.
+        run: |
+          ls -d /Applications/Xcode*.app
+          X=$(ls -d /Applications/Xcode_*.app | grep -vi -e beta -e rc | sort -V | tail -1)
+          [ -n "$X" ] && sudo xcode-select -s "$X"
+          xcodebuild -version
+          xcodebuild -showsdks | grep -i iphoneos
 
       - name: Generate project
         run: |
