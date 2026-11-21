@@ -658,7 +658,10 @@ struct MediaViewer: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Luk") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { dismiss() } label: { Image(systemName: "xmark") }
+                        .accessibilityLabel(Text("Luk"))
+                }
                 ToolbarItem(placement: .primaryAction) { faceMenu }
                 ToolbarItem(placement: .primaryAction) { tagMenu }
                 ToolbarItem(placement: .primaryAction) {
