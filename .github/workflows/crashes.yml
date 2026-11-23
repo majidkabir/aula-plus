@@ -1,0 +1,43 @@
+name: Crash reports
+# Reads TestFlight crash reports (the ones shared from the phone after a crash) via the App Store Connect API.
+# Prints only the exception and the crashed thread, so the public log holds no personal data.
+on: workflow_dispatch
+jobs:
+  crashes:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - run: pip install -q pyjwt cryptography requests
+      - shell: python
+        run: |
+          import base64, json, os, re, time, jwt, requests
+          key = base64.b64decode(os.environ["ASC_KEY_P8"]).decode()
+          tok = jwt.encode({"iss": os.environ["ASC_ISSUER_ID"], "iat": int(time.time()), "exp": int(time.time()) + 900,
+                            "aud": "appstoreconnect-v1"}, key, algorithm="ES256", headers={"kid": os.environ["ASC_KEY_ID"]})
+          H = {"Authorization": f"Bearer {tok}"}
+          base = "https://api.appstoreconnect.apple.com"
+          r = requests.get(f"{base}/v1/apps/6834417706/betaFeedbackCrashSubmissions",
+                           params={"limit": 5, "sort": "-createdDate"}, headers=H)
+          print("list:", r.status_code)
+          if r.status_code != 200:
+              print(r.text[:2000]); raise SystemExit(0)
+          for s in r.json().get("data", []):
+              a = s["attributes"]
+              print("\n=====", a.get("createdDate"), "build", a.get("buildBundleId"), a.get("osVersion"), a.get("deviceModel"))
+              c = requests.get(f"{base}/v1/betaFeedbackCrashSubmissions/{s['id']}/crashLog", headers=H)
+              if c.status_code != 200:
+                  print("crashLog:", c.status_code, c.text[:500]); continue
+              log = c.json()["data"]["attributes"].get("logText") or ""
+              out, keep = [], False
+              for line in log.splitlines():
+                  if re.match(r"^(Version|OS Version|Exception Type|Exception Codes|Termination Reason|Triggered by Thread|Crashed Thread|Application Specific Information)", line):
+                      out.append(line)
+                  if re.match(r"^Thread \d+ Crashed", line) or line.startswith("Last Exception Backtrace"):
+                      keep = True; out.append(line); continue
+                  if keep:
+                      if not line.strip(): keep = False; continue
+                      out.append(line)
+              print("\n".join(out[:120]) if out else log[:6000])
