@@ -5960,6 +5960,26 @@
           }
         }
       }
+    },
+    "Se demo uden login": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try the demo without logging in"
+          }
+        }
+      }
+    },
+    "Afslut demo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave demo"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

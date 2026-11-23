@@ -162,7 +162,9 @@ struct SettingsView: View {
                 }
                 Section {
                     Button("Ryd cache") { DiskCache.clear() }
-                    Button("Log ud", role: .destructive) { confirmLogout = true }
+                    Button(Demo.isOn ? LocalizedStringKey("Afslut demo") : LocalizedStringKey("Log ud"), role: .destructive) {
+                        if Demo.isOn { Task { await app.logout() } } else { confirmLogout = true }
+                    }
                 }
                 Section {
                     Text("Aula+ er en uofficiel app og er ikke lavet af eller godkendt af Aula/KOMBIT. Den bruger samme API som Aulas egen app.")
