@@ -1,0 +1,66 @@
+name: Submit for TestFlight review
+# Sets the Beta App Review notes, adds the build to the external test groups and submits it for review.
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: Build number to submit (empty = newest)
+        required: false
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+      BUILD: ${{ inputs.build }}
+    steps:
+      - run: pip install -q pyjwt cryptography requests
+      - shell: python
+        run: |
+          import base64, os, time, jwt, requests
+          APP = "6834417706"
+          NOTES = ("This is an unofficial client for Aula, the Danish school platform. Real login needs MitID "
+                   "(Danish national ID), so please tap 'Se demo uden login' on the first screen to try every "
+                   "feature with sample data. Leave the demo again under More > Settings > 'Afslut demo'.")
+          WHAT = "Faster Aula client: messages, calendar, photos, check-in/out. Try it with 'Se demo uden login'."
+          key = base64.b64decode(os.environ["ASC_KEY_P8"]).decode()
+          def tok():
+              return jwt.encode({"iss": os.environ["ASC_ISSUER_ID"], "iat": int(time.time()), "exp": int(time.time()) + 900,
+                                 "aud": "appstoreconnect-v1"}, key, algorithm="ES256", headers={"kid": os.environ["ASC_KEY_ID"]})
+          B = "https://api.appstoreconnect.apple.com"
+          def call(m, p, body=None, **q):
+              r = requests.request(m, B + p, headers={"Authorization": f"Bearer {tok()}"}, json=body, params=q)
+              if r.status_code >= 300: print(m, p, r.status_code, r.text[:800])
+              return r
+          # 1. Review notes
+          d = call("GET", f"/v1/apps/{APP}/betaAppReviewDetail").json()["data"]
+          call("PATCH", f"/v1/betaAppReviewDetails/{d['id']}", {"data": {"type": "betaAppReviewDetails", "id": d["id"],
+               "attributes": {"notes": NOTES, "demoAccountRequired": False}}})
+          print("notes set")
+          # 2. The build (wait until processed)
+          want = os.environ.get("BUILD") or None
+          for _ in range(40):
+              q = {"filter[app]": APP, "sort": "-uploadedDate", "limit": 1}
+              if want: q["filter[version]"] = want
+              b = call("GET", "/v1/builds", **q).json()["data"][0]
+              if b["attributes"]["processingState"] == "VALID": break
+              print("waiting for processing:", b["attributes"]["processingState"]); time.sleep(30)
+          bid, ver = b["id"], b["attributes"]["version"]
+          print("build", ver)
+          # 3. Export compliance (no non-exempt encryption: HTTPS only)
+          if b["attributes"].get("usesNonExemptEncryption") is None:
+              call("PATCH", f"/v1/builds/{bid}", {"data": {"type": "builds", "id": bid, "attributes": {"usesNonExemptEncryption": False}}})
+          # 4. What to test
+          for l in call("GET", f"/v1/builds/{bid}/betaBuildLocalizations").json().get("data", []):
+              call("PATCH", f"/v1/betaBuildLocalizations/{l['id']}", {"data": {"type": "betaBuildLocalizations", "id": l["id"], "attributes": {"whatsNew": WHAT}}})
+          # 5. External groups
+          groups = call("GET", "/v1/betaGroups", **{"filter[app]": APP, "limit": 50}).json().get("data", [])
+          ext = [g for g in groups if not g["attributes"].get("isInternalGroup")]
+          for g in ext:
+              r = call("POST", f"/v1/betaGroups/{g['id']}/relationships/builds", {"data": [{"type": "builds", "id": bid}]})
+              print("group", g["attributes"]["name"], r.status_code)
+          # 6. Submit
+          r = call("POST", "/v1/betaAppReviewSubmissions", {"data": {"type": "betaAppReviewSubmissions",
+                   "relationships": {"build": {"data": {"type": "builds", "id": bid}}}}})
+          print("submit", r.status_code, r.json().get("data", {}).get("attributes") if r.ok else "")
