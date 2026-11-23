@@ -32,8 +32,12 @@ jobs:
                   print(f"  Review submission {s['id']}: {sa.get('state')} submitted {sa.get('submittedDate')}")
                   for it in get(f"/v1/reviewSubmissions/{s['id']}/items").get("data", []):
                       print(f"     item {it['attributes'].get('state')}")
-              for b in get("/v1/betaAppReviewSubmissions", **{"filter[build]": "", "limit": 1}).get("data", [])[:0]:
-                  pass
+              d = get(f"/v1/apps/{aid}/betaAppReviewDetail").get("data", {}).get("attributes", {})
+              print(f"  Beta review info: demoAccountRequired={d.get('demoAccountRequired')} demo-name-set={bool(d.get('demoAccountName'))} "
+                    f"contact-set={bool(d.get('contactEmail'))} notes={(d.get('notes') or '')[:300]!r}")
+              for l in get(f"/v1/apps/{aid}/betaAppLocalizations").get("data", []):
+                  la = l["attributes"]
+                  print(f"  Beta description [{la.get('locale')}]: {(la.get('description') or '')[:200]!r} feedbackEmail-set={bool(la.get('feedbackEmail'))}")
               builds = get("/v1/builds", **{"filter[app]": aid, "sort": "-uploadedDate", "limit": 8, "include": "betaAppReviewSubmission,buildBetaDetail"})
               inc = {(i["type"], i["id"]): i["attributes"] for i in builds.get("included", [])}
               for b in builds.get("data", []):
