@@ -15,17 +15,22 @@ enum AIModel {
         set { UserDefaults.standard.set(newValue, forKey: cloudKey) }
     }
 
-    /// The device can use Private Cloud Compute at all (iOS 27, Apple Intelligence on).
+    /// Private Cloud Compute needs Apple's managed entitlement (com.apple.developer.private-cloud-compute).
+    /// Without it iOS 27.0.1 doesn't throw: FoundationModels hits an assertion and the app crashes (build 40).
+    /// So it stays off until the entitlement is granted and Info.plist sets AulaPlusPrivateCloudCompute = YES.
+    static let hasEntitlement = Bundle.main.object(forInfoDictionaryKey: "AulaPlusPrivateCloudCompute") as? Bool == true
+
+    /// The device can use Private Cloud Compute at all (iOS 27, Apple Intelligence on, entitlement granted).
     static var cloudSupported: Bool {
         #if canImport(FoundationModels)
-        if #available(iOS 27.0, *) { return PrivateCloudComputeLanguageModel().isAvailable }
+        if #available(iOS 27.0, *), hasEntitlement { return PrivateCloudComputeLanguageModel().isAvailable }
         #endif
         return false
     }
 
     static var cloud: Bool {
         #if canImport(FoundationModels)
-        if #available(iOS 27.0, *), cloudAllowed {
+        if #available(iOS 27.0, *), hasEntitlement, cloudAllowed {
             let m = PrivateCloudComputeLanguageModel()
             return m.isAvailable && !m.quotaUsage.isLimitReached
         }
