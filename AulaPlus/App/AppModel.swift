@@ -115,6 +115,7 @@ final class AppModel {
             }
             AppLock.shared.sync(loggedIn: false)
             if Demo.screen == "lock" { AppLock.shared.showLockedForDemo() }
+            if session.value == nil { await session.refresh() }   // demo picked on the login screen
             return
         }
         let hasTokens = await TokenStore.shared.hasTokens
@@ -140,6 +141,7 @@ final class AppModel {
     }
 
     func logout() async {
+        Demo.leave()
         await TokenStore.shared.clear()
         await AulaAPI.shared.reset()
         DiskCache.clear()

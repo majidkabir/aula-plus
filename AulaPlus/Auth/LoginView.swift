@@ -50,6 +50,13 @@ struct LoginView: View {
             .buttonBorderShape(.roundedRectangle(radius: 14))
             .disabled(working)
             .padding(.horizontal, 24)
+            Button {
+                Demo.enter()
+                Task { await app.start() }
+            } label: {
+                Text("Se demo uden login").font(.subheadline.weight(.semibold))
+            }
+            .disabled(working)
             Label("Uofficiel app. Dine data går kun mellem din telefon og Aula.", systemImage: "lock.fill")
                 .font(.caption)
                 .foregroundStyle(.secondary)

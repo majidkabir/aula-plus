@@ -3,7 +3,11 @@ import Foundation
 /// Demo mode: `-demo YES` launches with sample data and no network.
 /// Used for UI screenshots in CI (`-screen today|messages|calendar|weekPlan|more|thread|post|child`).
 enum Demo {
-    static let isOn = UserDefaults.standard.bool(forKey: "demo")
+    /// On via `-demo YES` (CI screenshots) or the "Se demo" button on the login screen (App Review has no MitID).
+    static var isOn: Bool { UserDefaults.standard.bool(forKey: "demo") }
+
+    static func enter() { UserDefaults.standard.set(true, forKey: "demo") }
+    static func leave() { UserDefaults.standard.removeObject(forKey: "demo") }
     static var screen: String? { UserDefaults.standard.string(forKey: "screen") }
 
     private static let cal = Calendar.week

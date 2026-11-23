@@ -47,7 +47,12 @@ final class Loadable<T: Codable> {
     }
 
     func refresh() async {
-        guard !isLoading, !Demo.isOn else { return }
+        // Demo turned on after launch (login screen button): objects made earlier pick up the sample data here.
+        if Demo.isOn {
+            if value == nil { value = Demo.value(for: key) as? T; savedAt = Date() }
+            return
+        }
+        guard !isLoading else { return }
         isLoading = true
         let hadValue = value != nil
         defer { isLoading = false; isPartial = false; expected = nil }
