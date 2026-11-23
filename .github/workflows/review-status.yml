@@ -1,0 +1,44 @@
+name: Review status
+# Read-only: lists each app's App Store versions, review submissions and TestFlight beta reviews.
+on: workflow_dispatch
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - run: pip install -q pyjwt cryptography requests
+      - shell: python
+        run: |
+          import base64, os, time, jwt, requests
+          key = base64.b64decode(os.environ["ASC_KEY_P8"]).decode()
+          tok = jwt.encode({"iss": os.environ["ASC_ISSUER_ID"], "iat": int(time.time()), "exp": int(time.time()) + 900,
+                            "aud": "appstoreconnect-v1"}, key, algorithm="ES256", headers={"kid": os.environ["ASC_KEY_ID"]})
+          H = {"Authorization": f"Bearer {tok}"}; B = "https://api.appstoreconnect.apple.com"
+          def get(p, **q):
+              r = requests.get(B + p, headers=H, params=q)
+              if r.status_code != 200: print("  ", p, r.status_code, r.text[:300]); return {}
+              return r.json()
+          for app in get("/v1/apps", limit=50).get("data", []):
+              a = app["attributes"]; aid = app["id"]
+              print(f"\n=== {a['name']} ({a['bundleId']}) id {aid}")
+              for v in get(f"/v1/apps/{aid}/appStoreVersions", limit=5).get("data", []):
+                  va = v["attributes"]
+                  print(f"  App Store {va.get('platform')} {va.get('versionString')}: {va.get('appStoreState')} / {va.get('appVersionState')} created {va.get('createdDate')}")
+              for s in get("/v1/reviewSubmissions", **{"filter[app]": aid, "limit": 5}).get("data", []):
+                  sa = s["attributes"]
+                  print(f"  Review submission {s['id']}: {sa.get('state')} submitted {sa.get('submittedDate')}")
+                  for it in get(f"/v1/reviewSubmissions/{s['id']}/items").get("data", []):
+                      print(f"     item {it['attributes'].get('state')}")
+              for b in get("/v1/betaAppReviewSubmissions", **{"filter[build]": "", "limit": 1}).get("data", [])[:0]:
+                  pass
+              builds = get("/v1/builds", **{"filter[app]": aid, "sort": "-uploadedDate", "limit": 8, "include": "betaAppReviewSubmission,buildBetaDetail"})
+              inc = {(i["type"], i["id"]): i["attributes"] for i in builds.get("included", [])}
+              for b in builds.get("data", []):
+                  ba = b["attributes"]; rel = b.get("relationships", {})
+                  rs = rel.get("betaAppReviewSubmission", {}).get("data"); bd = rel.get("buildBetaDetail", {}).get("data")
+                  review = inc.get((rs["type"], rs["id"]), {}).get("betaReviewState") if rs else None
+                  ext = inc.get((bd["type"], bd["id"]), {}).get("externalBuildState") if bd else None
+                  print(f"  Build {ba.get('version')}: {ba.get('processingState')} beta-review={review} external={ext} uploaded {ba.get('uploadedDate')}")
