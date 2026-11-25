@@ -141,7 +141,10 @@ final class AppModel {
     }
 
     func logout() async {
+        let wasDemo = Demo.isOn
+        ParentTaskFinder.shared.didLogOut(wasDemo: wasDemo)   // before leaving the demo, so the right file is cleared
         Demo.leave()
+        ParentTaskFinder.shared.reload()
         await TokenStore.shared.clear()
         await AulaAPI.shared.reset()
         DiskCache.clear()

@@ -113,7 +113,7 @@ struct TaskDetailView: View {
         case .thread(let id):
             let page = data.thread(id)
             await page.load(maxAge: 3600)
-            if page.value == nil { loadError = page.error ?? String(localized: "Beskeden kunne ikke hentes.") }
+            if page.value == nil { loadError = String(localized: "Beskeden kunne ikke hentes.") }
         case .post(let id):
             if let p = data.posts.value?.first(where: { $0.id == id }) { post = p; return }
             do { post = try await AulaAPI.shared.post(id: id) }

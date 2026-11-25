@@ -51,11 +51,12 @@ final class ParentTaskFinder {
     }
 
     @ObservationIgnored private var store = Store()
-    @ObservationIgnored private let file: URL = {
+    /// The demo (login-screen button) keeps its own list, so sample tasks never mix with real ones.
+    private var file: URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appendingPathComponent("parent-tasks.json")
-    }()
+        return dir.appendingPathComponent(Demo.isOn ? "parent-tasks-demo.json" : "parent-tasks.json")
+    }
     @ObservationIgnored private var running: Task<Void, Never>?
     /// False while `shared` is being created: the widget writer reads `shared`, so calling it from init
     /// would re-enter the static initializer and crash.
@@ -64,14 +65,46 @@ final class ParentTaskFinder {
     private static let aiVersion = 1
 
     private init() {
+        loadStore()
+        ready = true
+    }
+
+    private func loadStore() {
+        store = Store(aiVersion: Self.aiVersion)
         if let data = try? Data(contentsOf: file), let s = try? JSONDecoder().decode(Store.self, from: data) { store = s }
         if Self.usesAI && store.aiVersion != Self.aiVersion {
             store.read = [:]
             store.aiVersion = Self.aiVersion
         }
+        // Builds 42–44 saved tasks found in the demo's sample messages (short ids) into the real list.
+        if !Demo.isOn {
+            let before = store.tasks.count
+            store.tasks.removeAll { t in
+                switch t.source {
+                case .thread(let id): id.count < 5
+                case .post(let id): id < 1000
+                }
+            }
+            if store.tasks.count != before { save() }
+        }
         publish()
-        ready = true
     }
+
+    /// After logging out or leaving the demo: forget this account's tasks and show the right list.
+    func didLogOut(wasDemo: Bool) {
+        running?.cancel()
+        running = nil
+        if !wasDemo {
+            // Another account may log in next.
+            store = Store(aiVersion: Self.aiVersion)
+            save()
+        } else {
+            try? FileManager.default.removeItem(at: file)
+        }
+    }
+
+    /// Call when the demo turns on or off.
+    func reload() { loadStore() }
 
     /// Open tasks, soonest first (undated ones by when they were sent).
     var open: [ParentTask] {
