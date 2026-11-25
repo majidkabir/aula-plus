@@ -52,6 +52,7 @@ struct LoginView: View {
             .padding(.horizontal, 24)
             Button {
                 Demo.enter()
+                ParentTaskFinder.shared.reload()
                 Task { await app.start() }
             } label: {
                 Text("Se demo uden login").font(.subheadline.weight(.semibold))
