@@ -5980,6 +5980,116 @@
           }
         }
       }
+    },
+    "Oversæt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translate"
+          }
+        }
+      }
+    },
+    "Viser teksten på engelsk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows the text in English"
+          }
+        }
+      }
+    },
+    "Fra beskeden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From the message"
+          }
+        }
+      }
+    },
+    "Fra opslaget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From the post"
+          }
+        }
+      }
+    },
+    "Fundet af Apple Intelligence. Tjek altid den oprindelige tekst.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found by Apple Intelligence. Always check the original text."
+          }
+        }
+      }
+    },
+    "Fundet ud fra ord som \"husk\" og \"medbring\". Tjek altid den oprindelige tekst.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found from words like \"remember\" and \"bring\". Always check the original text."
+          }
+        }
+      }
+    },
+    "Åbn hele beskeden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the whole message"
+          }
+        }
+      }
+    },
+    "Åbn opslaget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the post"
+          }
+        }
+      }
+    },
+    "Beskeden kunne ikke hentes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The message couldn't be loaded."
+          }
+        }
+      }
+    },
+    "Opslaget kunne ikke hentes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The post couldn't be loaded."
+          }
+        }
+      }
+    },
+    "%lld nye notifikationer i Aula": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld new notifications in Aula"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

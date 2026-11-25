@@ -242,6 +242,7 @@ enum Route: Hashable {
     case groups, search, consents
     case group(AulaGroup)
     case event(Event)
+    case task(ParentTask)
     case child(Child)
     case document(SecureDocument)
     case empty          // screenshot runs only

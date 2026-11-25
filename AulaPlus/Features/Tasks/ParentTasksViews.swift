@@ -113,21 +113,9 @@ struct ParentTaskRow: View {
         }
     }
 
-    /// Opens the message or post the task came from.
+    /// Opens the task with the message or post it came from.
     @ViewBuilder private func source<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        switch task.source {
-        case .thread(let id):
-            let t = data.threads.value?.first { $0.id == id }
-                ?? ThreadSummary(id: id, subject: task.sourceTitle, preview: "", sender: "", date: task.sourceDate,
-                                 isRead: true, isSensitive: false, regarding: [])
-            NavigationLink(value: t) { content() }.buttonStyle(.plain)
-        case .post(let id):
-            if let p = data.posts.value?.first(where: { $0.id == id }) {
-                NavigationLink(value: p) { content() }.buttonStyle(.plain)
-            } else {
-                content()
-            }
-        }
+        NavigationLink(value: Route.task(task)) { content() }.buttonStyle(.plain)
     }
 
     static func dueLabel(_ d: Date) -> String {

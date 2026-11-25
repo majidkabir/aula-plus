@@ -156,6 +156,7 @@ struct PostDetailView: View {
                 }
                 Divider()
                 HTMLText(html: post.html)
+                TranslateButton(html: post.html)
                 AttachmentList(attachments: post.attachments)
               }
               .cardStyle()
