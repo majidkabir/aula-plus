@@ -53,7 +53,7 @@ struct TranslateButton: View {
                 let status = await LanguageAvailability().status(from: Locale.Language(identifier: "da"),
                                                                  to: Locale.Language(identifier: "en"))
                 if status == .unsupported { await viaModel(text) }
-                else { request = TranslationSession.Configuration(source: .init(identifier: "da"), target: .init(identifier: "en")) }
+                else { request = AnyHashable(TranslationSession.Configuration(source: .init(identifier: "da"), target: .init(identifier: "en"))) }
             }
         } else {
             Task { await viaModel(text) }
@@ -94,7 +94,7 @@ private struct AppleTranslate: ViewModifier {
 
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
-            content.translationTask(request as? TranslationSession.Configuration) { session in
+            content.translationTask(request?.base as? TranslationSession.Configuration) { session in
                 do {
                     let paragraphs = text.components(separatedBy: "\n")
                     var out: [String] = []
