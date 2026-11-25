@@ -102,23 +102,39 @@ enum BackgroundRefresh {
             // First run after an update: only remember what's there, so old items don't all pop up.
             if defaults.object(forKey: seenNotesKey) != nil {
                 let seen = Set(defaults.stringArray(forKey: seenNotesKey) ?? [])
-                for n in list.prefix(20) where !seen.contains(n.id) && n.threadId == nil && n.postId == nil {
-                    var info: [String: Any] = ["notification": true]
-                    if let a = n.albumId { info["albumId"] = a; info["albumTitle"] = n.title }
-                    await notify(id: "note-\(n.id)", title: n.title, body: n.childName ?? "", info: info)
+                let fresh = list.filter { !seen.contains($0.id) && $0.threadId == nil && $0.postId == nil }
+                // Photos: one notification per album, however many pictures were added.
+                for (albumId, items) in Dictionary(grouping: fresh.filter { $0.albumId != nil }, by: { $0.albumId! }) {
+                    let first = items[0]
+                    let names = Array(Set(items.compactMap(\.childName))).sorted().joined(separator: ", ")
+                    let count = items.count == 1 ? "" : String(localized: "\(items.count) nye billeder")
+                    await notify(id: "album-\(albumId)-\(first.id)", title: first.title,
+                                 body: [count, names].filter { !$0.isEmpty }.joined(separator: " · "),
+                                 info: ["notification": true, "albumId": albumId, "albumTitle": first.title],
+                                 group: "album-\(albumId)")
+                }
+                // The rest: one each when there are a few, one summary when there are many.
+                let others = fresh.filter { $0.albumId == nil }
+                if others.count > 3 {
+                    await notify(id: "notes-\(others[0].id)", title: String(localized: "\(others.count) nye notifikationer i Aula"),
+                                 body: others.prefix(3).map(\.title).joined(separator: " · "), info: ["notification": true])
+                } else {
+                    for n in others {
+                        await notify(id: "note-\(n.id)", title: n.title, body: n.childName ?? "", info: ["notification": true])
+                    }
                 }
             }
             defaults.set(list.map(\.id), forKey: seenNotesKey)
         }
     }
 
-    private static func notify(id: String, title: String, body: String, info: [String: Any]) async {
+    private static func notify(id: String, title: String, body: String, info: [String: Any], group: String = "aula") async {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = String(body.prefix(240))
         content.sound = .default
         content.userInfo = info
-        content.threadIdentifier = "aula"
+        content.threadIdentifier = group
         let req = UNNotificationRequest(identifier: id, content: content, trigger: nil)
         try? await UNUserNotificationCenter.current().add(req)
     }

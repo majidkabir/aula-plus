@@ -105,6 +105,7 @@ struct RouteView: View {
         case .settings: SettingsView(embedded: true)
         case .tasks: ParentTasksView()
         case .event(let e): EventDetailView(event: e)
+        case .task(let t): TaskDetailView(task: t)
         case .profile: MyProfileView()
         case .birthdays: BirthdaysView()
         case .presence: PresenceHubView()

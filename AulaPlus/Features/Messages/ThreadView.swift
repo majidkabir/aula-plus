@@ -246,6 +246,7 @@ struct MessageBubble: View {
                         .font(.subheadline.italic()).foregroundStyle(.secondary)
                 } else {
                     HTMLText(html: message.html)
+                    TranslateButton(html: message.html)
                 }
                 AttachmentList(attachments: message.attachments)
                 if let d = message.date {
