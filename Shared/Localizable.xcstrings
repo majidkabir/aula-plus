@@ -6090,6 +6090,26 @@
           }
         }
       }
+    },
+    "Vis original": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show original"
+          }
+        }
+      }
+    },
+    "Oversættelse virker ikke på denne iPhone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translation doesn't work on this iPhone"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
