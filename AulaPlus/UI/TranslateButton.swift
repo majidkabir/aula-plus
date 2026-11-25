@@ -95,6 +95,8 @@ private struct AppleTranslate: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
             content.translationTask(request ? TranslationSession.Configuration(source: .init(identifier: "da"), target: .init(identifier: "en")) : nil) { session in
+                // The session is only used here, one call at a time.
+                nonisolated(unsafe) let session = session
                 do {
                     let paragraphs = text.components(separatedBy: "\n")
                     var out: [String] = []
