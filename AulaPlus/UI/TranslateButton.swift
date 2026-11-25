@@ -15,7 +15,7 @@ struct TranslateButton: View {
     @State private var showing = false
     @State private var busy = false
     @State private var failed: String?
-    @State private var request: AnyHashable?   // TranslationSession.Configuration on iOS 18+
+    @State private var request = false   // runs Apple Translate (iOS 18+)
 
     var body: some View {
         let text = HTML.plainText(html).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -53,7 +53,7 @@ struct TranslateButton: View {
                 let status = await LanguageAvailability().status(from: Locale.Language(identifier: "da"),
                                                                  to: Locale.Language(identifier: "en"))
                 if status == .unsupported { await viaModel(text) }
-                else { request = AnyHashable(TranslationSession.Configuration(source: .init(identifier: "da"), target: .init(identifier: "en"))) }
+                else { request = true }
             }
         } else {
             Task { await viaModel(text) }
@@ -88,22 +88,22 @@ struct TranslateButton: View {
 
 /// Runs Apple's Translate when `request` is set; reports nil when it can't (then the caller tries Apple Intelligence).
 private struct AppleTranslate: ViewModifier {
-    @Binding var request: AnyHashable?
+    @Binding var request: Bool
     let text: String
     let done: (String?) -> Void
 
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
-            content.translationTask(request?.base as? TranslationSession.Configuration) { session in
+            content.translationTask(request ? TranslationSession.Configuration(source: .init(identifier: "da"), target: .init(identifier: "en")) : nil) { session in
                 do {
                     let paragraphs = text.components(separatedBy: "\n")
                     var out: [String] = []
                     for p in paragraphs {
                         out.append(p.trimmingCharacters(in: .whitespaces).isEmpty ? p : try await session.translate(p).targetText)
                     }
-                    await MainActor.run { done(out.joined(separator: "\n")); request = nil }
+                    await MainActor.run { done(out.joined(separator: "\n")); request = false }
                 } catch {
-                    await MainActor.run { done(nil); request = nil }
+                    await MainActor.run { done(nil); request = false }
                 }
             }
         } else {
